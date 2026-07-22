@@ -4,7 +4,7 @@
 
 ### 画面遷移図
 
-https://www.figma.com/design/uwYyUGO0Vhh2vaEX4jmH88/TakutoMasuga_work?node-id=0-1&p=f&t=16PaBtG7h6Q8EvHA-0
+https://www.figma.com/design/uwYyUGO0Vhh2vaEX4jmH88/TakutoMasuga_work?node-id=0-1&t=hBUB91svLlDkxGfL-1
 
 ---
 
