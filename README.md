@@ -10,7 +10,7 @@ https://www.figma.com/design/uwYyUGO0Vhh2vaEX4jmH88/TakutoMasuga_work?node-id=0-
 
 ### ER図
 
-[![Image from Gyazo](https://i.gyazo.com/5ee8b185a0f7eb562746a13dc14b1ead.png)](https://gyazo.com/5ee8b185a0f7eb562746a13dc14b1ead)
+[![Image from Gyazo](https://i.gyazo.com/d129272e2f40a9419ba8d36b397a3daa.png)](https://gyazo.com/d129272e2f40a9419ba8d36b397a3daa)
 
 ---
 
