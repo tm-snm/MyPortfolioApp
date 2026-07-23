@@ -2,6 +2,10 @@
 
 ## Re:solve - 未来の自分へ残す、つまずき解決カード
 
+### 画面遷移図
+
+https://www.figma.com/design/uwYyUGO0Vhh2vaEX4jmH88/TakutoMasuga_work?node-id=0-1&t=hBUB91svLlDkxGfL-1
+
 ---
 
 ## 1. サービス概要
