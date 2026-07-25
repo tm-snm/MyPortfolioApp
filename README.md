@@ -8,6 +8,12 @@ https://www.figma.com/design/uwYyUGO0Vhh2vaEX4jmH88/TakutoMasuga_work?node-id=0-
 
 ---
 
+### ER図
+
+[![Image from Gyazo](https://i.gyazo.com/f287544e1076d70525753989837c56dd.png)](https://gyazo.com/f287544e1076d70525753989837c56dd)
+
+---
+
 ## 1. サービス概要
 
 Recall Cardは、AIとのチャット履歴や検索で解決した内容を、未来の自分が再利用できる「つまずき解決カード」として保存・検索・復習できるサービスです。
