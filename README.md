@@ -657,3 +657,21 @@ MVPでは、他ユーザーとの共有機能は実装しません。
 - 検索機能の実装範囲を広げすぎる可能性
 
 ---
+
+## 開発環境
+
+### 使用バージョン
+
+- Ruby 3.4.10
+- Rails 7.2.3.1
+- PostgreSQL 17.10
+- Docker Compose
+
+### 初回セットアップ
+
+```bash
+cp .env.example .env
+docker compose build
+docker compose run --rm web bin/rails db:prepare
+docker compose up -d
+```
