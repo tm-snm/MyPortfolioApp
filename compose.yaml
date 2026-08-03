@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:17.10-bookworm
+
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build:
+      context: .
+
+    command:
+      - bin/rails
+      - server
+      - -b
+      - 0.0.0.0
+
+    volumes:
+      - .:/app
+
+    ports:
+      - "3000:3000"
+
+    environment:
+      DATABASE_HOST: db
+      DATABASE_USERNAME: ${POSTGRES_USER}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    stdin_open: true
+    tty: true
+
+volumes:
+  postgres_data:
