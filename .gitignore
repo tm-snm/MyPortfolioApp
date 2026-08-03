@@ -1,1 +1,35 @@
-.env
+# Bundlerのローカル設定
+/.bundle
+
+# 環境変数
+/.env
+/.env.*
+!/.env.example
+!/.env.*.example
+
+# Railsのログ
+/log/*
+!/log/.keep
+
+# Railsの一時ファイル
+/tmp/*
+!/tmp/.keep
+
+# PIDディレクトリだけ維持し、中のPIDファイルは除外
+!/tmp/pids/
+/tmp/pids/*
+!/tmp/pids/.keep
+
+# ローカルのアップロードファイル
+/storage/*
+!/storage/.keep
+
+# 自動生成物
+/public/assets
+/coverage
+/vendor/bundle
+/node_modules
+
+# Railsの秘密鍵
+/config/master.key
+/config/credentials/*.key

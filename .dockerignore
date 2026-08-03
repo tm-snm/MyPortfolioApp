@@ -1,0 +1,21 @@
+# Git
+.git
+.gitignore
+
+# 環境変数・秘密情報
+.env
+.env.*
+
+# Rails実行時の生成物
+log/*
+tmp/*
+storage/*
+
+# テスト・依存関係・ビルド生成物
+coverage
+vendor/bundle
+node_modules
+public/assets
+
+# OS・エディタ
+.DS_Store

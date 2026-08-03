@@ -27,6 +27,7 @@ services:
 
     volumes:
       - .:/app
+      - rails_tmp_cache:/app/tmp/cache
 
     ports:
       - "3000:3000"
@@ -45,3 +46,4 @@ services:
 
 volumes:
   postgres_data:
+  rails_tmp_cache:
