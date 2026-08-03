@@ -1,2 +1,148 @@
-<h1>Home#top</h1>
-<p>Find me in app/views/home/top.html.erb</p>
+<% content_for :title,
+               "Recall Card | つまずきを、次の自分の知識に" %>
+
+<section class="hero-section py-5">
+  <div class="container py-lg-5">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-7">
+        <p class="text-primary fw-semibold mb-2">
+          未来の自分へ残す、つまずき解決カード
+        </p>
+
+        <h1 class="display-5 fw-bold mb-4">
+          解決したつまずきを、<br class="d-none d-md-block">
+          次に使える知識として残す。
+        </h1>
+
+        <p class="lead text-secondary mb-4">
+          Recall Cardは、AIや検索で解決した内容を、
+          あとから見返せるカードとして整理・保存するサービスです。
+        </p>
+
+        <div class="d-flex flex-wrap gap-2">
+          <%= link_to "特徴を見る", "#{root_path}#features",
+                      class: "btn btn-primary btn-lg" %>
+
+          <%= link_to "使い方を見る", "#{root_path}#steps",
+                      class: "btn btn-outline-secondary btn-lg" %>
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="card shadow-sm border-0">
+          <div class="card-body p-4">
+            <p class="small text-secondary mb-2">
+              Recall Cardの例
+            </p>
+
+            <h2 class="h5 fw-bold">
+              DockerからPostgreSQLへ接続できない
+            </h2>
+
+            <hr>
+
+            <p class="small fw-semibold mb-1">
+              原因
+            </p>
+
+            <p class="small text-secondary">
+              Railsコンテナから見たDBホストに
+              localhostを指定していた。
+            </p>
+
+            <p class="small fw-semibold mb-1">
+              次回の確認
+            </p>
+
+            <p class="small text-secondary mb-0">
+              Compose内ではサービス名のdbをホスト名として使う。
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="py-5 bg-white">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold">Recall Cardでできること</h2>
+      <p class="text-secondary mb-0">
+        解決した知識を、未来の自分が使いやすい形に整えます。
+      </p>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="h-100 p-4 border rounded-3">
+          <h3 class="h5 fw-bold">整理する</h3>
+          <p class="text-secondary mb-0">
+            AIの回答や調べた内容を、
+            タイトル・本文・未来のメモに整理します。
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="h-100 p-4 border rounded-3">
+          <h3 class="h5 fw-bold">探し直す</h3>
+          <p class="text-secondary mb-0">
+            キーワードやタグから、
+            過去に解決した内容を探せます。
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="h-100 p-4 border rounded-3">
+          <h3 class="h5 fw-bold">復習する</h3>
+          <p class="text-secondary mb-0">
+            もう一度確認したいカードを、
+            復習予定として残せます。
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="steps" class="py-5">
+  <div class="container">
+    <div class="text-center mb-5">
+      <h2 class="fw-bold">基本的な使い方</h2>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="text-center">
+          <span class="step-number">1</span>
+          <h3 class="h5 mt-3">テンプレートをコピー</h3>
+          <p class="text-secondary">
+            アプリ内のプロンプトを外部AIへ貼り付けます。
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="text-center">
+          <span class="step-number">2</span>
+          <h3 class="h5 mt-3">AI出力を貼り付ける</h3>
+          <p class="text-secondary">
+            AIの回答をRecall Cardへ貼り付けます。
+          </p>
+        </div>
+      </div>
+
+      <div class="col-md-4">
+        <div class="text-center">
+          <span class="step-number">3</span>
+          <h3 class="h5 mt-3">確認して保存</h3>
+          <p class="text-secondary">
+            分割結果を編集して、自分のカードとして保存します。
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
