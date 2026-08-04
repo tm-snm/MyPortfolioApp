@@ -1,0 +1,28 @@
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: #212529;
+}
+
+.hero-section {
+  background: linear-gradient(
+    135deg,
+    rgba(13, 110, 253, 0.08),
+    rgba(255, 255, 255, 0.8)
+  );
+}
+
+.step-number {
+  align-items: center;
+  background-color: #0d6efd;
+  border-radius: 50%;
+  color: #fff;
+  display: inline-flex;
+  font-size: 1.25rem;
+  font-weight: 700;
+  height: 3rem;
+  justify-content: center;
+  width: 3rem;
+}
