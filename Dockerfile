@@ -15,7 +15,7 @@ RUN apt-get update -qq && \
 
 WORKDIR /app
 
-COPY Gemfile Gemfile.lock ./
+COPY Gemfile Gemfile.lock .ruby-version ./
 RUN bundle install
 
 COPY . .
