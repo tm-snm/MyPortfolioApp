@@ -19,6 +19,8 @@ services:
     build:
       context: .
 
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
+
     command:
       - bin/rails
       - server
@@ -36,6 +38,7 @@ services:
       DATABASE_HOST: db
       DATABASE_USERNAME: ${POSTGRES_USER}
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      HOME: /tmp
 
     depends_on:
       db:
