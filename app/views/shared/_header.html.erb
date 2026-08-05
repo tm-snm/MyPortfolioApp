@@ -11,6 +11,10 @@
             <%= current_user.email %>
           </span>
 
+          <%= link_to "カードを作成",
+              new_card_path,
+              class: "btn btn-outline-primary btn-sm" %>
+
           <%= button_to "ログアウト",
                         destroy_user_session_path,
                         method: :delete,
