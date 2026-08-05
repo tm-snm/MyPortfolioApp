@@ -1,33 +1,30 @@
-<header class="bg-white border-bottom">
+<header class="border-bottom bg-white">
   <nav class="navbar navbar-expand-lg">
     <div class="container">
-      <%= link_to "Recall Card", root_path,
-                  class: "navbar-brand fw-bold text-dark" %>
+      <%= link_to "Recall Card",
+                  root_path,
+                  class: "navbar-brand fw-bold" %>
 
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#globalNavigation"
-        aria-controls="globalNavigation"
-        aria-expanded="false"
-        aria-label="ナビゲーションを開く"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
+      <div class="d-flex align-items-center gap-2">
+        <% if user_signed_in? %>
+          <span class="small text-secondary">
+            <%= current_user.email %>
+          </span>
 
-      <div class="collapse navbar-collapse" id="globalNavigation">
-        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <%= link_to "特徴", "#{root_path}#features",
-                        class: "nav-link" %>
-          </li>
+          <%= button_to "ログアウト",
+                        destroy_user_session_path,
+                        method: :delete,
+                        class: "btn btn-outline-secondary btn-sm",
+                        form: { class: "d-inline" } %>
+        <% else %>
+          <%= link_to "ログイン",
+                      new_user_session_path,
+                      class: "btn btn-outline-primary btn-sm" %>
 
-          <li class="nav-item">
-            <%= link_to "使い方", "#{root_path}#steps",
-                        class: "nav-link" %>
-          </li>
-        </ul>
+          <%= link_to "新規登録",
+                      new_user_registration_path,
+                      class: "btn btn-primary btn-sm" %>
+        <% end %>
       </div>
     </div>
   </nav>
