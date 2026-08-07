@@ -322,4 +322,56 @@ RSpec.describe "Cards", type: :request do
       end
     end
   end
+
+  describe "DELETE /cards/:id" do
+    context "ログインしている場合" do
+      before do
+        sign_in user
+      end
+
+      context "自分のカードの場合" do
+        it "カードを削除できる" do
+          card
+
+          expect do
+            delete card_path(card)
+          end.to change(Card, :count).by(-1)
+        end
+
+        it "削除後にカード一覧画面へリダイレクトされる" do
+          delete card_path(card)
+
+          expect(response).to redirect_to(cards_path)
+        end
+      end
+
+      context "他ユーザーのカードの場合" do
+        it "カードを削除できない" do
+          other_card
+
+          expect do
+            delete card_path(other_card)
+          end.not_to change(Card, :count)
+
+          expect(response).to have_http_status(:not_found)
+        end
+      end
+    end
+
+    context "ログインしていない場合" do
+      it "カードを削除しない" do
+        card
+
+        expect do
+          delete card_path(card)
+        end.not_to change(Card, :count)
+      end
+
+      it "ログイン画面へリダイレクトされる" do
+        delete card_path(card)
+
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+  end
 end
