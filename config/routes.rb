@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
   devise_for :users
 
-  resources :cards, only: %i[index new create]
+  resources :cards, only: %i[index new create show]
 
   root "home#top"
 end

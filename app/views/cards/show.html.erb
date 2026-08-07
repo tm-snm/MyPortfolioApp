@@ -1,0 +1,40 @@
+<div class="container py-4">
+  <div class="mb-4">
+    <h1 class="h2"><%= @card.title %></h1>
+
+    <div class="text-muted">
+      作成日時:
+      <%= @card.created_at.strftime("%Y/%m/%d %H:%M") %>
+    </div>
+  </div>
+
+  <div class="mb-4">
+    <h2 class="h5">ステータス</h2>
+
+    <p>
+      <%= @card.review_later? ? "復習予定" : "通常" %>
+    </p>
+  </div>
+
+  <div class="mb-4">
+    <h2 class="h5">本文</h2>
+
+    <div>
+      <%= simple_format(@card.body) %>
+    </div>
+  </div>
+
+  <% if @card.future_note.present? %>
+    <div class="mb-4">
+      <h2 class="h5">未来の自分へのメモ</h2>
+
+      <div>
+        <%= simple_format(@card.future_note) %>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="d-flex gap-2">
+    <%= link_to "カード一覧へ戻る", cards_path, class: "btn btn-outline-secondary" %>
+  </div>
+</div>

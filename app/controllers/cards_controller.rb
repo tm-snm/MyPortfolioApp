@@ -5,6 +5,10 @@ class CardsController < ApplicationController
     @cards = current_user.cards.order(created_at: :desc)
   end
 
+  def show
+    @card = current_user.cards.find(params[:id])
+  end
+
   def new
     @card = current_user.cards.build
   end

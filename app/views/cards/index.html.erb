@@ -25,7 +25,11 @@
                   </p>
                 </div>
 
-                <div>
+                <div class="d-flex align-items-center gap-2">
+                  <%= link_to "詳細を見る",
+                              card_path(card),
+                              class: "btn btn-outline-primary btn-sm" %>
+
                   <% if card.review_later? %>
                     <span class="badge text-bg-warning">復習予定</span>
                   <% else %>
