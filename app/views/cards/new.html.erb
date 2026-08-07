@@ -4,6 +4,10 @@
       <h1 class="mb-4">カードを作成</h1>
 
       <%= render "form", card: @card %>
+
+      <div class="mt-3">
+        <%= link_to "キャンセル", cards_path, class: "btn btn-outline-secondary" %>
+      </div>
     </div>
   </div>
 </div>

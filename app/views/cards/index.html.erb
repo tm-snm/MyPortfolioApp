@@ -1,0 +1,54 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h2 mb-0">カード一覧</h1>
+
+    <%= link_to "新しいカードを作成",
+                new_card_path,
+                class: "btn btn-primary" %>
+  </div>
+
+  <% if @cards.any? %>
+    <div class="row g-3">
+      <% @cards.each do |card| %>
+        <div class="col-12">
+          <article class="card shadow-sm">
+            <div class="card-body">
+              <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                <div>
+                  <h2 class="h5 card-title mb-2">
+                    <%= card.title %>
+                  </h2>
+
+                  <p class="text-muted small mb-0">
+                    作成日時：
+                    <%= card.created_at.strftime("%Y/%m/%d %H:%M") %>
+                  </p>
+                </div>
+
+                <div class="d-flex align-items-center gap-2">
+                  <%= link_to "詳細を見る",
+                              card_path(card),
+                              class: "btn btn-outline-primary btn-sm" %>
+
+                  <% if card.review_later? %>
+                    <span class="badge text-bg-warning">復習予定</span>
+                  <% else %>
+                    <span class="badge text-bg-secondary">通常</span>
+                  <% end %>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="text-center border rounded p-5 bg-light">
+      <p class="mb-3">まだカードがありません。</p>
+
+      <%= link_to "最初のカードを作成",
+                  new_card_path,
+                  class: "btn btn-primary" %>
+    </div>
+  <% end %>
+</div>
