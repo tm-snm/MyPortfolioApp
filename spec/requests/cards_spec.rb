@@ -119,4 +119,78 @@ RSpec.describe "Cards", type: :request do
       end
     end
   end
+
+  describe "GET /cards" do
+    context "ログインしている場合" do
+      let(:user) { create(:user) }
+      let(:other_user) { create(:user) }
+
+      before do
+        sign_in user
+      end
+
+      it "正常に一覧画面を表示できる" do
+        get cards_path
+
+        expect(response).to have_http_status(:ok)
+      end
+
+      it "自分のカードを表示する" do
+        card = create(:card, user:, title: "自分のカード")
+
+        get cards_path
+
+        expect(response.body).to include("自分のカード")
+        expect(response.body).to include(card.title)
+      end
+
+      it "他のユーザーのカードを表示しない" do
+        create(:card, user:, title: "自分のカード")
+        create(:card, user: other_user, title: "他人のカード")
+
+        get cards_path
+
+        expect(response.body).to include("自分のカード")
+        expect(response.body).not_to include("他人のカード")
+      end
+
+      it "カードを新しい順で表示する" do
+        old_card = create(
+          :card,
+          user:,
+          title: "古いカード",
+          created_at: 2.days.ago
+        )
+
+        new_card = create(
+          :card,
+          user:,
+          title: "新しいカード",
+          created_at: 1.day.ago
+        )
+
+        get cards_path
+
+        new_card_position = response.body.index(new_card.title)
+        old_card_position = response.body.index(old_card.title)
+
+        expect(new_card_position).to be < old_card_position
+      end
+
+      it "カードが0件でも正常に表示できる" do
+        get cards_path
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("まだカードがありません")
+      end
+    end
+
+    context "ログインしていない場合" do
+      it "ログイン画面へリダイレクトする" do
+        get cards_path
+
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+  end
 end

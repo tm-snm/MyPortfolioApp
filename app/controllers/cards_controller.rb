@@ -1,6 +1,10 @@
 class CardsController < ApplicationController
   before_action :authenticate_user!
 
+  def index
+    @cards = current_user.cards.order(created_at: :desc)
+  end
+
   def new
     @card = current_user.cards.build
   end
