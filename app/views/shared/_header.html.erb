@@ -11,9 +11,13 @@
             <%= current_user.email %>
           </span>
 
+          <%= link_to "カード一覧",
+              cards_path,
+              class: "btn btn-outline-primary btn-sm" %>
+
           <%= link_to "カードを作成",
               new_card_path,
-              class: "btn btn-outline-primary btn-sm" %>
+              class: "btn btn-primary btn-sm" %>
 
           <%= button_to "ログアウト",
                         destroy_user_session_path,
