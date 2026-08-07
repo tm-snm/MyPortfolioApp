@@ -15,36 +15,21 @@
 
   <div class="mb-3">
     <%= form.label :title, "タイトル", class: "form-label" %>
-    <%= form.text_field :title,
-                        class: "form-control",
-                        placeholder: "例：DockerでGemを追加できなかった原因" %>
+    <%= form.text_field :title, class: "form-control", placeholder: "例：DockerでGemを追加できなかった原因" %>
   </div>
 
   <div class="mb-3">
     <%= form.label :body, "本文", class: "form-label" %>
-    <%= form.text_area :body,
-                       rows: 12,
-                       class: "form-control",
-                       placeholder: "状況、原因、解決方法などを入力してください" %>
+    <%= form.text_area :body, rows: 12, class: "form-control", placeholder: "状況、原因、解決方法などを入力してください" %>
   </div>
 
   <div class="mb-4">
-    <%= form.label :future_note,
-                   "未来の自分へのメモ",
-                   class: "form-label" %>
+    <%= form.label :future_note, "未来の自分へのメモ", class: "form-label" %>
 
-    <%= form.text_area :future_note,
-                       rows: 4,
-                       class: "form-control",
-                       placeholder: "次回まず確認することなどを入力してください" %>
+    <%= form.text_area :future_note, rows: 4, class: "form-control", placeholder: "次回まず確認することなどを入力してください" %>
   </div>
 
   <div class="d-flex gap-2">
-    <%= form.submit "カードを作成",
-                    class: "btn btn-primary" %>
-
-    <%= link_to "キャンセル",
-                root_path,
-                class: "btn btn-outline-secondary" %>
+    <%= form.submit "カードを作成", class: "btn btn-primary" %>
   </div>
 <% end %>

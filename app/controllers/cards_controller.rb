@@ -23,6 +23,20 @@ class CardsController < ApplicationController
     end
   end
 
+  def edit
+    @card = current_user.cards.find(params[:id])
+  end
+
+  def update
+    @card = current_user.cards.find(params[:id])
+
+    if @card.update(card_params)
+      redirect_to @card, notice: "カードを更新しました"
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def card_params
