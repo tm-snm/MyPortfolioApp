@@ -193,4 +193,52 @@ RSpec.describe "Cards", type: :request do
       end
     end
   end
+
+  describe "GET /cards/:id" do
+    let(:user) { create(:user) }
+    let(:other_user) { create(:user) }
+
+    let(:card) do
+      create(
+        :card,
+        user: user,
+        title: "Railsのルーティング",
+        body: "resourcesについて理解する",
+        future_note: "routesを最初に確認する"
+      )
+    end
+
+    let(:other_card) do
+      create(:card, user: other_user)
+    end
+
+    context "ログインしている場合" do
+      before do
+        sign_in user
+      end
+
+      it "自分のカード詳細を表示できる" do
+        get card_path(card)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("Railsのルーティング")
+        expect(response.body).to include("resourcesについて理解する")
+        expect(response.body).to include("routesを最初に確認する")
+      end
+
+      it "他ユーザーのカード詳細を表示できない" do
+        get card_path(other_card)
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "ログインしていない場合" do
+      it "ログイン画面へリダイレクトされる" do
+        get card_path(card)
+
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+  end
 end
