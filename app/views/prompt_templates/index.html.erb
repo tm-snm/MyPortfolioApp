@@ -1,0 +1,36 @@
+<div class="container py-4">
+  <div class="mb-4">
+    <h1 class="h2">プロンプトテンプレート</h1>
+    <p class="text-muted">
+      用途に合ったテンプレートを選んで、AIとの会話をRecall Card用に整理できます。
+    </p>
+  </div>
+
+  <div class="row g-3">
+    <% @prompt_templates.each do |prompt_template| %>
+      <div class="col-12 col-md-6">
+        <div class="card h-100 shadow-sm">
+          <div class="card-body">
+            <h2 class="h5 card-title">
+              <%= prompt_template.title %>
+            </h2>
+
+            <p class="card-text text-muted">
+              <%= prompt_template.description %>
+            </p>
+
+            <%= link_to "詳細を見る",
+                        prompt_template_path(prompt_template),
+                        class: "btn btn-outline-primary" %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="mt-4">
+    <%= link_to "カード一覧へ戻る",
+                cards_path,
+                class: "btn btn-outline-secondary" %>
+  </div>
+</div>
