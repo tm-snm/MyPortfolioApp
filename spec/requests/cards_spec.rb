@@ -62,7 +62,43 @@ RSpec.describe "Cards", type: :request do
         it "作成後にリダイレクトする" do
           post cards_path, params: valid_params
 
-          expect(response).to redirect_to(cards_path)
+          created_card = Card.order(:created_at).last
+
+          expect(response).to redirect_to(card_path(created_card))
+        end
+      end
+
+      context "AI出力からカードを作成する場合" do
+        let(:raw_content) do
+          <<~TEXT
+            【タイトル】
+            DockerでGemを追加できなかった
+
+            【本文】
+            bundleの保存先に書き込み権限がなかった。
+
+            【未来の自分へのメモ】
+            Gem追加時はコンテナ内の権限を確認する。
+          TEXT
+        end
+
+        let(:ai_card_params) do
+          {
+            card: {
+              title: "DockerでGemを追加できなかった",
+              body: "bundleの保存先に書き込み権限がなかった。",
+              future_note: "Gem追加時はコンテナ内の権限を確認する。",
+              raw_content: raw_content
+            }
+          }
+        end
+
+        it "AIの元出力をraw_contentとして保存できる" do
+          post cards_path, params: ai_card_params
+
+          created_card = Card.order(:created_at).last
+
+          expect(created_card.raw_content).to eq(raw_content)
         end
       end
 
@@ -372,6 +408,75 @@ RSpec.describe "Cards", type: :request do
 
         expect(response).to redirect_to(new_user_session_path)
       end
+    end
+  end
+
+  describe "GET /cards/new_from_ai" do
+    context "ログインしている場合" do
+      before do
+        sign_in user
+      end
+
+      it "AI出力貼り付け画面を表示できる" do
+        get new_from_ai_cards_path
+
+        expect(response).to have_http_status(:ok)
+      end
+    end
+
+    context "ログインしていない場合" do
+      it "ログイン画面へリダイレクトされる" do
+        get new_from_ai_cards_path
+
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+  end
+
+  describe "POST /cards/preview_from_ai" do
+    before do
+      sign_in user
+    end
+
+    let(:raw_content) do
+      <<~TEXT
+        【タイトル】
+        RailsのStrong Parametersについて
+
+        【本文】
+        Strong Parametersは、
+        Controllerで受け取るパラメータを制限する仕組み。
+
+        【未来の自分へのメモ】
+        user_idをpermitしないことを確認する。
+      TEXT
+    end
+
+    it "AI出力を解析してプレビューを表示する" do
+      post preview_from_ai_cards_path,
+          params: { raw_content: raw_content }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("RailsのStrong Parametersについて")
+      expect(response.body).to include("Controllerで受け取るパラメータを制限する仕組み")
+      expect(response.body).to include("user_idをpermitしないことを確認する")
+    end
+
+    it "プレビュー時にはカードを保存しない" do
+      expect do
+        post preview_from_ai_cards_path,
+            params: { raw_content: raw_content }
+      end.not_to change(Card, :count)
+    end
+
+    it "形式が崩れていても500エラーにならない" do
+      post preview_from_ai_cards_path,
+          params: {
+            raw_content: "形式とは違うAIの回答です"
+          }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("形式とは違うAIの回答です")
     end
   end
 end
