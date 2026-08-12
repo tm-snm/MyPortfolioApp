@@ -7,11 +7,27 @@
     </p>
   </div>
 
-  <div class="card shadow-sm mb-4">
+  <div class="card shadow-sm mb-3" data-controller="clipboard">
     <div class="card-body">
       <h2 class="h5 mb-3">プロンプト本文</h2>
 
-      <pre class="mb-0"><%= @prompt_template.body %></pre>
+      <pre
+        class="mb-3"
+        data-clipboard-target="source"><%= @prompt_template.body %></pre>
+
+      <div class="d-flex align-items-center gap-3">
+        <button
+          type="button"
+          class="btn btn-outline-primary btn-sm"
+          data-action="clipboard#copy">
+          コピーする
+        </button>
+
+        <span
+          class="text-success small"
+          data-clipboard-target="message">
+        </span>
+      </div>
     </div>
   </div>
 
