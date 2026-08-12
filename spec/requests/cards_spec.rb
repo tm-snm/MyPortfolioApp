@@ -62,7 +62,7 @@ RSpec.describe "Cards", type: :request do
         it "作成後にリダイレクトする" do
           post cards_path, params: valid_params
 
-          expect(response).to redirect_to(root_path)
+          expect(response).to redirect_to(cards_path)
         end
       end
 
