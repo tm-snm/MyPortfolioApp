@@ -1,0 +1,55 @@
+<div class="container py-4">
+  <div class="mb-4">
+    <h1 class="h2">カード内容の確認</h1>
+
+    <p class="text-muted">
+      AI出力から解析した内容です。
+      必要に応じて修正してから保存してください。
+    </p>
+  </div>
+
+  <%= form_with model: @card do |f| %>
+    <% if @card.errors.any? %>
+      <div class="alert alert-danger">
+        <ul class="mb-0">
+          <% @card.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <div class="mb-3">
+      <%= f.label :title, "タイトル", class: "form-label" %>
+      <%= f.text_field :title, class: "form-control" %>
+    </div>
+
+    <div class="mb-3">
+      <%= f.label :body, "本文", class: "form-label" %>
+      <%= f.text_area :body,
+                      rows: 16,
+                      class: "form-control" %>
+    </div>
+
+    <div class="mb-3">
+      <%= f.label :future_note,
+                  "未来の自分へのメモ",
+                  class: "form-label" %>
+
+      <%= f.text_area :future_note,
+                      rows: 4,
+                      class: "form-control" %>
+    </div>
+
+    <%= f.hidden_field :raw_content %>
+
+    <div class="d-flex gap-2">
+      <%= f.submit "カードを保存",
+                   class: "btn btn-primary" %>
+
+      <%= link_to "貼り付け画面へ戻る",
+                  new_from_ai_cards_path,
+                  class: "btn btn-outline-secondary" %>
+    </div>
+  <% end %>
+</div>
