@@ -1,0 +1,31 @@
+<div class="container py-4">
+  <div class="mb-4">
+    <h1 class="h2">AI出力からカードを作成</h1>
+
+    <p class="text-muted">
+      AIで整理した回答全文を貼り付けてください。
+      内容を解析し、保存前に確認・編集できます。
+    </p>
+  </div>
+
+  <%= form_with url: preview_from_ai_cards_path, method: :post, data: { turbo: false } do %>
+    <div class="mb-3">
+      <%= label_tag :raw_content, "AIの出力" , class: "form-label" %>
+
+      <%= text_area_tag :raw_content,
+                        params[:raw_content],
+                        rows: 18,
+                        class: "form-control",
+                        placeholder: "AIの出力全文を貼り付けてください" %>
+    </div>
+
+    <div class="d-flex gap-2">
+      <%= submit_tag "プレビュー",
+                     class: "btn btn-primary" %>
+
+      <%= link_to "カード一覧へ戻る",
+                  cards_path,
+                  class: "btn btn-outline-secondary" %>
+    </div>
+  <% end %>
+</div>
