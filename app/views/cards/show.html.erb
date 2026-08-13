@@ -8,6 +8,20 @@
     </div>
   </div>
 
+  <% if @card.tags.any? %>
+    <div class="mb-3">
+      <h2 class="h6">タグ</h2>
+
+      <div class="d-flex flex-wrap gap-2">
+        <% @card.tags.each do |tag| %>
+          <span class="badge text-bg-secondary">
+            <%= tag.name %>
+          </span>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
   <div class="mb-4">
     <h2 class="h5">ステータス</h2>
 

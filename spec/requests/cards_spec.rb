@@ -102,6 +102,82 @@ RSpec.describe "Cards", type: :request do
         end
       end
 
+      context "タグを設定する場合" do
+        let(:params_with_tags) do
+          {
+            card: {
+              title: "Dockerのエラー",
+              body: "Dockerの権限エラーを解決した"
+            },
+            tag_names: "Rails, Docker, GitHub"
+          }
+        end
+
+        it "複数のタグを設定してカードを作成できる" do
+          post cards_path, params: params_with_tags
+
+          created_card = user.cards.order(:created_at).last
+
+          expect(created_card.tags.pluck(:name)).to contain_exactly(
+            "Rails",
+            "Docker",
+            "GitHub"
+          )
+        end
+
+        it "タグ名の前後の空白と重複を除去する" do
+          params_with_tags[:tag_names] = " Rails, Docker, Rails, , Docker "
+
+          post cards_path, params: params_with_tags
+
+          created_card = user.cards.order(:created_at).last
+
+          expect(created_card.tags.pluck(:name)).to contain_exactly(
+            "Rails",
+            "Docker"
+          )
+        end
+
+        it "既存のタグを再利用する" do
+          existing_tag = create(:tag, user: user, name: "Rails")
+
+          params_with_tags[:tag_names] = "Rails"
+
+          expect do
+            post cards_path, params: params_with_tags
+          end.not_to change(Tag, :count)
+
+          created_card = user.cards.order(:created_at).last
+
+          expect(created_card.tags).to include(existing_tag)
+        end
+
+        it "他ユーザーの同名タグを利用しない" do
+          other_tag = create(:tag, user: other_user, name: "Rails")
+
+          params_with_tags[:tag_names] = "Rails"
+
+          post cards_path, params: params_with_tags
+
+          created_card = user.cards.order(:created_at).last
+
+          expect(created_card.tags).not_to include(other_tag)
+          expect(created_card.tags.first.user).to eq(user)
+        end
+
+        it "タグを設定しなくてもカードを作成できる" do
+          expect do
+            post cards_path, params: {
+              card: {
+                title: "タグなしカード",
+                body: "本文"
+              },
+              tag_names: ""
+            }
+          end.to change(Card, :count).by(1)
+        end
+      end
+
       context "無効なパラメータの場合" do
         let(:invalid_params) do
           {
@@ -318,6 +394,61 @@ RSpec.describe "Cards", type: :request do
         expect(card.body).to eq("更新後本文")
         expect(card.future_note).to eq("更新後メモ")
         expect(response).to redirect_to(card_path(card))
+      end
+    end
+
+    context "タグを変更する場合" do
+      let(:rails_tag) do
+        create(:tag, user: user, name: "Rails")
+      end
+
+      let(:docker_tag) do
+        create(:tag, user: user, name: "Docker")
+      end
+
+      before do
+        card.tags << rails_tag
+        card.tags << docker_tag
+      end
+
+      it "タグを追加できる" do
+        patch card_path(card), params: {
+          card: {
+            title: card.title,
+            body: card.body
+          },
+          tag_names: "Rails, Docker, GitHub"
+        }
+
+        expect(card.reload.tags.pluck(:name)).to contain_exactly(
+          "Rails",
+          "Docker",
+          "GitHub"
+        )
+      end
+
+      it "タグを削除できる" do
+        patch card_path(card), params: {
+          card: {
+            title: card.title,
+            body: card.body
+          },
+          tag_names: "Rails"
+        }
+
+        expect(card.reload.tags.pluck(:name)).to contain_exactly("Rails")
+      end
+
+      it "タグをすべて外せる" do
+        patch card_path(card), params: {
+          card: {
+            title: card.title,
+            body: card.body
+          },
+          tag_names: ""
+        }
+
+        expect(card.reload.tags).to be_empty
       end
     end
 
