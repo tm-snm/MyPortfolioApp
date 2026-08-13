@@ -292,6 +292,79 @@ RSpec.describe "Cards", type: :request do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("まだカードがありません")
       end
+
+      context "キーワード検索する場合" do
+        let!(:title_match_card) do
+          create(
+            :card,
+            user: user,
+            title: "Dockerの権限エラー",
+            body: "Gemのインストールに失敗した"
+          )
+        end
+
+        let!(:body_match_card) do
+          create(
+            :card,
+            user: user,
+            title: "Railsのエラー",
+            body: "Docker Composeを確認した"
+          )
+        end
+
+        let!(:not_match_card) do
+          create(
+            :card,
+            user: user,
+            title: "Rubyの配列",
+            body: "mapメソッドについて"
+          )
+        end
+
+        it "タイトルの部分一致でカードを検索できる" do
+          get cards_path, params: { q: "Docker" }
+
+          expect(response.body).to include(title_match_card.title)
+        end
+
+        it "本文の部分一致でカードを検索できる" do
+          get cards_path, params: { q: "Docker" }
+
+          expect(response.body).to include(body_match_card.title)
+        end
+
+        it "一致しないカードを表示しない" do
+          get cards_path, params: { q: "Docker" }
+
+          expect(response.body).not_to include(not_match_card.title)
+        end
+
+        it "他ユーザーの一致するカードを表示しない" do
+          other_match_card = create(
+            :card,
+            user: other_user,
+            title: "Dockerのカード",
+            body: "Dockerについて"
+          )
+
+          get cards_path, params: { q: "Docker" }
+
+          expect(response.body).not_to include(other_match_card.title)
+        end
+
+        it "空の検索では通常の一覧を表示する" do
+          get cards_path, params: { q: "" }
+
+          expect(response.body).to include(title_match_card.title)
+          expect(response.body).to include(not_match_card.title)
+        end
+
+        it "検索結果が0件の場合にメッセージを表示する" do
+          get cards_path, params: { q: "存在しないキーワード" }
+
+          expect(response.body).to include("一致するカードが見つかりませんでした")
+        end
+      end
     end
 
     context "ログインしていない場合" do

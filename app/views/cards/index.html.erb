@@ -2,6 +2,26 @@
   <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="h2 mb-0">カード一覧</h1>
 
+    <div class="d-flex gap-2 mb-4">
+      <%= form_with url: cards_path,
+                    method: :get,
+                    class: "d-flex gap-2 flex-grow-1" do %>
+        <%= search_field_tag :q,
+                            params[:q],
+                            placeholder: "タイトル・本文から検索",
+                            class: "form-control" %>
+
+        <%= submit_tag "検索",
+                      class: "btn btn-outline-primary" %>
+      <% end %>
+
+      <% if params[:q].present? %>
+        <%= link_to "検索を解除",
+                    cards_path,
+                    class: "btn btn-outline-secondary" %>
+      <% end %>
+    </div>
+
     <%= link_to "新しいカードを作成",
                 new_card_path,
                 class: "btn btn-primary" %>
@@ -41,6 +61,16 @@
           </article>
         </div>
       <% end %>
+    </div>
+  <% elsif params[:q].present? %>
+    <div class="text-center border rounded p-5 bg-light">
+      <p class="mb-3">
+        「<%= params[:q] %>」に一致するカードが見つかりませんでした。
+      </p>
+
+      <%= link_to "検索を解除",
+                  cards_path,
+                  class: "btn btn-outline-secondary" %>
     </div>
   <% else %>
     <div class="text-center border rounded p-5 bg-light">
