@@ -16,22 +16,30 @@ class CardsController < ApplicationController
   def create
     @card = current_user.cards.build(create_card_params)
 
-    if @card.save
-      redirect_to @card, notice: "カードを作成しました"
-    else
-      render :new, status: :unprocessable_entity
+    Card.transaction do
+      @card.save!
+      assign_tags(@card)
     end
+
+    redirect_to @card, notice: "カードを作成しました"
+  rescue ActiveRecord::RecordInvalid => e
+    @card.errors.add(:base, "タグの設定に失敗しました") unless e.record == @card
+    render :new, status: :unprocessable_entity
   end
 
   def edit
   end
 
   def update
-    if @card.update(card_params)
-      redirect_to @card, notice: "カードを更新しました"
-    else
-      render :edit, status: :unprocessable_entity
+    Card.transaction do
+      @card.update!(card_params)
+      assign_tags(@card)
     end
+
+    redirect_to @card, notice: "カードを更新しました"
+  rescue ActiveRecord::RecordInvalid => e
+    @card.errors.add(:base, "タグの設定に失敗しました") unless e.record == @card
+    render :edit, status: :unprocessable_entity
   end
 
   def destroy
@@ -73,5 +81,21 @@ class CardsController < ApplicationController
 
   def set_card
     @card = current_user.cards.find(params[:id])
+  end
+
+  def normalized_tag_names
+    params[:tag_names].to_s
+                      .split(",")
+                      .map(&:strip)
+                      .reject(&:blank?)
+                      .uniq
+  end
+
+  def assign_tags(card)
+    tags = normalized_tag_names.map do |name|
+      current_user.tags.find_or_create_by!(name: name)
+    end
+
+    card.tags = tags
   end
 end

@@ -41,6 +41,19 @@
                       class: "form-control" %>
     </div>
 
+    <div class="mb-3">
+      <%= label_tag :tag_names, "タグ", class: "form-label" %>
+
+      <%= text_field_tag :tag_names,
+                        nil,
+                        class: "form-control",
+                        placeholder: "Rails, Docker, GitHub" %>
+
+      <div class="form-text">
+        複数のタグはカンマ区切りで入力してください。
+      </div>
+    </div>
+
     <%= f.hidden_field :raw_content %>
 
     <div class="d-flex gap-2">
