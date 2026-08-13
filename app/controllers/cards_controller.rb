@@ -4,6 +4,8 @@ class CardsController < ApplicationController
 
   def index
     @cards = current_user.cards.order(created_at: :desc)
+
+    @cards = @cards.search_by_keyword(params[:q]) if params[:q].present?
   end
 
   def show
