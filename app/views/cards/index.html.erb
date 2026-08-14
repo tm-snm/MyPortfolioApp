@@ -11,6 +11,16 @@
                             placeholder: "タイトル・本文から検索",
                             class: "form-control" %>
 
+        <%= select_tag :tag_id,
+                      options_from_collection_for_select(
+                        @tags,
+                        :id,
+                        :name,
+                        params[:tag_id]
+                      ),
+                      include_blank: "すべてのタグ",
+                      class: "form-select" %>
+
         <%= submit_tag "検索",
                       class: "btn btn-outline-primary" %>
       <% end %>

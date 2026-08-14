@@ -4,8 +4,20 @@ class CardsController < ApplicationController
 
   def index
     @cards = current_user.cards.order(created_at: :desc)
+    @tags = current_user.tags.order(:name)
 
     @cards = @cards.search_by_keyword(params[:q]) if params[:q].present?
+
+    if params[:tag_id].present?
+      @selected_tag = current_user.tags.find_by(id: params[:tag_id])
+
+      if @selected_tag
+        @cards = @cards
+          .joins(:tags)
+          .where(tags: { id: @selected_tag.id })
+          .distinct
+      end
+    end
   end
 
   def show

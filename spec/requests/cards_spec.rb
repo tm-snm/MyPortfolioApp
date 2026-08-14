@@ -365,6 +365,104 @@ RSpec.describe "Cards", type: :request do
           expect(response.body).to include("一致するカードが見つかりませんでした")
         end
       end
+
+      context "タグで絞り込む場合" do
+        let(:rails_tag) { create(:tag, user: user, name: "Rails") }
+        let(:docker_tag) { create(:tag, user: user, name: "Docker") }
+
+        let(:rails_card) do
+          create(:card, user: user, title: "Railsのエラー")
+        end
+
+        let(:docker_card) do
+          create(:card, user: user, title: "Dockerのエラー")
+        end
+
+        let(:no_tag_card) do
+          create(:card, user: user, title: "タグなしカード")
+        end
+
+        before do
+          create(:tagging, card: rails_card, tag: rails_tag)
+          create(:tagging, card: docker_card, tag: docker_tag)
+
+          no_tag_card
+        end
+
+        it "選択したタグを持つカードだけ表示する" do
+          get cards_path, params: { tag_id: rails_tag.id }
+
+          expect(response.body).to include(rails_card.title)
+          expect(response.body).not_to include(docker_card.title)
+          expect(response.body).not_to include(no_tag_card.title)
+        end
+      end
+
+      context "キーワード検索とタグ絞り込みを組み合わせる場合" do
+        let(:rails_tag) { create(:tag, user: user, name: "Rails") }
+        let(:docker_tag) { create(:tag, user: user, name: "Docker") }
+
+        let(:matching_card) do
+          create(
+            :card,
+            user: user,
+            title: "Railsのルーティングエラー"
+          )
+        end
+
+        let(:keyword_only_card) do
+          create(
+            :card,
+            user: user,
+            title: "RailsのDocker設定"
+          )
+        end
+
+        let(:tag_only_card) do
+          create(
+            :card,
+            user: user,
+            title: "ActiveRecordの使い方"
+          )
+        end
+
+        before do
+          create(:tagging, card: matching_card, tag: rails_tag)
+          create(:tagging, card: keyword_only_card, tag: docker_tag)
+          create(:tagging, card: tag_only_card, tag: rails_tag)
+        end
+
+        it "キーワードとタグの両方に一致するカードだけ表示する" do
+          get cards_path, params: {
+            q: "Rails",
+            tag_id: rails_tag.id
+          }
+
+          expect(response.body).to include(matching_card.title)
+          expect(response.body).not_to include(keyword_only_card.title)
+          expect(response.body).not_to include(tag_only_card.title)
+        end
+      end
+
+      context "他ユーザーのタグIDを指定した場合" do
+        let(:other_tag) do
+          create(:tag, user: other_user, name: "秘密タグ")
+        end
+
+        let(:other_card) do
+          create(:card, user: other_user, title: "他ユーザーのカード")
+        end
+
+        before do
+          create(:tagging, card: other_card, tag: other_tag)
+        end
+
+        it "他ユーザーのカードを表示しない" do
+          get cards_path, params: { tag_id: other_tag.id }
+
+          expect(response.body).not_to include(other_card.title)
+        end
+      end
     end
 
     context "ログインしていない場合" do
