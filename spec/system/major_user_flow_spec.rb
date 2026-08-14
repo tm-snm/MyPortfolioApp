@@ -10,7 +10,8 @@ RSpec.describe "主要ユーザーフロー", type: :system do
   let!(:prompt_template) do
     create(
       :prompt_template,
-      title: "学習・技術理解用テンプレート"
+      title: "System Spec用テンプレート",
+      category: "system_spec"
     )
   end
 
@@ -38,9 +39,10 @@ RSpec.describe "主要ユーザーフロー", type: :system do
     expect(page).to have_content("プロンプトテンプレート")
     expect(page).to have_content(prompt_template.title)
 
-    within("div.card", text: prompt_template.title) do
-      click_link "詳細を見る"
-    end
+    click_link(
+      "詳細を見る",
+      href: prompt_template_path(prompt_template)
+    )
 
     expect(page).to have_content(prompt_template.title)
 
