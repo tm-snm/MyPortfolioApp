@@ -444,6 +444,75 @@ RSpec.describe "Cards", type: :request do
         end
       end
 
+      context "キーワード・タグ・復習予定を組み合わせる場合" do
+        let(:rails_tag) do
+          create(:tag, user: user, name: "Rails")
+        end
+
+        let(:docker_tag) do
+          create(:tag, user: user, name: "Docker")
+        end
+
+        let!(:matching_card) do
+          create(
+            :card,
+            user: user,
+            title: "Railsのルーティングエラー",
+            status: :review_later
+          )
+        end
+
+        let!(:normal_card) do
+          create(
+            :card,
+            user: user,
+            title: "Railsの通常カード",
+            status: :normal
+          )
+        end
+
+        let!(:other_tag_card) do
+          create(
+            :card,
+            user: user,
+            title: "RailsのDockerカード",
+            status: :review_later
+          )
+        end
+
+        before do
+          create(
+            :tagging,
+            card: matching_card,
+            tag: rails_tag
+          )
+
+          create(
+            :tagging,
+            card: normal_card,
+            tag: rails_tag
+          )
+
+          create(
+            :tagging,
+            card: other_tag_card,
+            tag: docker_tag
+          )
+        end
+
+        it "すべての条件に一致するカードだけ表示する" do
+          get cards_path, params: {
+            q: "Rails",
+            tag_id: rails_tag.id,
+            review: "1"
+          }
+
+          expect(response.body).to include(matching_card.title)
+          expect(response.body).not_to include(normal_card.title)
+          expect(response.body).not_to include(other_tag_card.title)
+        end
+      end
+
       context "他ユーザーのタグIDを指定した場合" do
         let(:other_tag) do
           create(:tag, user: other_user, name: "秘密タグ")
@@ -483,8 +552,13 @@ RSpec.describe "Cards", type: :request do
           )
         end
 
-        before do
-          sign_in user
+        let!(:other_review_card) do
+          create(
+            :card,
+            user: other_user,
+            title: "他人の復習カード",
+            status: :review_later
+          )
         end
 
         it "復習予定のカードだけ表示する" do
@@ -492,6 +566,13 @@ RSpec.describe "Cards", type: :request do
 
           expect(response.body).to include(review_card.title)
           expect(response.body).not_to include(normal_card.title)
+        end
+
+        it "他ユーザーの復習予定カードを表示しない" do
+          get cards_path, params: { review: "1" }
+
+          expect(response.body).to include(review_card.title)
+          expect(response.body).not_to include(other_review_card.title)
         end
       end
     end
@@ -576,158 +657,175 @@ RSpec.describe "Cards", type: :request do
   end
 
   describe "PATCH /cards/:id" do
-    before do
-      sign_in user
-    end
-
-    context "正常な値の場合" do
-      it "カードを更新できる" do
-        patch card_path(card), params: {
-          card: {
-            title: "更新後タイトル",
-            body: "更新後本文",
-            future_note: "更新後メモ"
-          }
-        }
-
-        card.reload
-
-        expect(card.title).to eq("更新後タイトル")
-        expect(card.body).to eq("更新後本文")
-        expect(card.future_note).to eq("更新後メモ")
-        expect(response).to redirect_to(card_path(card))
-      end
-    end
-
-    context "タグを変更する場合" do
-      let(:rails_tag) do
-        create(:tag, user: user, name: "Rails")
-      end
-
-      let(:docker_tag) do
-        create(:tag, user: user, name: "Docker")
-      end
-
+    context "ログインしている場合" do
       before do
-        card.tags << rails_tag
-        card.tags << docker_tag
+        sign_in user
       end
 
-      it "タグを追加できる" do
-        patch card_path(card), params: {
-          card: {
-            title: card.title,
-            body: card.body
-          },
-          tag_names: "Rails, Docker, GitHub"
-        }
-
-        expect(card.reload.tags.pluck(:name)).to contain_exactly(
-          "Rails",
-          "Docker",
-          "GitHub"
-        )
-      end
-
-      it "タグを削除できる" do
-        patch card_path(card), params: {
-          card: {
-            title: card.title,
-            body: card.body
-          },
-          tag_names: "Rails"
-        }
-
-        expect(card.reload.tags.pluck(:name)).to contain_exactly("Rails")
-      end
-
-      it "タグをすべて外せる" do
-        patch card_path(card), params: {
-          card: {
-            title: card.title,
-            body: card.body
-          },
-          tag_names: ""
-        }
-
-        expect(card.reload.tags).to be_empty
-      end
-    end
-
-    context "不正な値の場合" do
-      it "カードを更新しない" do
-        original_title = card.title
-        original_body = card.body
-
-        patch card_path(card), params: {
-          card: {
-            title: "",
-            body: "変更された本文"
+      context "正常な値の場合" do
+        it "カードを更新できる" do
+          patch card_path(card), params: {
+            card: {
+              title: "更新後タイトル",
+              body: "更新後本文",
+              future_note: "更新後メモ"
+            }
           }
-        }
 
-        card.reload
+          card.reload
 
-        expect(card.title).to eq(original_title)
-        expect(card.body).to eq(original_body)
-        expect(response).to have_http_status(:unprocessable_entity)
+          expect(card.title).to eq("更新後タイトル")
+          expect(card.body).to eq("更新後本文")
+          expect(card.future_note).to eq("更新後メモ")
+          expect(response).to redirect_to(card_path(card))
+        end
+      end
+
+      context "タグを変更する場合" do
+        let(:rails_tag) do
+          create(:tag, user: user, name: "Rails")
+        end
+
+        let(:docker_tag) do
+          create(:tag, user: user, name: "Docker")
+        end
+
+        before do
+          card.tags << rails_tag
+          card.tags << docker_tag
+        end
+
+        it "タグを追加できる" do
+          patch card_path(card), params: {
+            card: {
+              title: card.title,
+              body: card.body
+            },
+            tag_names: "Rails, Docker, GitHub"
+          }
+
+          expect(card.reload.tags.pluck(:name)).to contain_exactly(
+            "Rails",
+            "Docker",
+            "GitHub"
+          )
+        end
+
+        it "タグを削除できる" do
+          patch card_path(card), params: {
+            card: {
+              title: card.title,
+              body: card.body
+            },
+            tag_names: "Rails"
+          }
+
+          expect(card.reload.tags.pluck(:name)).to contain_exactly("Rails")
+        end
+
+        it "タグをすべて外せる" do
+          patch card_path(card), params: {
+            card: {
+              title: card.title,
+              body: card.body
+            },
+            tag_names: ""
+          }
+
+          expect(card.reload.tags).to be_empty
+        end
+      end
+
+      context "不正な値の場合" do
+        it "カードを更新しない" do
+          original_title = card.title
+          original_body = card.body
+
+          patch card_path(card), params: {
+            card: {
+              title: "",
+              body: "変更された本文"
+            }
+          }
+
+          card.reload
+
+          expect(card.title).to eq(original_title)
+          expect(card.body).to eq(original_body)
+          expect(response).to have_http_status(:unprocessable_entity)
+        end
+      end
+
+      context "他ユーザーのカードの場合" do
+        it "カードを更新できない" do
+          original_title = other_card.title
+
+          patch card_path(other_card), params: {
+            card: {
+              title: "不正な更新"
+            }
+          }
+
+          other_card.reload
+
+          expect(other_card.title).to eq(original_title)
+          expect(response).to have_http_status(:not_found)
+        end
+      end
+
+      context "復習予定に変更する場合" do
+        before do
+          sign_in user
+        end
+
+        it "カードを復習予定に変更できる" do
+          patch card_path(card), params: {
+            card: {
+              status: "review_later"
+            }
+          }
+
+          expect(card.reload).to be_review_later
+        end
+      end
+
+      context "復習予定を解除する場合" do
+        let(:card) do
+          create(
+            :card,
+            user: user,
+            status: :review_later
+          )
+        end
+
+        before do
+          sign_in user
+        end
+
+        it "カードを通常状態に戻せる" do
+          patch card_path(card), params: {
+            card: {
+              status: "normal"
+            }
+          }
+
+          expect(card.reload).to be_normal
+        end
       end
     end
 
-    context "他ユーザーのカードの場合" do
+    context "ログインしていない場合" do
       it "カードを更新できない" do
-        original_title = other_card.title
+        original_title = card.title
 
-        patch card_path(other_card), params: {
+        patch card_path(card), params: {
           card: {
             title: "不正な更新"
           }
         }
 
-        other_card.reload
-
-        expect(other_card.title).to eq(original_title)
-        expect(response).to have_http_status(:not_found)
-      end
-    end
-
-    context "復習予定に変更する場合" do
-      before do
-        sign_in user
-      end
-
-      it "カードを復習予定に変更できる" do
-        patch card_path(card), params: {
-          card: {
-            status: "review_later"
-          }
-        }
-
-        expect(card.reload).to be_review_later
-      end
-    end
-
-    context "復習予定を解除する場合" do
-      let(:card) do
-        create(
-          :card,
-          user: user,
-          status: :review_later
-        )
-      end
-
-      before do
-        sign_in user
-      end
-
-      it "カードを通常状態に戻せる" do
-        patch card_path(card), params: {
-          card: {
-            status: "normal"
-          }
-        }
-
-        expect(card.reload).to be_normal
+        expect(card.reload.title).to eq(original_title)
+        expect(response).to redirect_to(new_user_session_path)
       end
     end
   end
@@ -807,10 +905,6 @@ RSpec.describe "Cards", type: :request do
   end
 
   describe "POST /cards/preview_from_ai" do
-    before do
-      sign_in user
-    end
-
     let(:raw_content) do
       <<~TEXT
         【タイトル】
@@ -825,31 +919,46 @@ RSpec.describe "Cards", type: :request do
       TEXT
     end
 
-    it "AI出力を解析してプレビューを表示する" do
-      post preview_from_ai_cards_path,
-          params: { raw_content: raw_content }
+    context "ログインしている場合" do
+      before do
+        sign_in user
+      end
 
-      expect(response).to have_http_status(:ok)
-      expect(response.body).to include("RailsのStrong Parametersについて")
-      expect(response.body).to include("Controllerで受け取るパラメータを制限する仕組み")
-      expect(response.body).to include("user_idをpermitしないことを確認する")
-    end
-
-    it "プレビュー時にはカードを保存しない" do
-      expect do
+      it "AI出力を解析してプレビューを表示する" do
         post preview_from_ai_cards_path,
             params: { raw_content: raw_content }
-      end.not_to change(Card, :count)
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("RailsのStrong Parametersについて")
+        expect(response.body).to include("Controllerで受け取るパラメータを制限する仕組み")
+        expect(response.body).to include("user_idをpermitしないことを確認する")
+      end
+
+      it "プレビュー時にはカードを保存しない" do
+        expect do
+          post preview_from_ai_cards_path,
+              params: { raw_content: raw_content }
+        end.not_to change(Card, :count)
+      end
+
+      it "形式が崩れていても500エラーにならない" do
+        post preview_from_ai_cards_path,
+            params: {
+              raw_content: "形式とは違うAIの回答です"
+            }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.body).to include("形式とは違うAIの回答です")
+      end
     end
 
-    it "形式が崩れていても500エラーにならない" do
-      post preview_from_ai_cards_path,
-          params: {
-            raw_content: "形式とは違うAIの回答です"
-          }
+    context "ログインしていない場合" do
+      it "ログイン画面へリダイレクトされる" do
+        post preview_from_ai_cards_path,
+            params: { raw_content: raw_content }
 
-      expect(response).to have_http_status(:ok)
-      expect(response.body).to include("形式とは違うAIの回答です")
+        expect(response).to redirect_to(new_user_session_path)
+      end
     end
   end
 end
