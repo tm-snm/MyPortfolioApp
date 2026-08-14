@@ -10,7 +10,7 @@
 
   <% if @card.tags.any? %>
     <div class="mb-3">
-      <h2 class="h6">タグ</h2>
+      <h2 class="h5">タグ</h2>
 
       <div class="d-flex flex-wrap gap-2">
         <% @card.tags.each do |tag| %>
@@ -25,9 +25,15 @@
   <div class="mb-4">
     <h2 class="h5">ステータス</h2>
 
-    <p>
-      <%= @card.review_later? ? "復習予定" : "通常" %>
-    </p>
+    <% if @card.review_later? %>
+      <span class="badge text-bg-warning">
+        復習予定
+      </span>
+    <% else %>
+      <span class="badge text-bg-secondary">
+        通常
+      </span>
+    <% end %>
   </div>
 
   <div class="mb-4">
@@ -52,5 +58,26 @@
     <%= link_to "編集", edit_card_path(@card), class: "btn btn-outline-primary" %>
     <%= button_to "削除", card_path(@card), method: :delete, data: { turbo_confirm: "このカードを削除しますか？" }, class: "btn btn-outline-danger" %>
     <%= link_to "カード一覧へ戻る", cards_path, class: "btn btn-outline-secondary" %>
+    <% if @card.review_later? %>
+      <%= button_to "復習予定を解除",
+                    card_path(@card),
+                    method: :patch,
+                    params: {
+                      card: {
+                        status: "normal"
+                      }
+                    },
+                    class: "btn btn-outline-secondary" %>
+    <% else %>
+      <%= button_to "復習予定にする",
+                    card_path(@card),
+                    method: :patch,
+                    params: {
+                      card: {
+                        status: "review_later"
+                      }
+                    },
+                    class: "btn btn-outline-warning" %>
+    <% end %>
   </div>
 </div>

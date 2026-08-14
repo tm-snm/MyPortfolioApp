@@ -4,7 +4,6 @@ class CardsController < ApplicationController
 
   def index
     @cards = current_user.cards.order(created_at: :desc)
-    @tags = current_user.tags.order(:name)
 
     @cards = @cards.search_by_keyword(params[:q]) if params[:q].present?
 
@@ -18,6 +17,12 @@ class CardsController < ApplicationController
           .distinct
       end
     end
+
+    if params[:review] == "1"
+      @cards = @cards.review_later
+    end
+
+    @tags = current_user.tags.order(:name)
   end
 
   def show
@@ -47,7 +52,7 @@ class CardsController < ApplicationController
   def update
     Card.transaction do
       @card.update!(card_params)
-      assign_tags(@card)
+      assign_tags(@card) if params.key?(:tag_names)
     end
 
     redirect_to @card, notice: "カードを更新しました"
@@ -81,7 +86,7 @@ class CardsController < ApplicationController
   private
 
   def card_params
-    params.require(:card).permit(:title, :body, :future_note)
+    params.require(:card).permit(:title, :body, :future_note, :status)
   end
 
   def create_card_params

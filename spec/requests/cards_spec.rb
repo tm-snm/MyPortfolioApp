@@ -463,6 +463,37 @@ RSpec.describe "Cards", type: :request do
           expect(response.body).not_to include(other_card.title)
         end
       end
+
+      context "復習予定で絞り込む場合" do
+        let!(:review_card) do
+          create(
+            :card,
+            user: user,
+            title: "復習するカード",
+            status: :review_later
+          )
+        end
+
+        let!(:normal_card) do
+          create(
+            :card,
+            user: user,
+            title: "通常カード",
+            status: :normal
+          )
+        end
+
+        before do
+          sign_in user
+        end
+
+        it "復習予定のカードだけ表示する" do
+          get cards_path(review: "1")
+
+          expect(response.body).to include(review_card.title)
+          expect(response.body).not_to include(normal_card.title)
+        end
+      end
     end
 
     context "ログインしていない場合" do
@@ -657,6 +688,46 @@ RSpec.describe "Cards", type: :request do
 
         expect(other_card.title).to eq(original_title)
         expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "復習予定に変更する場合" do
+      before do
+        sign_in user
+      end
+
+      it "カードを復習予定に変更できる" do
+        patch card_path(card), params: {
+          card: {
+            status: "review_later"
+          }
+        }
+
+        expect(card.reload).to be_review_later
+      end
+    end
+
+    context "復習予定を解除する場合" do
+      let(:card) do
+        create(
+          :card,
+          user: user,
+          status: :review_later
+        )
+      end
+
+      before do
+        sign_in user
+      end
+
+      it "カードを通常状態に戻せる" do
+        patch card_path(card), params: {
+          card: {
+            status: "normal"
+          }
+        }
+
+        expect(card.reload).to be_normal
       end
     end
   end
