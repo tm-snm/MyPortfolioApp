@@ -70,4 +70,59 @@ RSpec.describe Card, type: :model do
       )
     end
   end
+
+  describe ".search_by_keyword" do
+    let(:user) { create(:user) }
+
+    let!(:title_match_card) do
+      create(
+        :card,
+        user: user,
+        title: "Dockerの権限エラー",
+        body: "Gemを追加できなかった"
+      )
+    end
+
+    let!(:body_match_card) do
+      create(
+        :card,
+        user: user,
+        title: "Railsの学習",
+        body: "Docker Composeで起動する"
+      )
+    end
+
+    let!(:not_match_card) do
+      create(
+        :card,
+        user: user,
+        title: "Rubyの配列",
+        body: "mapメソッドについて"
+      )
+    end
+
+    it "タイトルにキーワードを含むカードを検索できる" do
+      result = described_class.search_by_keyword("Docker")
+
+      expect(result).to include(title_match_card)
+    end
+
+    it "本文にキーワードを含むカードを検索できる" do
+      result = described_class.search_by_keyword("Docker")
+
+      expect(result).to include(body_match_card)
+    end
+
+    it "キーワードを含まないカードは検索結果に含まれない" do
+      result = described_class.search_by_keyword("Docker")
+
+      expect(result).not_to include(not_match_card)
+    end
+
+    it "大文字小文字を区別せず検索できる" do
+      result = described_class.search_by_keyword("docker")
+
+      expect(result).to include(title_match_card, body_match_card)
+    end
+  end
 end

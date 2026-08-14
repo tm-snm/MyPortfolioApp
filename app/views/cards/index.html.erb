@@ -1,11 +1,78 @@
 <div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-4">
+  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
     <h1 class="h2 mb-0">カード一覧</h1>
 
     <%= link_to "新しいカードを作成",
                 new_card_path,
-                class: "btn btn-primary" %>
+                class: "btn btn-primary flex-shrink-0" %>
   </div>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <%= form_with url: cards_path,
+                    method: :get,
+                    class: "row g-2 align-items-end" do %>
+
+        <div class="col-12 col-lg">
+          <%= label_tag :q, "キーワード", class: "form-label" %>
+
+          <%= search_field_tag :q,
+                              params[:q],
+                              placeholder: "タイトル・本文から検索",
+                              class: "form-control" %>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-3">
+          <%= label_tag :tag_id, "タグ", class: "form-label" %>
+
+          <%= select_tag :tag_id,
+                        options_from_collection_for_select(
+                          @tags,
+                          :id,
+                          :name,
+                          params[:tag_id]
+                        ),
+                        include_blank: "すべてのタグ",
+                        class: "form-select" %>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-auto">
+          <div class="form-check mb-2">
+            <%= check_box_tag :review,
+                              "1",
+                              params[:review] == "1",
+                              class: "form-check-input" %>
+
+            <%= label_tag :review,
+                          "復習予定のみ",
+                          class: "form-check-label" %>
+          </div>
+        </div>
+
+        <div class="col-12 col-lg-auto">
+          <div class="d-flex gap-2">
+            <%= submit_tag "絞り込む",
+                          class: "btn btn-outline-primary" %>
+
+            <% if params[:q].present? ||
+                  params[:tag_id].present? ||
+                  params[:review] == "1" %>
+              <%= link_to "条件を解除",
+                          cards_path,
+                          class: "btn btn-outline-secondary" %>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <% if params[:review] == "1" %>
+    <div class="alert alert-warning py-2 mb-4">
+      復習予定のカードのみ表示しています。
+    </div>
+  <% end %>
+
 
   <% if @cards.any? %>
     <div class="row g-3">
@@ -41,6 +108,16 @@
           </article>
         </div>
       <% end %>
+    </div>
+  <% elsif params[:q].present? %>
+    <div class="text-center border rounded p-5 bg-light">
+      <p class="mb-3">
+        「<%= params[:q] %>」に一致するカードが見つかりませんでした。
+      </p>
+
+      <%= link_to "検索を解除",
+                  cards_path,
+                  class: "btn btn-outline-secondary" %>
     </div>
   <% else %>
     <div class="text-center border rounded p-5 bg-light">

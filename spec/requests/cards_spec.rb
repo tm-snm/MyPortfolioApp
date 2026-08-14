@@ -102,6 +102,82 @@ RSpec.describe "Cards", type: :request do
         end
       end
 
+      context "タグを設定する場合" do
+        let(:params_with_tags) do
+          {
+            card: {
+              title: "Dockerのエラー",
+              body: "Dockerの権限エラーを解決した"
+            },
+            tag_names: "Rails, Docker, GitHub"
+          }
+        end
+
+        it "複数のタグを設定してカードを作成できる" do
+          post cards_path, params: params_with_tags
+
+          created_card = user.cards.order(:created_at).last
+
+          expect(created_card.tags.pluck(:name)).to contain_exactly(
+            "Rails",
+            "Docker",
+            "GitHub"
+          )
+        end
+
+        it "タグ名の前後の空白と重複を除去する" do
+          params_with_tags[:tag_names] = " Rails, Docker, Rails, , Docker "
+
+          post cards_path, params: params_with_tags
+
+          created_card = user.cards.order(:created_at).last
+
+          expect(created_card.tags.pluck(:name)).to contain_exactly(
+            "Rails",
+            "Docker"
+          )
+        end
+
+        it "既存のタグを再利用する" do
+          existing_tag = create(:tag, user: user, name: "Rails")
+
+          params_with_tags[:tag_names] = "Rails"
+
+          expect do
+            post cards_path, params: params_with_tags
+          end.not_to change(Tag, :count)
+
+          created_card = user.cards.order(:created_at).last
+
+          expect(created_card.tags).to include(existing_tag)
+        end
+
+        it "他ユーザーの同名タグを利用しない" do
+          other_tag = create(:tag, user: other_user, name: "Rails")
+
+          params_with_tags[:tag_names] = "Rails"
+
+          post cards_path, params: params_with_tags
+
+          created_card = user.cards.order(:created_at).last
+
+          expect(created_card.tags).not_to include(other_tag)
+          expect(created_card.tags.first.user).to eq(user)
+        end
+
+        it "タグを設定しなくてもカードを作成できる" do
+          expect do
+            post cards_path, params: {
+              card: {
+                title: "タグなしカード",
+                body: "本文"
+              },
+              tag_names: ""
+            }
+          end.to change(Card, :count).by(1)
+        end
+      end
+
       context "無効なパラメータの場合" do
         let(:invalid_params) do
           {
@@ -216,6 +292,208 @@ RSpec.describe "Cards", type: :request do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("まだカードがありません")
       end
+
+      context "キーワード検索する場合" do
+        let!(:title_match_card) do
+          create(
+            :card,
+            user: user,
+            title: "Dockerの権限エラー",
+            body: "Gemのインストールに失敗した"
+          )
+        end
+
+        let!(:body_match_card) do
+          create(
+            :card,
+            user: user,
+            title: "Railsのエラー",
+            body: "Docker Composeを確認した"
+          )
+        end
+
+        let!(:not_match_card) do
+          create(
+            :card,
+            user: user,
+            title: "Rubyの配列",
+            body: "mapメソッドについて"
+          )
+        end
+
+        it "タイトルの部分一致でカードを検索できる" do
+          get cards_path, params: { q: "Docker" }
+
+          expect(response.body).to include(title_match_card.title)
+        end
+
+        it "本文の部分一致でカードを検索できる" do
+          get cards_path, params: { q: "Docker" }
+
+          expect(response.body).to include(body_match_card.title)
+        end
+
+        it "一致しないカードを表示しない" do
+          get cards_path, params: { q: "Docker" }
+
+          expect(response.body).not_to include(not_match_card.title)
+        end
+
+        it "他ユーザーの一致するカードを表示しない" do
+          other_match_card = create(
+            :card,
+            user: other_user,
+            title: "Dockerのカード",
+            body: "Dockerについて"
+          )
+
+          get cards_path, params: { q: "Docker" }
+
+          expect(response.body).not_to include(other_match_card.title)
+        end
+
+        it "空の検索では通常の一覧を表示する" do
+          get cards_path, params: { q: "" }
+
+          expect(response.body).to include(title_match_card.title)
+          expect(response.body).to include(not_match_card.title)
+        end
+
+        it "検索結果が0件の場合にメッセージを表示する" do
+          get cards_path, params: { q: "存在しないキーワード" }
+
+          expect(response.body).to include("一致するカードが見つかりませんでした")
+        end
+      end
+
+      context "タグで絞り込む場合" do
+        let(:rails_tag) { create(:tag, user: user, name: "Rails") }
+        let(:docker_tag) { create(:tag, user: user, name: "Docker") }
+
+        let(:rails_card) do
+          create(:card, user: user, title: "Railsのエラー")
+        end
+
+        let(:docker_card) do
+          create(:card, user: user, title: "Dockerのエラー")
+        end
+
+        let(:no_tag_card) do
+          create(:card, user: user, title: "タグなしカード")
+        end
+
+        before do
+          create(:tagging, card: rails_card, tag: rails_tag)
+          create(:tagging, card: docker_card, tag: docker_tag)
+
+          no_tag_card
+        end
+
+        it "選択したタグを持つカードだけ表示する" do
+          get cards_path, params: { tag_id: rails_tag.id }
+
+          expect(response.body).to include(rails_card.title)
+          expect(response.body).not_to include(docker_card.title)
+          expect(response.body).not_to include(no_tag_card.title)
+        end
+      end
+
+      context "キーワード検索とタグ絞り込みを組み合わせる場合" do
+        let(:rails_tag) { create(:tag, user: user, name: "Rails") }
+        let(:docker_tag) { create(:tag, user: user, name: "Docker") }
+
+        let(:matching_card) do
+          create(
+            :card,
+            user: user,
+            title: "Railsのルーティングエラー"
+          )
+        end
+
+        let(:keyword_only_card) do
+          create(
+            :card,
+            user: user,
+            title: "RailsのDocker設定"
+          )
+        end
+
+        let(:tag_only_card) do
+          create(
+            :card,
+            user: user,
+            title: "ActiveRecordの使い方"
+          )
+        end
+
+        before do
+          create(:tagging, card: matching_card, tag: rails_tag)
+          create(:tagging, card: keyword_only_card, tag: docker_tag)
+          create(:tagging, card: tag_only_card, tag: rails_tag)
+        end
+
+        it "キーワードとタグの両方に一致するカードだけ表示する" do
+          get cards_path, params: {
+            q: "Rails",
+            tag_id: rails_tag.id
+          }
+
+          expect(response.body).to include(matching_card.title)
+          expect(response.body).not_to include(keyword_only_card.title)
+          expect(response.body).not_to include(tag_only_card.title)
+        end
+      end
+
+      context "他ユーザーのタグIDを指定した場合" do
+        let(:other_tag) do
+          create(:tag, user: other_user, name: "秘密タグ")
+        end
+
+        let(:other_card) do
+          create(:card, user: other_user, title: "他ユーザーのカード")
+        end
+
+        before do
+          create(:tagging, card: other_card, tag: other_tag)
+        end
+
+        it "他ユーザーのカードを表示しない" do
+          get cards_path, params: { tag_id: other_tag.id }
+
+          expect(response.body).not_to include(other_card.title)
+        end
+      end
+
+      context "復習予定で絞り込む場合" do
+        let!(:review_card) do
+          create(
+            :card,
+            user: user,
+            title: "復習するカード",
+            status: :review_later
+          )
+        end
+
+        let!(:normal_card) do
+          create(
+            :card,
+            user: user,
+            title: "通常カード",
+            status: :normal
+          )
+        end
+
+        before do
+          sign_in user
+        end
+
+        it "復習予定のカードだけ表示する" do
+          get cards_path(review: "1")
+
+          expect(response.body).to include(review_card.title)
+          expect(response.body).not_to include(normal_card.title)
+        end
+      end
     end
 
     context "ログインしていない場合" do
@@ -321,6 +599,61 @@ RSpec.describe "Cards", type: :request do
       end
     end
 
+    context "タグを変更する場合" do
+      let(:rails_tag) do
+        create(:tag, user: user, name: "Rails")
+      end
+
+      let(:docker_tag) do
+        create(:tag, user: user, name: "Docker")
+      end
+
+      before do
+        card.tags << rails_tag
+        card.tags << docker_tag
+      end
+
+      it "タグを追加できる" do
+        patch card_path(card), params: {
+          card: {
+            title: card.title,
+            body: card.body
+          },
+          tag_names: "Rails, Docker, GitHub"
+        }
+
+        expect(card.reload.tags.pluck(:name)).to contain_exactly(
+          "Rails",
+          "Docker",
+          "GitHub"
+        )
+      end
+
+      it "タグを削除できる" do
+        patch card_path(card), params: {
+          card: {
+            title: card.title,
+            body: card.body
+          },
+          tag_names: "Rails"
+        }
+
+        expect(card.reload.tags.pluck(:name)).to contain_exactly("Rails")
+      end
+
+      it "タグをすべて外せる" do
+        patch card_path(card), params: {
+          card: {
+            title: card.title,
+            body: card.body
+          },
+          tag_names: ""
+        }
+
+        expect(card.reload.tags).to be_empty
+      end
+    end
+
     context "不正な値の場合" do
       it "カードを更新しない" do
         original_title = card.title
@@ -355,6 +688,46 @@ RSpec.describe "Cards", type: :request do
 
         expect(other_card.title).to eq(original_title)
         expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "復習予定に変更する場合" do
+      before do
+        sign_in user
+      end
+
+      it "カードを復習予定に変更できる" do
+        patch card_path(card), params: {
+          card: {
+            status: "review_later"
+          }
+        }
+
+        expect(card.reload).to be_review_later
+      end
+    end
+
+    context "復習予定を解除する場合" do
+      let(:card) do
+        create(
+          :card,
+          user: user,
+          status: :review_later
+        )
+      end
+
+      before do
+        sign_in user
+      end
+
+      it "カードを通常状態に戻せる" do
+        patch card_path(card), params: {
+          card: {
+            status: "normal"
+          }
+        }
+
+        expect(card.reload).to be_normal
       end
     end
   end
