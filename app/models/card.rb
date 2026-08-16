@@ -19,6 +19,12 @@ class Card < ApplicationRecord
     )
   }
 
+  scope :tagged_with, ->(tag_id) {
+    joins(:tags)
+      .where(tags: { id: tag_id })
+      .distinct
+  }
+
   validates :title, presence: true
   validates :body, presence: true
 end
