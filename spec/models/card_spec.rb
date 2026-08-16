@@ -125,4 +125,36 @@ RSpec.describe Card, type: :model do
       expect(result).to include(title_match_card, body_match_card)
     end
   end
+
+  describe ".tagged_with" do
+    let(:user) { create(:user) }
+
+    let(:rails_tag) do
+      create(:tag, user: user, name: "Rails")
+    end
+
+    let(:docker_tag) do
+      create(:tag, user: user, name: "Docker")
+    end
+
+    let(:rails_card) do
+      create(:card, user: user, title: "Railsカード")
+    end
+
+    let(:docker_card) do
+      create(:card, user: user, title: "Dockerカード")
+    end
+
+    before do
+      create(:tagging, card: rails_card, tag: rails_tag)
+      create(:tagging, card: docker_card, tag: docker_tag)
+    end
+
+    it "指定したタグを持つカードだけ取得できる" do
+      result = described_class.tagged_with(rails_tag.id)
+
+      expect(result).to include(rails_card)
+      expect(result).not_to include(docker_card)
+    end
+  end
 end

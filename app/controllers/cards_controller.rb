@@ -9,18 +9,10 @@ class CardsController < ApplicationController
 
     if params[:tag_id].present?
       @selected_tag = current_user.tags.find_by(id: params[:tag_id])
-
-      if @selected_tag
-        @cards = @cards
-          .joins(:tags)
-          .where(tags: { id: @selected_tag.id })
-          .distinct
-      end
+      @cards = @cards.tagged_with(@selected_tag.id) if @selected_tag
     end
 
-    if params[:review] == "1"
-      @cards = @cards.review_later
-    end
+    @cards = @cards.review_later if params[:review] == "1"
 
     @tags = current_user.tags.order(:name)
   end
@@ -102,19 +94,11 @@ class CardsController < ApplicationController
     @card = current_user.cards.find(params[:id])
   end
 
-  def normalized_tag_names
-    params[:tag_names].to_s
-                      .split(",")
-                      .map(&:strip)
-                      .reject(&:blank?)
-                      .uniq
-  end
-
   def assign_tags(card)
-    tags = normalized_tag_names.map do |name|
-      current_user.tags.find_or_create_by!(name: name)
-    end
-
-    card.tags = tags
+    CardTagAssigner.new(
+      user: current_user,
+      card: card,
+      tag_names: params[:tag_names]
+    ).call
   end
 end

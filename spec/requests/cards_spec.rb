@@ -950,6 +950,14 @@ RSpec.describe "Cards", type: :request do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("形式とは違うAIの回答です")
       end
+
+      it "AI出力が空の場合は貼り付け画面を再表示する" do
+        post preview_from_ai_cards_path,
+            params: { raw_content: "" }
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.body).to include("AIの出力を貼り付けてください")
+      end
     end
 
     context "ログインしていない場合" do
