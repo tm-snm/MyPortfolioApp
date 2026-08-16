@@ -3,7 +3,7 @@
     <h1 class="h2">AI出力からカードを作成</h1>
 
     <p class="text-muted">
-      AIで整理した回答全文を貼り付けてください。
+      「【タイトル】」「【本文】」「【未来の自分へのメモ】」の形式で出力された内容を貼り付けてください。
       内容を解析し、保存前に確認・編集できます。
     </p>
   </div>
@@ -19,13 +19,12 @@
                         placeholder: "AIの出力全文を貼り付けてください" %>
     </div>
 
-    <div class="d-flex gap-2">
-      <%= submit_tag "プレビュー",
-                     class: "btn btn-primary" %>
+    <div class="d-grid d-sm-flex gap-2">
+      <%= submit_tag "プレビュー", class: "btn btn-primary" %>
 
-      <%= link_to "カード一覧へ戻る",
-                  cards_path,
-                  class: "btn btn-outline-secondary" %>
+      <%= link_to "テンプレートを見る", prompt_templates_path, class: "btn btn-outline-primary" %>
+
+      <%= link_to "カード一覧へ戻る", cards_path, class: "btn btn-outline-secondary" %>
     </div>
   <% end %>
 </div>
