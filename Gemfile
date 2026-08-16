@@ -55,6 +55,8 @@ group :test do
 end
 
 group :development do
+  gem "bullet"
+
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
 end
