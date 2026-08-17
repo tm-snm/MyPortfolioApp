@@ -43,6 +43,7 @@
   </div>
 
   <div class="d-flex gap-2">
-    <%= form.submit "カードを作成", class: "btn btn-primary" %>
+    <% submit_label = card.persisted? ? "カードを更新" : "カードを作成" %>
+    <%= form.submit submit_label, class: "btn btn-primary" %>
   </div>
 <% end %>
