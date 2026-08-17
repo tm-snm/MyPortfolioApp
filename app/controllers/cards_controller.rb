@@ -35,7 +35,7 @@ class CardsController < ApplicationController
     redirect_to @card, notice: "カードを作成しました"
   rescue ActiveRecord::RecordInvalid => e
     @card.errors.add(:base, "タグの設定に失敗しました") unless e.record == @card
-    
+
     if @card.raw_content.present?
       render :preview_from_ai, status: :unprocessable_entity
     else
