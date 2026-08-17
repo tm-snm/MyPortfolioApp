@@ -2,9 +2,9 @@
   <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
     <h1 class="h2 mb-0">カード一覧</h1>
 
-    <%= link_to "新しいカードを作成",
-                new_card_path,
-                class: "btn btn-primary flex-shrink-0" %>
+    <%= link_to "AI出力からカードを作成",
+            new_from_ai_cards_path,
+            class: "btn btn-primary flex-shrink-0" %>
   </div>
 
   <div class="card shadow-sm mb-4">
@@ -73,6 +73,7 @@
     </div>
   <% end %>
 
+  <% filters_active = params[:q].present? || params[:tag_id].present? || params[:review] == "1" %>
 
   <% if @cards.any? %>
     <div class="row g-3">
@@ -109,22 +110,27 @@
         </div>
       <% end %>
     </div>
-  <% elsif params[:q].present? %>
+  <% elsif filters_active %>
     <div class="text-center border rounded p-5 bg-light">
       <p class="mb-3">
-        「<%= params[:q] %>」に一致するカードが見つかりませんでした。
+        条件に一致するカードが見つかりませんでした。
       </p>
 
-      <%= link_to "検索を解除",
+      <%= link_to "条件を解除",
                   cards_path,
                   class: "btn btn-outline-secondary" %>
     </div>
+
   <% else %>
     <div class="text-center border rounded p-5 bg-light">
-      <p class="mb-3">まだカードがありません。</p>
+      <p class="mb-2">まだカードがありません。</p>
 
-      <%= link_to "最初のカードを作成",
-                  new_card_path,
+      <p class="text-muted mb-3">
+        AIで解決した内容を最初のカードとして残してみましょう。
+      </p>
+
+      <%= link_to "最初のカードを作成するプロンプトを選ぶ",
+                  prompt_templates_path,
                   class: "btn btn-primary" %>
     </div>
   <% end %>

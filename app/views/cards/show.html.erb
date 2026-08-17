@@ -1,6 +1,6 @@
 <div class="container py-4">
   <div class="mb-4">
-    <h1 class="h2"><%= @card.title %></h1>
+    <h1 class="h2 text-break"><%= @card.title %></h1>
 
     <div class="text-muted">
       作成日時:
@@ -39,14 +39,14 @@
   <div class="mb-4">
     <h2 class="h5">本文</h2>
 
-    <div>
+    <div class="text-break">
       <%= simple_format(@card.body) %>
     </div>
   </div>
 
   <% if @card.future_note.present? %>
     <div class="mb-4">
-      <h2 class="h5">未来の自分へのメモ</h2>
+      <h2 class="h5 text-break">未来の自分へのメモ</h2>
 
       <div>
         <%= simple_format(@card.future_note) %>
@@ -54,9 +54,9 @@
     </div>
   <% end %>
 
-  <div class="d-flex gap-2">
+  <div class="d-grid d-sm-flex flex-sm-wrap gap-2">
     <%= link_to "編集", edit_card_path(@card), class: "btn btn-outline-primary" %>
-    <%= button_to "削除", card_path(@card), method: :delete, data: { turbo_confirm: "このカードを削除しますか？" }, class: "btn btn-outline-danger" %>
+    <%= button_to "削除", card_path(@card), method: :delete, data: { turbo_confirm: "このカードを削除しますか？" }, class: "btn btn-outline-danger", form: { class: "d-grid" } %>
     <%= link_to "カード一覧へ戻る", cards_path, class: "btn btn-outline-secondary" %>
     <% if @card.review_later? %>
       <%= button_to "復習予定を解除",
@@ -67,7 +67,7 @@
                         status: "normal"
                       }
                     },
-                    class: "btn btn-outline-secondary" %>
+                    class: "btn btn-outline-secondary",form: { class: "d-grid" } %>
     <% else %>
       <%= button_to "復習予定にする",
                     card_path(@card),
@@ -77,7 +77,7 @@
                         status: "review_later"
                       }
                     },
-                    class: "btn btn-outline-warning" %>
+                    class: "btn btn-outline-warning",form: { class: "d-grid" } %>
     <% end %>
   </div>
 </div>

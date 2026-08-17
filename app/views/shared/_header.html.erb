@@ -1,34 +1,82 @@
 <header class="border-bottom bg-white">
   <nav class="navbar navbar-expand-lg">
     <div class="container">
+
+      <%# アプリ名 %>
       <%= link_to "Recall Card",
                   root_path,
                   class: "navbar-brand fw-bold" %>
 
-      <div class="d-flex align-items-center gap-2">
-        <% if user_signed_in? %>
-          <span class="small text-secondary">
-            <%= current_user.email %>
-          </span>
+      <% if user_signed_in? %>
 
-          <%= link_to "カード一覧",
-              cards_path,
-              class: "btn btn-outline-primary btn-sm" %>
+        <%# モバイル用ハンバーガーボタン %>
+        <button class="navbar-toggler ms-auto"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNavbar"
+                aria-controls="mainNavbar"
+                aria-expanded="false"
+                aria-label="メニューを開閉する">
+          <span class="navbar-toggler-icon"></span>
+        </button>
 
-          <%= link_to "カードを作成",
-              new_card_path,
-              class: "btn btn-primary btn-sm" %>
+        <%# モバイルでは折り畳み、PCでは常時表示 %>
+        <div class="collapse navbar-collapse"
+             id="mainNavbar">
 
-          <%= link_to "プロンプト",
-            prompt_templates_path,
-            class: "btn btn-outline-primary btn-sm" %>
+          <div class="d-grid d-lg-flex
+                      align-items-lg-center
+                      gap-2
+                      ms-lg-auto
+                      pt-3 pt-lg-0">
 
-          <%= button_to "ログアウト",
-                        destroy_user_session_path,
-                        method: :delete,
-                        class: "btn btn-outline-secondary btn-sm",
-                        form: { class: "d-inline" } %>
-        <% else %>
+            <%# ログインユーザー %>
+            <span class="small text-secondary py-1 py-lg-0">
+              <%= current_user.email %>
+            </span>
+
+            <%# カード一覧 %>
+            <%= link_to "カード一覧",
+                        cards_path,
+                        class: "btn btn-outline-primary btn-sm" %>
+
+            <%# カード作成 %>
+            <%= link_to "カードを作成",
+                        new_from_ai_cards_path,
+                        class: "btn btn-primary btn-sm" %>
+
+            <%# プロンプト一覧 %>
+            <%= link_to "プロンプト",
+                        prompt_templates_path,
+                        class: "btn btn-outline-primary btn-sm" %>
+
+            <%# ログアウト %>
+            <%= button_to "ログアウト",
+                          destroy_user_session_path,
+                          method: :delete,
+                          class: "btn btn-outline-secondary btn-sm",
+                          form: {
+                            class: "d-grid d-lg-block m-0"
+                          } %>
+
+            <%# モバイル専用：メニューを閉じる %>
+            <button type="button"
+                    class="btn btn-outline-secondary btn-sm d-lg-none mt-2"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#mainNavbar"
+                    aria-controls="mainNavbar"
+                    aria-label="メニューを閉じる">
+              メニューを閉じる
+            </button>
+
+          </div>
+        </div>
+
+      <% else %>
+
+        <%# 未ログイン時 %>
+        <div class="d-flex align-items-center gap-2 ms-auto">
+
           <%= link_to "ログイン",
                       new_user_session_path,
                       class: "btn btn-outline-primary btn-sm" %>
@@ -36,8 +84,11 @@
           <%= link_to "新規登録",
                       new_user_registration_path,
                       class: "btn btn-primary btn-sm" %>
-        <% end %>
-      </div>
+
+        </div>
+
+      <% end %>
+
     </div>
   </nav>
 </header>
