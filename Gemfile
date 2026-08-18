@@ -34,6 +34,8 @@ gem "bootsnap", require: false
 
 gem "devise", "~> 5.0"
 
+gem "rails-i18n", "~> 7.0.0"
+
 group :development, :test do
   gem "rspec-rails", "~> 8.0"
   gem "factory_bot_rails"
