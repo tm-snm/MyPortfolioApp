@@ -616,6 +616,12 @@ RSpec.describe "Cards", type: :request do
 
         expect(response).to have_http_status(:not_found)
       end
+
+      it "存在しないカードへアクセスする場合、404を返す" do
+        get card_path(999999)
+
+        expect(response).to have_http_status(:not_found)
+      end
     end
 
     context "ログインしていない場合" do

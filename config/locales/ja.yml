@@ -1,0 +1,22 @@
+ja:
+  activerecord:
+    models:
+      card: "カード"
+      user: "ユーザー"
+      tag: "タグ"
+
+    attributes:
+      card:
+        user: "ユーザー"
+        title: "タイトル"
+        body: "本文"
+        future_note: "未来の自分へのメモ"
+        status: "ステータス"
+
+      tag:
+        name: "タグ名"
+
+      user:
+        email: "メールアドレス"
+        password: "パスワード"
+        password_confirmation: "パスワード（確認）"
