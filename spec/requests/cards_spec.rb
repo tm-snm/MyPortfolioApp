@@ -611,6 +611,47 @@ RSpec.describe "Cards", type: :request do
         expect(response.body).to include("routesを最初に確認する")
       end
 
+      it "本文をMarkdownとして表示する" do
+        markdown_card = create(
+          :card,
+          user: user,
+          body: <<~MARKDOWN
+            ## 原因
+
+            - 設定不足
+
+            | 項目 | 内容 |
+            | --- | --- |
+            | 確認 | routes |
+          MARKDOWN
+        )
+
+        get card_path(markdown_card)
+
+        expect(response.body).to include("<h2>原因</h2>")
+        expect(response.body).to include("<li>設定不足</li>")
+        expect(response.body).to include("<table>")
+      end
+
+      it "本文に含まれる危険なHTMLを実行可能な形で表示しない" do
+        unsafe_card = create(
+          :card,
+          user: user,
+          body: <<~MARKDOWN
+            <script>alert("xss")</script>
+            [危険なリンク](javascript:alert("xss"))
+          MARKDOWN
+        )
+
+        get card_path(unsafe_card)
+
+        markdown_html = response.parsed_body
+                                .at_css(".markdown-content")
+                                .inner_html
+
+        expect(markdown_html).not_to include("<script", "javascript:")
+      end
+
       it "他ユーザーのカード詳細を表示できない" do
         get card_path(other_card)
 
@@ -938,6 +979,34 @@ RSpec.describe "Cards", type: :request do
         expect(response.body).to include("RailsのStrong Parametersについて")
         expect(response.body).to include("Controllerで受け取るパラメータを制限する仕組み")
         expect(response.body).to include("user_idをpermitしないことを確認する")
+      end
+
+      it "解析した本文をMarkdownとしてプレビューする" do
+        markdown_content = <<~TEXT
+          【タイトル】
+          Markdown表示
+
+          【本文】
+          ## 原因
+
+          - 設定不足
+
+          ~~~ruby
+          puts "hello"
+          ~~~
+
+          【未来の自分へのメモ】
+          表示を確認する
+        TEXT
+
+        post preview_from_ai_cards_path,
+            params: { raw_content: markdown_content }
+
+        expect(response.body).to include("解析時点の表示プレビュー")
+        expect(response.body).to include("<h2>原因</h2>")
+        expect(response.body).to include("<li>設定不足</li>")
+        expect(response.body).to include("<pre")
+        expect(response.body).to include("textarea")
       end
 
       it "プレビュー時にはカードを保存しない" do
