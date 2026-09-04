@@ -39,8 +39,8 @@
   <div class="mb-4">
     <h2 class="h5">本文</h2>
 
-    <div class="text-break">
-      <%= simple_format(@card.body) %>
+    <div class="markdown-content">
+      <%= render_markdown(@card.body) %>
     </div>
   </div>
 
