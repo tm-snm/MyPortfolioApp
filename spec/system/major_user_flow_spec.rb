@@ -57,8 +57,12 @@ RSpec.describe "主要ユーザーフロー", type: :system do
       Dockerの権限エラー
 
       【本文】
+      ## 状況
+
       Dockerコンテナ内でGemを追加すると権限エラーが発生した。
-      Dockerイメージを再ビルドして依存関係を反映した。
+
+      - Dockerイメージを再ビルドする
+      - 依存関係を反映する
 
       【未来の自分へのメモ】
       Gemfileを変更した場合はDockerイメージの再ビルドを確認する。
@@ -72,6 +76,10 @@ RSpec.describe "主要ユーザーフロー", type: :system do
       "タイトル",
       with: "Dockerの権限エラー"
     )
+    within(".markdown-content") do
+      expect(page).to have_css("h2", text: "状況")
+      expect(page).to have_css("li", text: "Dockerイメージを再ビルドする")
+    end
 
     fill_in "タグ", with: "Docker, Rails"
 
@@ -81,6 +89,13 @@ RSpec.describe "主要ユーザーフロー", type: :system do
 
     expect(page).to have_content("Dockerの権限エラー")
     expect(page).to have_content("カードを作成しました")
+    within(".markdown-content") do
+      expect(page).to have_css("h2", text: "状況")
+    end
+
+    created_card = user.cards.order(:created_at).last
+    expect(created_card.body).to include("## 状況")
+    expect(created_card.body).not_to include("<h2>")
 
     click_link "カード一覧"
 
