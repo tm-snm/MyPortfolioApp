@@ -85,9 +85,9 @@ RSpec.describe "Cards", type: :request do
         let(:ai_card_params) do
           {
             card: {
-              title: "DockerでGemを追加できなかった",
-              body: "bundleの保存先に書き込み権限がなかった。",
-              future_note: "Gem追加時はコンテナ内の権限を確認する。",
+              title: "編集後のDockerタイトル",
+              body: "編集後の解決方法です。",
+              future_note: "編集後の確認メモです。",
               raw_content: raw_content
             }
           }
@@ -99,6 +99,30 @@ RSpec.describe "Cards", type: :request do
           created_card = Card.order(:created_at).last
 
           expect(created_card.raw_content).to eq(raw_content)
+        end
+
+        it "保存前に編集した内容をカードへ保存できる" do
+          post cards_path, params: ai_card_params
+
+          created_card = user.cards.order(:created_at).last
+
+          expect(created_card).to have_attributes(
+            title: "編集後のDockerタイトル",
+            body: "編集後の解決方法です。",
+            future_note: "編集後の確認メモです。"
+          )
+        end
+
+        it "バリデーション失敗時もAIの元出力とタグ入力を保持する" do
+          ai_card_params[:card][:title] = ""
+          ai_card_params[:tag_names] = "Rails, Docker"
+
+          post cards_path, params: ai_card_params
+
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(response.body).to include(raw_content.strip)
+          expect(response.body).to include("Rails, Docker")
+          expect(response.body).to include("カード内容を確認・編集する")
         end
       end
 
@@ -939,6 +963,9 @@ RSpec.describe "Cards", type: :request do
         get new_from_ai_cards_path
 
         expect(response).to have_http_status(:ok)
+        expect(response.body).to include('turbo-frame id="ai_card_builder"')
+        expect(response.body).to include('name="card[raw_content]"')
+        expect(response.body).to include("カード作成の4ステップ")
       end
     end
 
@@ -973,12 +1000,32 @@ RSpec.describe "Cards", type: :request do
 
       it "AI出力を解析してプレビューを表示する" do
         post preview_from_ai_cards_path,
-            params: { raw_content: raw_content }
+            params: { card: { raw_content: raw_content } }
 
         expect(response).to have_http_status(:ok)
+        expect(response.body).to include("AI出力からカードを作成")
+        expect(response.body).to include('turbo-frame id="ai_card_builder"')
         expect(response.body).to include("RailsのStrong Parametersについて")
         expect(response.body).to include("Controllerで受け取るパラメータを制限する仕組み")
         expect(response.body).to include("user_idをpermitしないことを確認する")
+        expect(response.body).to include(raw_content.strip)
+      end
+
+      it "Turbo Streamで作成フォームだけを更新する" do
+        post preview_from_ai_cards_path,
+            params: {
+              card: { raw_content: raw_content },
+              tag_names: "Rails, Docker"
+            },
+            headers: { "ACCEPT" => Mime[:turbo_stream].to_s }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.media_type).to eq(Mime[:turbo_stream].to_s)
+        expect(response.body).to include('action="update" target="ai_card_builder"')
+        expect(response.body).to include("カード内容を確認・編集する")
+        expect(response.body).to include("Rails, Docker")
+        expect(response.body).to include("formaction=\"#{preview_from_ai_cards_path}\"")
+        expect(response.body).to include('data-turbo-frame="_top"')
       end
 
       it "解析した本文をMarkdownとしてプレビューする" do
@@ -1000,7 +1047,7 @@ RSpec.describe "Cards", type: :request do
         TEXT
 
         post preview_from_ai_cards_path,
-            params: { raw_content: markdown_content }
+            params: { card: { raw_content: markdown_content } }
 
         expect(response.body).to include("解析時点の表示プレビュー")
         expect(response.body).to include("<h2>原因</h2>")
@@ -1012,25 +1059,43 @@ RSpec.describe "Cards", type: :request do
       it "プレビュー時にはカードを保存しない" do
         expect do
           post preview_from_ai_cards_path,
-              params: { raw_content: raw_content }
+              params: { card: { raw_content: raw_content } }
         end.not_to change(Card, :count)
       end
 
       it "形式が崩れていても500エラーにならない" do
         post preview_from_ai_cards_path,
             params: {
-              raw_content: "形式とは違うAIの回答です"
+              card: { raw_content: "形式とは違うAIの回答です" }
             }
 
         expect(response).to have_http_status(:ok)
         expect(response.body).to include("形式とは違うAIの回答です")
       end
 
-      it "AI出力が空の場合は貼り付け画面を再表示する" do
+      it "AI出力が空白の場合は貼り付け画面を再表示する" do
         post preview_from_ai_cards_path,
-            params: { raw_content: "" }
+            params: {
+              card: { raw_content: "  \n" },
+              tag_names: "Rails, Docker"
+            }
 
         expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.body).to include("AIの出力を貼り付けてください")
+        expect(response.body).to include('name="card[raw_content]"')
+
+        tag_names_field = Nokogiri::HTML(response.body).at_css('input[name="tag_names"]')
+        expect(tag_names_field["value"]).to eq("Rails, Docker")
+      end
+
+      it "Turbo Streamでも空入力エラーを作成フォーム内へ表示する" do
+        post preview_from_ai_cards_path,
+            params: { card: { raw_content: "" } },
+            headers: { "ACCEPT" => Mime[:turbo_stream].to_s }
+
+        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response.media_type).to eq(Mime[:turbo_stream].to_s)
+        expect(response.body).to include('action="update" target="ai_card_builder"')
         expect(response.body).to include("AIの出力を貼り付けてください")
       end
     end
@@ -1038,7 +1103,7 @@ RSpec.describe "Cards", type: :request do
     context "ログインしていない場合" do
       it "ログイン画面へリダイレクトされる" do
         post preview_from_ai_cards_path,
-            params: { raw_content: raw_content }
+            params: { card: { raw_content: raw_content } }
 
         expect(response).to redirect_to(new_user_session_path)
       end

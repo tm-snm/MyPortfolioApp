@@ -49,6 +49,11 @@ RSpec.describe "PromptTemplates", type: :request do
         expect(response.body).to include(prompt_template.title)
         expect(response.body).to include(prompt_template.description)
         expect(response.body).to include(prompt_template.body)
+        expect(response.body).to include("カード作成の4ステップ")
+        expect(response.body).to include("プロンプトをコピー")
+        expect(response.body).to include('data-clipboard-target="message"')
+        expect(response.body).to include('aria-live="polite"')
+        expect(response.body).to include("AI回答を貼り付ける")
       end
     end
 
