@@ -1,0 +1,125 @@
+<%= render "shared/card_creation_steps", current_step: @previewed ? 4 : 3 %>
+
+<% form_url = @previewed ? cards_path : preview_from_ai_cards_path %>
+<% frame_target = @previewed ? "_top" : "ai_card_builder" %>
+
+<%= form_with model: @card,
+              url: form_url,
+              method: :post,
+              data: { turbo_frame: frame_target } do |f| %>
+  <% if !@previewed && @tag_names.present? %>
+    <%= hidden_field_tag :tag_names, @tag_names %>
+  <% end %>
+
+  <% if @card.errors.any? %>
+    <div class="alert alert-danger" role="alert">
+      <p class="fw-semibold mb-2">入力内容を確認してください。</p>
+
+      <ul class="mb-0">
+        <% @card.errors.full_messages.each do |message| %>
+          <li><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <section class="card shadow-sm mb-4" aria-labelledby="ai-output-heading">
+    <div class="card-body">
+      <h2 id="ai-output-heading" class="h5">AI回答を貼り付ける</h2>
+
+      <p class="text-muted small">
+        「【タイトル】」「【本文】」「【未来の自分へのメモ】」の形式で出力された回答を、そのまま貼り付けてください。
+      </p>
+
+      <div class="mb-3">
+        <%= f.label :raw_content, "AIの出力", class: "form-label" %>
+
+        <%= f.text_area :raw_content,
+                        rows: 14,
+                        class: "form-control#{' is-invalid' if @raw_content_error.present?}",
+                        placeholder: "【タイトル】\n解決した内容のタイトル\n\n【本文】\n原因や解決方法\n\n【未来の自分へのメモ】\n次回確認すること" %>
+
+        <% if @raw_content_error.present? %>
+          <div class="invalid-feedback"><%= @raw_content_error %></div>
+        <% else %>
+          <div class="form-text">形式が異なる場合も、全文を本文として確認・編集できます。</div>
+        <% end %>
+      </div>
+
+      <% unless @previewed %>
+        <div class="d-grid d-sm-flex">
+          <%= f.submit "内容を確認",
+                       class: "btn btn-primary",
+                       data: { turbo_submits_with: "解析中..." } %>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <% if @previewed %>
+    <section class="card shadow-sm" aria-labelledby="parsed-card-heading">
+      <div class="card-body">
+        <h2 id="parsed-card-heading" class="h5">カード内容を確認・編集する</h2>
+
+        <p class="text-muted small">
+          解析結果を確認し、必要に応じて修正してから保存してください。
+        </p>
+
+        <div class="mb-3">
+          <%= f.label :title, "タイトル", class: "form-label" %>
+          <%= f.text_field :title, class: "form-control" %>
+        </div>
+
+        <div class="mb-3">
+          <%= f.label :body, "本文", class: "form-label" %>
+          <%= f.text_area :body, rows: 14, class: "form-control" %>
+
+          <div class="mt-3">
+            <h3 class="h6">解析時点の表示プレビュー</h3>
+
+            <p class="form-text">
+              本文を編集した場合、変更後のMarkdown表示は保存後のカード詳細画面で確認できます。
+            </p>
+
+            <div class="markdown-content border rounded bg-light p-3">
+              <%= render_markdown(@card.body) %>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <%= f.label :future_note, "未来の自分へのメモ", class: "form-label" %>
+          <%= f.text_area :future_note, rows: 4, class: "form-control" %>
+        </div>
+
+        <div class="mb-3">
+          <%= label_tag :tag_names, "タグ", class: "form-label" %>
+          <%= text_field_tag :tag_names,
+                             @tag_names,
+                             class: "form-control",
+                             placeholder: "Rails, Docker, GitHub" %>
+
+          <div class="form-text">複数のタグはカンマ区切りで入力してください。</div>
+        </div>
+
+        <p class="form-text">
+          貼り付けたAI回答を変更した場合は、保存前に「貼り付け内容を再解析」を押してください。
+        </p>
+
+        <div class="d-grid d-sm-flex gap-2">
+          <%= f.submit "カードを保存",
+                       class: "btn btn-primary",
+                       data: { turbo_submits_with: "保存中..." } %>
+
+          <%= f.submit "貼り付け内容を再解析",
+                       formaction: preview_from_ai_cards_path,
+                       class: "btn btn-outline-secondary",
+                       data: {
+                         turbo_frame: "ai_card_builder",
+                         turbo_submits_with: "解析中..."
+                       } %>
+        </div>
+      </div>
+    </section>
+  <% end %>
+<% end %>

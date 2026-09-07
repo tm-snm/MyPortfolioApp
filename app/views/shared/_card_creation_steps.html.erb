@@ -1,0 +1,27 @@
+<% steps = [
+     "テンプレートをコピー",
+     "外部AIへ貼り付けて回答をコピー",
+     "AI回答をRecall Cardへ貼り付け",
+     "内容を確認して保存"
+   ] %>
+
+<section class="mb-4" aria-labelledby="card-creation-steps-heading">
+  <h2 id="card-creation-steps-heading" class="h5 mb-3">カード作成の4ステップ</h2>
+
+  <ol class="row row-cols-1 row-cols-md-2 row-cols-xl-4 g-2 list-unstyled mb-0">
+    <% steps.each_with_index do |step, index| %>
+      <% step_number = index + 1 %>
+      <% active = step_number == current_step %>
+
+      <li class="col">
+        <div class="border rounded h-100 p-3<%= ' border-primary bg-primary-subtle' if active %>"
+             <% if active %>aria-current="step"<% end %>>
+          <span class="badge <%= active ? 'text-bg-primary' : 'text-bg-secondary' %> me-1">
+            <%= step_number %>
+          </span>
+          <span class="<%= 'fw-semibold' if active %>"><%= step %></span>
+        </div>
+      </li>
+    <% end %>
+  </ol>
+</section>
