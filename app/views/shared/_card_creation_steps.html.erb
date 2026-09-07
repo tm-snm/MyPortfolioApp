@@ -14,12 +14,12 @@
       <% active = step_number == current_step %>
 
       <li class="col">
-        <div class="border rounded h-100 p-3<%= ' border-primary bg-primary-subtle' if active %>"
+        <div class="border rounded h-100 p-2 p-sm-3<%= ' border-primary bg-primary-subtle' if active %>"
              <% if active %>aria-current="step"<% end %>>
           <span class="badge <%= active ? 'text-bg-primary' : 'text-bg-secondary' %> me-1">
             <%= step_number %>
           </span>
-          <span class="<%= 'fw-semibold' if active %>"><%= step %></span>
+          <span class="break-anywhere<%= ' fw-semibold' if active %>"><%= step %></span>
         </div>
       </li>
     <% end %>

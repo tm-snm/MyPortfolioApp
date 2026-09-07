@@ -17,7 +17,7 @@
 
       <ul class="mb-0">
         <% @card.errors.full_messages.each do |message| %>
-          <li><%= message %></li>
+          <li class="break-anywhere"><%= message %></li>
         <% end %>
       </ul>
     </div>
@@ -81,7 +81,7 @@
               本文を編集した場合、変更後のMarkdown表示は保存後のカード詳細画面で確認できます。
             </p>
 
-            <div class="markdown-content border rounded bg-light p-3">
+            <div class="markdown-content min-w-0 border rounded bg-light p-3">
               <%= render_markdown(@card.body) %>
             </div>
           </div>

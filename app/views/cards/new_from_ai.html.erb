@@ -1,6 +1,6 @@
 <div class="container py-4">
   <div class="mb-4">
-    <h1 class="h2">AI出力からカードを作成</h1>
+    <h1 class="h2 break-anywhere">AI出力からカードを作成</h1>
 
     <p class="text-muted">
       外部AIの回答を貼り付け、解析結果を確認・編集してからカードとして保存します。
@@ -12,7 +12,7 @@
   <% end %>
 
   <nav class="d-flex flex-column flex-sm-row gap-2 mt-4" aria-label="カード作成の補助リンク">
-    <%= link_to "別のテンプレートを確認する", prompt_templates_path, class: "link-primary" %>
-    <%= link_to "カード一覧へ戻る", cards_path, class: "link-secondary" %>
+    <%= link_to "別のテンプレートを確認する", prompt_templates_path, class: "link-primary mobile-link" %>
+    <%= link_to "カード一覧へ戻る", cards_path, class: "link-secondary mobile-link" %>
   </nav>
 </div>
