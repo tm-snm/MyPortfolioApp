@@ -6,6 +6,40 @@ body {
   color: #212529;
 }
 
+.min-w-0 {
+  min-width: 0;
+}
+
+.break-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.mobile-link {
+  align-items: center;
+  display: inline-flex;
+  min-height: 2.75rem;
+}
+
+.tag-badge {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: left;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.prompt-template-content {
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+textarea.form-control {
+  resize: vertical;
+}
+
 .hero-section {
   background: linear-gradient(
     135deg,
@@ -102,6 +136,7 @@ body {
   max-width: 100%;
   overflow-x: auto;
   padding: 1rem;
+  -webkit-overflow-scrolling: touch;
 }
 
 .markdown-content pre code {
@@ -120,6 +155,7 @@ body {
   min-width: 100%;
   overflow-x: auto;
   width: max-content;
+  -webkit-overflow-scrolling: touch;
 }
 
 .markdown-content th,
@@ -141,6 +177,30 @@ body {
 }
 
 @media (max-width: 575.98px) {
+  .btn,
+  .form-control,
+  .form-select,
+  .navbar-toggler {
+    min-height: 2.75rem;
+  }
+
+  .form-control,
+  .form-select {
+    font-size: 1rem;
+  }
+
+  .form-check {
+    align-items: center;
+    display: flex;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+  }
+
+  .form-check-input {
+    flex-shrink: 0;
+    margin-top: 0;
+  }
+
   .markdown-content h1 {
     font-size: 1.5rem;
   }

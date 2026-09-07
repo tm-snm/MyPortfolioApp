@@ -1,11 +1,11 @@
-<div class="container py-5">
+<div class="container py-4 py-sm-5">
   <div class="row justify-content-center">
     <div class="col-lg-8">
-      <h1 class="mb-4">カードを作成</h1>
+      <h1 class="break-anywhere mb-4">カードを作成</h1>
 
       <%= render "form", card: @card %>
 
-      <div class="mt-3">
+      <div class="d-grid d-sm-block mt-3">
         <%= link_to "キャンセル", cards_path, class: "btn btn-outline-secondary" %>
       </div>
     </div>

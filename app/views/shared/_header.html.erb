@@ -21,7 +21,7 @@
         </button>
 
         <%# モバイルでは折り畳み、PCでは常時表示 %>
-        <div class="collapse navbar-collapse"
+        <div class="collapse navbar-collapse min-w-0"
              id="mainNavbar">
 
           <div class="d-grid d-lg-flex
@@ -31,7 +31,7 @@
                       pt-3 pt-lg-0">
 
             <%# ログインユーザー %>
-            <span class="small text-secondary py-1 py-lg-0">
+            <span class="small text-secondary break-anywhere py-1 py-lg-0">
               <%= current_user.email %>
             </span>
 
@@ -75,7 +75,7 @@
       <% else %>
 
         <%# 未ログイン時 %>
-        <div class="d-flex align-items-center gap-2 ms-auto">
+        <div class="d-flex flex-wrap justify-content-end align-items-center gap-2 ms-auto">
 
           <%= link_to "ログイン",
                       new_user_session_path,
