@@ -26,6 +26,7 @@ class CardsController < ApplicationController
 
   def create
     @card = current_user.cards.build(create_card_params)
+    @tag_names = params[:tag_names]
 
     Card.transaction do
       @card.save!
@@ -37,7 +38,8 @@ class CardsController < ApplicationController
     @card.errors.add(:base, "タグの設定に失敗しました") unless e.record == @card
 
     if @card.raw_content.present?
-      render :preview_from_ai, status: :unprocessable_entity
+      @previewed = true
+      render :new_from_ai, status: :unprocessable_entity
     else
       render :new, status: :unprocessable_entity
     end
@@ -64,20 +66,26 @@ class CardsController < ApplicationController
   end
 
   def new_from_ai
+    @card = current_user.cards.build
+    @previewed = false
   end
 
   def preview_from_ai
-    raw_content = params[:raw_content].to_s
+    raw_content = params.dig(:card, :raw_content).to_s
+    @card = current_user.cards.build(raw_content: raw_content)
+    @tag_names = params[:tag_names]
+    @previewed = false
 
     if raw_content.blank?
-      flash.now[:alert] = "AIの出力を貼り付けてください"
-      return render :new_from_ai, status: :unprocessable_entity
+      @raw_content_error = "AIの出力を貼り付けてください"
+      return render_ai_creation(status: :unprocessable_entity)
     end
 
     parsed = CardParser.new(raw_content).parse
     @card = current_user.cards.build(parsed)
+    @previewed = true
 
-    render :preview_from_ai
+    render_ai_creation
   end
 
   private
@@ -105,5 +113,12 @@ class CardsController < ApplicationController
       card: card,
       tag_names: params[:tag_names]
     ).call
+  end
+
+  def render_ai_creation(status: :ok)
+    respond_to do |format|
+      format.turbo_stream { render :preview_from_ai, status: status }
+      format.html { render :new_from_ai, status: status }
+    end
   end
 end

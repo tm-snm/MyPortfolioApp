@@ -1,43 +1,67 @@
 <div class="container py-4">
   <div class="mb-4">
-    <h1 class="h2"><%= @prompt_template.title %></h1>
+    <h1 class="h2 break-anywhere"><%= @prompt_template.title %></h1>
 
     <p class="text-muted">
       <%= @prompt_template.description %>
     </p>
   </div>
 
+  <%= render "shared/card_creation_steps", current_step: 1 %>
+
   <div class="card shadow-sm mb-3" data-controller="clipboard">
     <div class="card-body">
       <h2 class="h5 mb-3">プロンプト本文</h2>
 
       <pre
-        class="mb-3"
+        class="prompt-template-content mb-3"
         data-clipboard-target="source"><%= @prompt_template.body %></pre>
 
-      <div class="d-flex align-items-center gap-3">
+      <div class="d-grid d-sm-flex align-items-sm-center gap-2 gap-sm-3">
         <button
           type="button"
-          class="btn btn-outline-primary btn-sm"
+          class="btn btn-primary"
+          data-clipboard-target="button"
           data-action="clipboard#copy">
-          コピーする
+          プロンプトをコピー
         </button>
 
         <span
-          class="text-success small"
-          data-clipboard-target="message">
+          class="small break-anywhere"
+          data-clipboard-target="message"
+          role="status"
+          aria-live="polite">
         </span>
       </div>
+
+      <div class="alert alert-info mt-3 mb-0 d-none" data-clipboard-target="guidance">
+        <p class="fw-semibold mb-2">次は外部AIで回答を作成します。</p>
+
+        <ol class="ps-3 ps-sm-4 mb-3">
+          <li>コピーしたプロンプトを普段使っている外部AIへ貼り付ける</li>
+          <li>AIが整理した回答をコピーする</li>
+          <li>Recall Cardへ戻り、回答を貼り付ける</li>
+        </ol>
+
+        <div class="d-grid d-sm-block">
+          <%= link_to "AI回答を貼り付ける",
+                      new_from_ai_cards_path,
+                      class: "btn btn-primary" %>
+        </div>
+      </div>
+
+      <noscript>
+        <div class="alert alert-info mt-3 mb-0">
+          プロンプトを手動でコピーして外部AIへ貼り付け、回答をコピーしたら
+          <%= link_to "貼り付け画面へ進む", new_from_ai_cards_path %>へ進んでください。
+        </div>
+      </noscript>
     </div>
   </div>
 
-  <div class="d-flex gap-2">
+  <div class="d-grid d-sm-block">
     <%= link_to "テンプレート一覧へ戻る",
                 prompt_templates_path,
                 class: "btn btn-outline-secondary" %>
-
-    <%= link_to "カードを作成",
-                new_from_ai_cards_path,
-                class: "btn btn-primary" %>
   </div>
 </div>
