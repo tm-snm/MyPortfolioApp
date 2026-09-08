@@ -7,7 +7,7 @@ Rails.application.routes.draw do
       post :preview_from_ai
     end
   end
-  resources :prompt_templates, only: %i[index show]
+  resources :prompt_templates
 
   root "home#top"
 end
