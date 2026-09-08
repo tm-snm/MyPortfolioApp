@@ -1,6 +1,8 @@
 class CardsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_card, only: %i[show edit update destroy]
+  before_action :set_available_tags,
+                only: %i[new create edit update new_from_ai preview_from_ai]
 
   def index
     @cards = current_user.cards.order(created_at: :desc)
@@ -105,6 +107,10 @@ class CardsController < ApplicationController
 
   def set_card
     @card = current_user.cards.find(params[:id])
+  end
+
+  def set_available_tags
+    @available_tags = current_user.tags.order(:name)
   end
 
   def assign_tags(card)
