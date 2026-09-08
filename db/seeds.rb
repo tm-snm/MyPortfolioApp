@@ -202,6 +202,9 @@ templates = [
 ]
 
 templates.each do |attrs|
-  template = PromptTemplate.find_or_initialize_by(category: attrs[:category])
+  template = PromptTemplate.find_or_initialize_by(
+    category: attrs[:category],
+    user_id: nil
+  )
   template.update!(attrs)
 end

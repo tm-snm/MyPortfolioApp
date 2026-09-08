@@ -1,10 +1,24 @@
 <div class="container py-4">
   <div class="mb-4">
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+      <% if @prompt_template.official? %>
+        <span class="badge text-bg-primary">公式</span>
+      <% else %>
+        <span class="badge text-bg-success">個人</span>
+      <% end %>
+
+      <span class="badge text-bg-light border text-dark break-anywhere">
+        <%= @prompt_template.category %>
+      </span>
+    </div>
+
     <h1 class="h2 break-anywhere"><%= @prompt_template.title %></h1>
 
-    <p class="text-muted">
-      <%= @prompt_template.description %>
-    </p>
+    <% if @prompt_template.description.present? %>
+      <p class="text-muted">
+        <%= @prompt_template.description %>
+      </p>
+    <% end %>
   </div>
 
   <%= render "shared/card_creation_steps", current_step: 1 %>
@@ -59,7 +73,24 @@
     </div>
   </div>
 
-  <div class="d-grid d-sm-block">
+  <div class="d-grid d-sm-flex flex-sm-wrap gap-2">
+    <% unless @prompt_template.official? %>
+      <%= link_to "編集",
+                  edit_prompt_template_path(@prompt_template),
+                  class: "btn btn-outline-primary" %>
+
+      <%= button_to "削除",
+                    prompt_template_path(@prompt_template),
+                    method: :delete,
+                    data: {
+                      turbo_confirm: "この個人テンプレートを削除しますか？"
+                    },
+                    class: "btn btn-outline-danger",
+                    form: {
+                      class: "d-grid"
+                    } %>
+    <% end %>
+
     <%= link_to "テンプレート一覧へ戻る",
                 prompt_templates_path,
                 class: "btn btn-outline-secondary" %>

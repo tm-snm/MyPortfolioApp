@@ -2,6 +2,7 @@ ja:
   activerecord:
     models:
       card: "カード"
+      prompt_template: "プロンプトテンプレート"
       user: "ユーザー"
       tag: "タグ"
 
@@ -15,6 +16,12 @@ ja:
 
       tag:
         name: "タグ名"
+
+      prompt_template:
+        title: "タイトル"
+        category: "カテゴリー"
+        description: "説明"
+        body: "プロンプト本文"
 
       user:
         email: "メールアドレス"

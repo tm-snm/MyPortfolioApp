@@ -1,0 +1,51 @@
+<%= form_with model: prompt_template do |form| %>
+  <% if prompt_template.errors.any? %>
+    <div class="alert alert-danger">
+      <p class="mb-2">
+        入力内容に<%= prompt_template.errors.count %>件のエラーがあります。
+      </p>
+
+      <ul class="mb-0">
+        <% prompt_template.errors.full_messages.each do |message| %>
+          <li class="break-anywhere"><%= message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="mb-3">
+    <%= form.label :title, "タイトル", class: "form-label" %>
+    <%= form.text_field :title,
+                        class: "form-control",
+                        placeholder: "例：エラー調査用テンプレート" %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :category, "カテゴリー", class: "form-label" %>
+    <%= form.text_field :category,
+                        class: "form-control",
+                        placeholder: "例：技術調査" %>
+  </div>
+
+  <div class="mb-3">
+    <%= form.label :description, "説明（任意）", class: "form-label" %>
+    <%= form.text_area :description,
+                       rows: 3,
+                       class: "form-control",
+                       placeholder: "どのような場面で使うテンプレートかを入力してください" %>
+  </div>
+
+  <div class="mb-4">
+    <%= form.label :body, "プロンプト本文", class: "form-label" %>
+    <%= form.text_area :body,
+                       rows: 16,
+                       class: "form-control",
+                       placeholder: "外部AIへコピーして使うプロンプトを入力してください" %>
+  </div>
+
+  <div class="d-grid d-sm-block">
+    <% submit_label =
+         prompt_template.persisted? ? "個人テンプレートを更新" : "個人テンプレートを作成" %>
+    <%= form.submit submit_label, class: "btn btn-primary" %>
+  </div>
+<% end %>
