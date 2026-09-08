@@ -92,15 +92,9 @@
           <%= f.text_area :future_note, rows: 4, class: "form-control" %>
         </div>
 
-        <div class="mb-3">
-          <%= label_tag :tag_names, "タグ", class: "form-label" %>
-          <%= text_field_tag :tag_names,
-                             @tag_names,
-                             class: "form-control",
-                             placeholder: "Rails, Docker, GitHub" %>
-
-          <div class="form-text">複数のタグはカンマ区切りで入力してください。</div>
-        </div>
+        <%= render "tag_input",
+                   available_tags: @available_tags,
+                   tag_names_value: @tag_names %>
 
         <p class="form-text">
           貼り付けたAI回答を変更した場合は、保存前に「貼り付け内容を再解析」を押してください。

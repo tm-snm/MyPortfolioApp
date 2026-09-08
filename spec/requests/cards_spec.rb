@@ -17,6 +17,21 @@ RSpec.describe "Cards", type: :request do
 
         expect(response).to have_http_status(:ok)
       end
+
+      it "自分のタグだけを候補として表示する" do
+        create(:tag, user: user, name: "Rails")
+        create(:tag, user: user, name: "Docker")
+        create(:tag, user: other_user, name: "秘密タグ")
+
+        get new_card_path
+
+        candidate_names = response.parsed_body
+                                  .css('[data-tag-input-target="candidate"]')
+                                  .pluck("data-tag-name")
+
+        expect(candidate_names).to eq(%w[Docker Rails])
+        expect(candidate_names).not_to include("秘密タグ")
+      end
     end
 
     context "ログインしていない場合" do
@@ -711,6 +726,32 @@ RSpec.describe "Cards", type: :request do
         expect(response.body).to include(card.title)
       end
 
+      it "現在のタグを選択済みにして自分のタグだけを候補表示する" do
+        rails_tag = create(:tag, user: user, name: "Rails")
+        create(:tag, user: user, name: "Docker")
+        create(:tag, user: other_user, name: "秘密タグ")
+        card.tags << rails_tag
+
+        get edit_card_path(card)
+
+        document = response.parsed_body
+        tag_names_field = document.at_css('input[name="tag_names"]')
+        selected_names = document
+                         .css('[data-action="tag-input#remove"]')
+                         .pluck("data-tag-name")
+        candidates = document.css('[data-tag-input-target="candidate"]')
+        candidate_names = candidates.pluck("data-tag-name")
+        rails_candidate = candidates.find do |candidate|
+          candidate["data-tag-name"] == "Rails"
+        end
+
+        expect(tag_names_field["value"]).to eq("Rails")
+        expect(selected_names).to eq([ "Rails" ])
+        expect(candidate_names).to eq(%w[Docker Rails])
+        expect(candidate_names).not_to include("秘密タグ")
+        expect(rails_candidate).to have_attribute("disabled")
+      end
+
       it "他ユーザーのカード編集画面を表示できない" do
         get edit_card_path(other_card)
 
@@ -824,6 +865,30 @@ RSpec.describe "Cards", type: :request do
           expect(card.title).to eq(original_title)
           expect(card.body).to eq(original_body)
           expect(response).to have_http_status(:unprocessable_entity)
+        end
+
+        it "タグ全解除後の再表示で古い選択状態を復元しない" do
+          tag = create(:tag, user: user, name: "Rails")
+          card.tags << tag
+
+          patch card_path(card), params: {
+            card: {
+              title: "",
+              body: card.body
+            },
+            tag_names: ""
+          }
+
+          document = response.parsed_body
+          tag_names_field = document.at_css('input[name="tag_names"]')
+          selected_names = document
+                           .css('[data-action="tag-input#remove"]')
+                           .pluck("data-tag-name")
+
+          expect(response).to have_http_status(:unprocessable_entity)
+          expect(tag_names_field["value"]).to eq("")
+          expect(selected_names).to be_empty
+          expect(card.reload.tags).to contain_exactly(tag)
         end
       end
 
@@ -1009,6 +1074,28 @@ RSpec.describe "Cards", type: :request do
         expect(response.body).to include("Controllerで受け取るパラメータを制限する仕組み")
         expect(response.body).to include("user_idをpermitしないことを確認する")
         expect(response.body).to include(raw_content.strip)
+      end
+
+      it "AIプレビューでも自分のタグだけを候補として表示する" do
+        create(:tag, user: user, name: "Rails")
+        create(:tag, user: user, name: "Docker")
+        create(:tag, user: other_user, name: "秘密タグ")
+
+        post preview_from_ai_cards_path,
+             params: {
+               card: { raw_content: raw_content },
+               tag_names: "Rails"
+             }
+
+        document = response.parsed_body
+        candidate_names = document
+                          .css('[data-tag-input-target="candidate"]')
+                          .pluck("data-tag-name")
+        tag_names_field = document.at_css('input[name="tag_names"]')
+
+        expect(candidate_names).to eq(%w[Docker Rails])
+        expect(candidate_names).not_to include("秘密タグ")
+        expect(tag_names_field["value"]).to eq("Rails")
       end
 
       it "Turbo Streamで作成フォームだけを更新する" do
