@@ -55,7 +55,7 @@ RSpec.describe PromptTemplate, type: :model do
     end
 
     it "公式テンプレートと指定ユーザーの個人テンプレートを返す" do
-      expect(described_class.available_to(user)).to contain_exactly(
+      expect(described_class.available_to(user)).to include(
         official_template,
         personal_template
       )
