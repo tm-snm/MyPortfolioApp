@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_08_155001) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_08_172340) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -24,6 +24,18 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_08_155001) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["user_id"], name: "index_cards_on_user_id"
+  end
+
+  create_table "prompt_template_preferences", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.bigint "prompt_template_id", null: false
+    t.boolean "favorite", default: false, null: false
+    t.datetime "last_used_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["prompt_template_id"], name: "index_prompt_template_preferences_on_prompt_template_id"
+    t.index ["user_id", "prompt_template_id"], name: "idx_prompt_template_preferences_unique", unique: true
+    t.index ["user_id"], name: "index_prompt_template_preferences_on_user_id"
   end
 
   create_table "prompt_templates", force: :cascade do |t|
@@ -69,6 +81,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_08_155001) do
   end
 
   add_foreign_key "cards", "users"
+  add_foreign_key "prompt_template_preferences", "prompt_templates"
+  add_foreign_key "prompt_template_preferences", "users"
   add_foreign_key "prompt_templates", "users"
   add_foreign_key "taggings", "cards"
   add_foreign_key "taggings", "tags"

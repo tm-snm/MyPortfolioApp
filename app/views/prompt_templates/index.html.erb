@@ -14,6 +14,62 @@
     </div>
   </div>
 
+  <section class="card shadow-sm mb-4" aria-labelledby="quick-access-heading">
+    <div class="card-body">
+      <h2 id="quick-access-heading" class="h4 mb-3">クイックアクセス</h2>
+
+      <div class="row g-4">
+        <div class="col-12 col-lg-6" id="favorite-templates">
+          <h3 class="h5">お気に入り</h3>
+
+          <% if @favorite_prompt_templates.any? %>
+            <div class="list-group">
+              <% @favorite_prompt_templates.each do |prompt_template| %>
+                <%= link_to prompt_template_path(prompt_template),
+                            class: "list-group-item list-group-item-action" do %>
+                  <span class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="break-anywhere"><%= prompt_template.title %></span>
+                    <span class="badge <%= prompt_template.official? ? 'text-bg-primary' : 'text-bg-success' %>">
+                      <%= prompt_template.official? ? "公式" : "個人" %>
+                    </span>
+                  </span>
+                <% end %>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-muted mb-0">お気に入りはまだありません。</p>
+          <% end %>
+        </div>
+
+        <div class="col-12 col-lg-6" id="recent-templates">
+          <h3 class="h5">最近使ったテンプレート</h3>
+
+          <% if @recent_prompt_templates.any? %>
+            <div class="list-group">
+              <% @recent_prompt_templates.each do |prompt_template| %>
+                <%= link_to prompt_template_path(prompt_template),
+                            class: "list-group-item list-group-item-action" do %>
+                  <span class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="break-anywhere"><%= prompt_template.title %></span>
+                    <span class="badge <%= prompt_template.official? ? 'text-bg-primary' : 'text-bg-success' %>">
+                      <%= prompt_template.official? ? "公式" : "個人" %>
+                    </span>
+                  </span>
+                <% end %>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-muted mb-0">
+              テンプレートをコピーすると、ここからすぐに開けます。
+            </p>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <h2 class="h4 mb-3">すべてのテンプレート</h2>
+
   <% if @prompt_templates.any? %>
     <div class="row g-3">
       <% @prompt_templates.each do |prompt_template| %>
@@ -42,10 +98,16 @@
                 </p>
               <% end %>
 
-              <div class="d-grid d-sm-block mt-auto">
+              <div class="d-grid d-sm-flex flex-sm-wrap gap-2 mt-auto">
                 <%= link_to "詳細を見る",
                             prompt_template_path(prompt_template),
                             class: "btn btn-outline-primary" %>
+
+                <%= render "favorite_button",
+                           prompt_template: prompt_template,
+                           favorite: @favorite_prompt_template_ids.include?(
+                             prompt_template.id
+                           ) %>
               </div>
             </div>
           </div>
