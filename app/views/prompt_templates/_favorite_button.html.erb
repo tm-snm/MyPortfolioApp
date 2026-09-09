@@ -1,0 +1,17 @@
+<% if favorite %>
+  <%= button_to "お気に入り解除",
+                unfavorite_prompt_template_path(prompt_template),
+                method: :delete,
+                class: "btn btn-outline-warning",
+                form: {
+                  class: "d-grid"
+                } %>
+<% else %>
+  <%= button_to "お気に入り登録",
+                favorite_prompt_template_path(prompt_template),
+                method: :post,
+                class: "btn btn-outline-warning",
+                form: {
+                  class: "d-grid"
+                } %>
+<% end %>

@@ -37,4 +37,15 @@ RSpec.describe User, type: :model do
       expect(PromptTemplate.exists?(official_template.id)).to be(true)
     end
   end
+
+  describe "テンプレート利用設定との関連" do
+    it "ユーザーを削除すると利用設定も削除する" do
+      user = create(:user)
+      preference = create(:prompt_template_preference, user: user)
+
+      user.destroy
+
+      expect(PromptTemplatePreference.exists?(preference.id)).to be(false)
+    end
+  end
 end

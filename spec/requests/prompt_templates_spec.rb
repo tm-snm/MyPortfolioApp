@@ -103,6 +103,18 @@ RSpec.describe "PromptTemplates", type: :request do
         expect(response.body).to include("プロンプトをコピー")
       end
 
+      it "コピー成功後の使用記録先をStimulusへ渡す" do
+        get prompt_template_path(official_template)
+
+        clipboard_element = response.parsed_body.at_css(
+          "[data-controller='clipboard']"
+        )
+
+        expect(
+          clipboard_element["data-clipboard-usage-url-value"]
+        ).to eq(record_usage_prompt_template_path(official_template))
+      end
+
       it "自分の個人テンプレートを表示できる" do
         get prompt_template_path(personal_template)
 
@@ -372,6 +384,283 @@ RSpec.describe "PromptTemplates", type: :request do
         end.not_to change(PromptTemplate, :count)
 
         expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+  end
+
+  describe "お気に入り・最近使ったテンプレート" do
+    describe "GET /prompt_templates" do
+      before do
+        sign_in user
+      end
+
+      it "ログインユーザーのお気に入りをクイックアクセスへ表示する" do
+        create(
+          :prompt_template_preference,
+          user: user,
+          prompt_template: official_template,
+          favorite: true
+        )
+        create(
+          :prompt_template_preference,
+          user: other_user,
+          prompt_template: other_users_template,
+          favorite: true
+        )
+
+        get prompt_templates_path
+
+        favorite_section = response.parsed_body.at_css("#favorite-templates")
+
+        expect(favorite_section.text).to include(official_template.title)
+        expect(favorite_section.text).not_to include(other_users_template.title)
+      end
+
+      it "他ユーザーが同じ公式テンプレートをお気に入りにしても表示しない" do
+        create(
+          :prompt_template_preference,
+          user: other_user,
+          prompt_template: official_template,
+          favorite: true
+        )
+
+        get prompt_templates_path
+
+        favorite_section = response.parsed_body.at_css("#favorite-templates")
+
+        expect(favorite_section.text).not_to include(official_template.title)
+        expect(favorite_section.text).to include(
+          "お気に入りはまだありません。"
+        )
+      end
+
+      it "最近使ったテンプレートを新しい順に5件まで表示する" do
+        recent_templates = 6.times.map do |index|
+          prompt_template = create(
+            :prompt_template,
+            :personal,
+            user: user,
+            title: "最近使ったテンプレート#{index}"
+          )
+          create(
+            :prompt_template_preference,
+            user: user,
+            prompt_template: prompt_template,
+            last_used_at: index.minutes.ago
+          )
+          prompt_template
+        end
+
+        get prompt_templates_path
+
+        recent_titles = response.parsed_body
+                                .css("#recent-templates .list-group-item")
+                                .map { |link| link.text.squish }
+
+        expect(recent_titles.length).to eq(5)
+        expect(recent_titles).to eq(
+          recent_templates.first(5).map { |template| "#{template.title} 個人" }
+        )
+        expect(recent_titles).not_to include(
+          "#{recent_templates.last.title} 個人"
+        )
+      end
+    end
+
+    describe "POST /prompt_templates/:id/favorite" do
+      context "ログインしている場合" do
+        before do
+          sign_in user
+        end
+
+        it "公式テンプレートをログインユーザーのお気に入りに登録する" do
+          expect do
+            post favorite_prompt_template_path(official_template)
+          end.to change { user.prompt_template_preferences.count }.by(1)
+
+          preference = user.prompt_template_preferences.last
+
+          expect(preference).to have_attributes(
+            prompt_template: official_template,
+            favorite: true
+          )
+          expect(response).to redirect_to(prompt_templates_path)
+        end
+
+        it "自分の個人テンプレートをお気に入りに登録できる" do
+          post favorite_prompt_template_path(personal_template)
+
+          expect(
+            user.prompt_template_preferences.exists?(
+              prompt_template: personal_template,
+              favorite: true
+            )
+          ).to be(true)
+        end
+
+        it "同じテンプレートを再登録しても利用設定を重複させない" do
+          create(
+            :prompt_template_preference,
+            user: user,
+            prompt_template: official_template,
+            favorite: true
+          )
+
+          expect do
+            post favorite_prompt_template_path(official_template)
+          end.not_to change(PromptTemplatePreference, :count)
+        end
+
+        it "他ユーザーの個人テンプレートを登録できない" do
+          expect do
+            post favorite_prompt_template_path(other_users_template)
+          end.not_to change(PromptTemplatePreference, :count)
+
+          expect(response).to have_http_status(:not_found)
+        end
+      end
+
+      context "ログインしていない場合" do
+        it "利用設定を作成せずログイン画面へリダイレクトする" do
+          expect do
+            post favorite_prompt_template_path(official_template)
+          end.not_to change(PromptTemplatePreference, :count)
+
+          expect(response).to redirect_to(new_user_session_path)
+        end
+      end
+    end
+
+    describe "DELETE /prompt_templates/:id/unfavorite" do
+      context "ログインしている場合" do
+        before do
+          sign_in user
+        end
+
+        it "使用履歴がないお気に入りの利用設定を削除する" do
+          create(
+            :prompt_template_preference,
+            user: user,
+            prompt_template: official_template,
+            favorite: true
+          )
+
+          expect do
+            delete unfavorite_prompt_template_path(official_template)
+          end.to change(PromptTemplatePreference, :count).by(-1)
+
+          expect(response).to redirect_to(prompt_templates_path)
+          expect(response).to have_http_status(:see_other)
+        end
+
+        it "使用履歴がある場合は履歴を残してお気に入りだけ解除する" do
+          last_used_at = 1.day.ago
+          preference = create(
+            :prompt_template_preference,
+            user: user,
+            prompt_template: official_template,
+            favorite: true,
+            last_used_at: last_used_at
+          )
+
+          expect do
+            delete unfavorite_prompt_template_path(official_template)
+          end.not_to change(PromptTemplatePreference, :count)
+
+          expect(preference.reload.favorite).to be(false)
+          expect(preference.last_used_at).to be_within(1.second).of(last_used_at)
+        end
+
+        it "他ユーザーの個人テンプレートを解除できない" do
+          preference = create(
+            :prompt_template_preference,
+            user: other_user,
+            prompt_template: other_users_template,
+            favorite: true
+          )
+
+          delete unfavorite_prompt_template_path(other_users_template)
+
+          expect(response).to have_http_status(:not_found)
+          expect(preference.reload.favorite).to be(true)
+        end
+      end
+
+      context "ログインしていない場合" do
+        it "利用設定を変更せずログイン画面へリダイレクトする" do
+          preference = create(
+            :prompt_template_preference,
+            user: user,
+            prompt_template: official_template,
+            favorite: true
+          )
+
+          delete unfavorite_prompt_template_path(official_template)
+
+          expect(preference.reload.favorite).to be(true)
+          expect(response).to redirect_to(new_user_session_path)
+        end
+      end
+    end
+
+    describe "POST /prompt_templates/:id/record_usage" do
+      context "ログインしている場合" do
+        before do
+          sign_in user
+        end
+
+        it "公式テンプレートの最終使用日時を記録する" do
+          expect do
+            post record_usage_prompt_template_path(official_template)
+          end.to change { user.prompt_template_preferences.count }.by(1)
+
+          preference = user.prompt_template_preferences.last
+
+          expect(preference.prompt_template).to eq(official_template)
+          expect(preference.last_used_at).to be_within(1.second).of(Time.current)
+          expect(response).to have_http_status(:no_content)
+        end
+
+        it "再使用時は既存の利用設定を更新する" do
+          preference = create(
+            :prompt_template_preference,
+            user: user,
+            prompt_template: official_template,
+            last_used_at: 1.day.ago
+          )
+
+          expect do
+            post record_usage_prompt_template_path(official_template)
+          end.not_to change(PromptTemplatePreference, :count)
+
+          expect(preference.reload.last_used_at).to be_within(1.second).of(
+            Time.current
+          )
+        end
+
+        it "他ユーザーの個人テンプレートを記録できない" do
+          expect do
+            post record_usage_prompt_template_path(other_users_template)
+          end.not_to change(PromptTemplatePreference, :count)
+
+          expect(response).to have_http_status(:not_found)
+        end
+
+        it "詳細画面を表示しただけでは使用日時を記録しない" do
+          expect do
+            get prompt_template_path(official_template)
+          end.not_to change(PromptTemplatePreference, :count)
+        end
+      end
+
+      context "ログインしていない場合" do
+        it "利用設定を作成せずログイン画面へリダイレクトする" do
+          expect do
+            post record_usage_prompt_template_path(official_template)
+          end.not_to change(PromptTemplatePreference, :count)
+
+          expect(response).to redirect_to(new_user_session_path)
+        end
       end
     end
   end

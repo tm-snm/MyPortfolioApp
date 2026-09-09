@@ -23,7 +23,10 @@
 
   <%= render "shared/card_creation_steps", current_step: 1 %>
 
-  <div class="card shadow-sm mb-3" data-controller="clipboard">
+  <div
+    class="card shadow-sm mb-3"
+    data-controller="clipboard"
+    data-clipboard-usage-url-value="<%= record_usage_prompt_template_path(@prompt_template) %>">
     <div class="card-body">
       <h2 class="h5 mb-3">プロンプト本文</h2>
 
@@ -74,6 +77,10 @@
   </div>
 
   <div class="d-grid d-sm-flex flex-sm-wrap gap-2">
+    <%= render "favorite_button",
+               prompt_template: @prompt_template,
+               favorite: @favorite %>
+
     <% unless @prompt_template.official? %>
       <%= link_to "編集",
                   edit_prompt_template_path(@prompt_template),
