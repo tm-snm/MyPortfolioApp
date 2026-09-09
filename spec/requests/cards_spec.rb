@@ -284,6 +284,31 @@ RSpec.describe "Cards", type: :request do
         expect(response).to have_http_status(:ok)
       end
 
+      it "検索条件とautocompleteに必要なフォーム属性を表示する" do
+        get cards_path, params: {
+          q: "Rails",
+          search_target: "title",
+          sort: "oldest"
+        }
+
+        document = response.parsed_body
+        search_input = document.at_css('input[name="q"]')
+        selected_target = document.at_css(
+          'select[name="search_target"] option[selected]'
+        )
+        selected_sort = document.at_css('select[name="sort"] option[selected]')
+
+        expect(search_input["value"]).to eq("Rails")
+        expect(search_input["role"]).to eq("combobox")
+        expect(search_input["aria-controls"]).to eq(
+          "card-title-autocomplete-list"
+        )
+        expect(selected_target["value"]).to eq("title")
+        expect(selected_sort["value"]).to eq("oldest")
+        expect(document.at_css('[role="listbox"]')).to be_present
+        expect(document.at_css('[aria-live="polite"]')).to be_present
+      end
+
       it "自分のカードを表示する" do
         card = create(:card, user: user, title: "自分のカード")
 
@@ -318,6 +343,50 @@ RSpec.describe "Cards", type: :request do
         )
 
         get cards_path
+
+        new_card_position = response.body.index(new_card.title)
+        old_card_position = response.body.index(old_card.title)
+
+        expect(new_card_position).to be < old_card_position
+      end
+
+      it "カードを古い順で表示できる" do
+        old_card = create(
+          :card,
+          user: user,
+          title: "古いカード",
+          created_at: 2.days.ago
+        )
+        new_card = create(
+          :card,
+          user: user,
+          title: "新しいカード",
+          created_at: 1.day.ago
+        )
+
+        get cards_path, params: { sort: "oldest" }
+
+        old_card_position = response.body.index(old_card.title)
+        new_card_position = response.body.index(new_card.title)
+
+        expect(old_card_position).to be < new_card_position
+      end
+
+      it "不明な並び順ではカードを新しい順で表示する" do
+        old_card = create(
+          :card,
+          user: user,
+          title: "古いカード",
+          created_at: 2.days.ago
+        )
+        new_card = create(
+          :card,
+          user: user,
+          title: "新しいカード",
+          created_at: 1.day.ago
+        )
+
+        get cards_path, params: { sort: "invalid" }
 
         new_card_position = response.body.index(new_card.title)
         old_card_position = response.body.index(old_card.title)
@@ -370,6 +439,38 @@ RSpec.describe "Cards", type: :request do
           get cards_path, params: { q: "Docker" }
 
           expect(response.body).to include(body_match_card.title)
+        end
+
+        it "検索対象をタイトルに限定できる" do
+          get cards_path, params: {
+            q: "Docker",
+            search_target: "title"
+          }
+
+          expect(response.body).to include(title_match_card.title)
+          expect(response.body).not_to include(body_match_card.title)
+        end
+
+        it "検索対象を本文に限定できる" do
+          get cards_path, params: {
+            q: "Docker",
+            search_target: "body"
+          }
+
+          expect(response.body).to include(body_match_card.title)
+          expect(response.body).not_to include(title_match_card.title)
+        end
+
+        it "不明な検索対象ではタイトルと本文を検索する" do
+          get cards_path, params: {
+            q: "Docker",
+            search_target: "invalid"
+          }
+
+          expect(response.body).to include(
+            title_match_card.title,
+            body_match_card.title
+          )
         end
 
         it "一致しないカードを表示しない" do
@@ -621,6 +722,96 @@ RSpec.describe "Cards", type: :request do
         get cards_path
 
         expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+  end
+
+  describe "GET /cards/autocomplete" do
+    context "ログインしている場合" do
+      before do
+        sign_in user
+      end
+
+      it "自分のカードからタイトル候補だけを新しい順で返す" do
+        old_card = create(
+          :card,
+          user: user,
+          title: "Railsの古いカード",
+          created_at: 2.days.ago
+        )
+        new_card = create(
+          :card,
+          user: user,
+          title: "Railsの新しいカード",
+          created_at: 1.day.ago
+        )
+        create(
+          :card,
+          user: user,
+          title: "本文だけ一致するカード",
+          body: "Railsについて"
+        )
+        create(
+          :card,
+          user: other_user,
+          title: "Railsの秘密カード"
+        )
+
+        get autocomplete_cards_path, params: { q: "RA" }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.media_type).to eq("application/json")
+        expect(response.parsed_body).to eq(
+          "titles" => [ new_card.title, old_card.title ]
+        )
+      end
+
+      it "2文字未満では候補を返さない" do
+        create(:card, user: user, title: "Railsカード")
+
+        get autocomplete_cards_path, params: { q: "R" }
+
+        expect(response.parsed_body).to eq("titles" => [])
+      end
+
+      it "候補を最大10件に制限する" do
+        11.times do |index|
+          create(
+            :card,
+            user: user,
+            title: "Rails候補#{index}",
+            created_at: index.minutes.ago
+          )
+        end
+
+        get autocomplete_cards_path, params: { q: "Rails" }
+
+        expect(response.parsed_body.fetch("titles").length).to eq(10)
+        expect(response.parsed_body.fetch("titles").first).to eq("Rails候補0")
+      end
+
+      it "候補がない場合は空配列を返す" do
+        get autocomplete_cards_path, params: { q: "存在しない" }
+
+        expect(response.parsed_body).to eq("titles" => [])
+      end
+
+      it "候補取得ではカードを保存しない" do
+        create(:card, user: user, title: "Railsカード")
+
+        expect do
+          get autocomplete_cards_path, params: { q: "Rails" }
+        end.not_to change(Card, :count)
+      end
+    end
+
+    context "ログインしていない場合" do
+      it "JSONリクエストを拒否する" do
+        get autocomplete_cards_path,
+            params: { q: "Rails" },
+            headers: { "ACCEPT" => "application/json" }
+
+        expect(response).to have_http_status(:unauthorized)
       end
     end
   end

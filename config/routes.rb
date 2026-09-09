@@ -3,6 +3,7 @@ Rails.application.routes.draw do
 
   resources :cards do
     collection do
+      get :autocomplete
       get :new_from_ai
       post :preview_from_ai
     end
