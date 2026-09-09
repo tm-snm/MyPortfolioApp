@@ -5,9 +5,11 @@ class CardsController < ApplicationController
                 only: %i[new create edit update new_from_ai preview_from_ai]
 
   def index
-    @cards = current_user.cards.order(created_at: :desc)
+    @search_target = normalized_search_target
+    @sort_order = normalized_sort_order
+    @cards = current_user.cards
 
-    @cards = @cards.search_by_keyword(params[:q]) if params[:q].present?
+    @cards = @cards.search_by_keyword(params[:q], @search_target) if params[:q].present?
 
     if params[:tag_id].present?
       @selected_tag = current_user.tags.find_by(id: params[:tag_id])
@@ -16,7 +18,24 @@ class CardsController < ApplicationController
 
     @cards = @cards.review_later if params[:review] == "1"
 
+    @cards = @cards.sorted_by(@sort_order)
     @tags = current_user.tags.order(:name)
+  end
+
+  def autocomplete
+    query = params[:q].to_s.strip
+    titles = []
+
+    if query.length >= 2
+      titles = current_user.cards
+                           .matching_title(query)
+                           .sorted_by("newest")
+                           .limit(10)
+                           .pluck(:title)
+                           .uniq
+    end
+
+    render json: { titles: titles }
   end
 
   def show
@@ -103,6 +122,16 @@ class CardsController < ApplicationController
       :future_note,
       :raw_content
     )
+  end
+
+  def normalized_search_target
+    target = params[:search_target].to_s
+    Card::SEARCH_TARGETS.include?(target) ? target : "all"
+  end
+
+  def normalized_sort_order
+    sort_order = params[:sort].to_s
+    Card::SORT_ORDERS.include?(sort_order) ? sort_order : "newest"
   end
 
   def set_card

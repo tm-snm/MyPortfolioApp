@@ -124,6 +124,77 @@ RSpec.describe Card, type: :model do
 
       expect(result).to include(title_match_card, body_match_card)
     end
+
+    it "検索対象をタイトルに限定できる" do
+      result = described_class.search_by_keyword("Docker", "title")
+
+      expect(result).to include(title_match_card)
+      expect(result).not_to include(body_match_card)
+    end
+
+    it "検索対象を本文に限定できる" do
+      result = described_class.search_by_keyword("Docker", "body")
+
+      expect(result).to include(body_match_card)
+      expect(result).not_to include(title_match_card)
+    end
+
+    it "不明な検索対象ではタイトルと本文を検索する" do
+      result = described_class.search_by_keyword("Docker", "unknown")
+
+      expect(result).to include(title_match_card, body_match_card)
+    end
+
+    it "SQLのワイルドカードを通常の文字として検索する" do
+      percent_card = create(:card, user: user, title: "進捗100%のカード")
+      no_percent_card = create(:card, user: user, title: "進捗1000のカード")
+
+      result = described_class.search_by_keyword("%", "title")
+
+      expect(result).to include(percent_card)
+      expect(result).not_to include(no_percent_card)
+    end
+  end
+
+  describe ".matching_title" do
+    let(:user) { create(:user) }
+
+    it "タイトルだけを大文字小文字を区別せず部分一致検索する" do
+      title_match_card = create(:card, user: user, title: "Rails Routing")
+      body_only_match_card = create(
+        :card,
+        user: user,
+        title: "別のカード",
+        body: "rails routing"
+      )
+
+      result = described_class.matching_title("RAILS")
+
+      expect(result).to include(title_match_card)
+      expect(result).not_to include(body_only_match_card)
+    end
+  end
+
+  describe ".sorted_by" do
+    let(:user) { create(:user) }
+    let!(:old_card) do
+      create(:card, user: user, created_at: 2.days.ago)
+    end
+    let!(:new_card) do
+      create(:card, user: user, created_at: 1.day.ago)
+    end
+
+    it "newestでは新しいカードから並べる" do
+      expect(described_class.sorted_by("newest")).to eq([ new_card, old_card ])
+    end
+
+    it "oldestでは古いカードから並べる" do
+      expect(described_class.sorted_by("oldest")).to eq([ old_card, new_card ])
+    end
+
+    it "不明な並び順では新しいカードから並べる" do
+      expect(described_class.sorted_by("unknown")).to eq([ new_card, old_card ])
+    end
   end
 
   describe ".tagged_with" do
