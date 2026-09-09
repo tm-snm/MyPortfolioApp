@@ -7,7 +7,13 @@ Rails.application.routes.draw do
       post :preview_from_ai
     end
   end
-  resources :prompt_templates, only: %i[index show]
+  resources :prompt_templates do
+    member do
+      post :favorite
+      delete :unfavorite
+      post :record_usage
+    end
+  end
 
   root "home#top"
 end

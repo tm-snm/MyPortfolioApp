@@ -4,5 +4,9 @@ FactoryBot.define do
     category { "MyString" }
     description { "MyText" }
     body { "MyText" }
+
+    trait :personal do
+      association :user
+    end
   end
 end

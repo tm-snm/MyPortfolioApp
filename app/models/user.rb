@@ -6,4 +6,6 @@ class User < ApplicationRecord
 
   has_many :cards, dependent: :destroy
   has_many :tags, dependent: :destroy
+  has_many :prompt_templates, dependent: :destroy
+  has_many :prompt_template_preferences, dependent: :destroy
 end
