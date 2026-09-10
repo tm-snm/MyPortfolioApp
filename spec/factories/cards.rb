@@ -9,6 +9,8 @@ FactoryBot.define do
     status { :normal }
     next_review_on { nil }
     last_reviewed_at { nil }
+    understanding_level { nil }
+    importance { nil }
 
     trait :scheduled_for_review do
       status { :review_later }

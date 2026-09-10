@@ -1,0 +1,28 @@
+<% understanding_label =
+     if card.understanding_level.present?
+       t("enums.card.understanding_level.#{card.understanding_level}")
+     else
+       "未設定"
+     end %>
+<% importance_label =
+     if card.importance.present?
+       t("enums.card.importance.#{card.importance}")
+     else
+       "未設定"
+     end %>
+<% importance_badge_class =
+     case card.importance
+     when "high" then "text-bg-danger"
+     when "medium" then "text-bg-warning"
+     when "low" then "text-bg-secondary"
+     else "text-bg-light border"
+     end %>
+
+<div class="d-flex flex-wrap align-items-center gap-2">
+  <span class="badge text-bg-info">
+    理解度：<%= understanding_label %>
+  </span>
+  <span class="badge <%= importance_badge_class %>">
+    重要度：<%= importance_label %>
+  </span>
+</div>

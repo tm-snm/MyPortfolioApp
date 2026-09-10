@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_09_09_073153) do
+ActiveRecord::Schema[7.2].define(version: 2026_09_10_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -25,6 +25,8 @@ ActiveRecord::Schema[7.2].define(version: 2026_09_09_073153) do
     t.datetime "updated_at", null: false
     t.date "next_review_on"
     t.datetime "last_reviewed_at"
+    t.integer "understanding_level"
+    t.integer "importance"
     t.index ["user_id", "status", "next_review_on"], name: "index_cards_on_user_status_next_review"
     t.index ["user_id"], name: "index_cards_on_user_id"
   end

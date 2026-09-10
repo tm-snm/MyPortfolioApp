@@ -13,6 +13,18 @@ class Card < ApplicationRecord
     review_later: 1
   }
 
+  enum :understanding_level, {
+    not_understood: 0,
+    mostly_understood: 1,
+    can_explain: 2
+  }, prefix: true, validate: { allow_nil: true }
+
+  enum :importance, {
+    low: 0,
+    medium: 1,
+    high: 2
+  }, prefix: true, validate: { allow_nil: true }
+
   scope :search_by_keyword, ->(keyword, target = "all") {
     escaped_keyword = sanitize_sql_like(keyword.to_s)
     pattern = "%#{escaped_keyword}%"
@@ -74,11 +86,16 @@ class Card < ApplicationRecord
     save_review_schedule
   end
 
-  def mark_reviewed(next_review_on:, reviewed_at: Time.current)
+  def mark_reviewed(
+    next_review_on:,
+    reviewed_at: Time.current,
+    understanding_level: self.understanding_level
+  )
     assign_attributes(
       status: :review_later,
       next_review_on: next_review_on,
-      last_reviewed_at: reviewed_at
+      last_reviewed_at: reviewed_at,
+      understanding_level: understanding_level
     )
     save_review_schedule
   end
