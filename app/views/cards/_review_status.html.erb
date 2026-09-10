@@ -1,0 +1,28 @@
+<div class="d-flex flex-wrap align-items-center gap-2">
+  <% if card.normal? %>
+    <span class="badge text-bg-secondary">通常</span>
+  <% else %>
+    <span class="badge text-bg-warning">復習予定</span>
+
+    <% case card.review_timing %>
+    <% when :unscheduled %>
+      <span class="badge text-bg-light border">復習日未設定</span>
+    <% when :overdue %>
+      <span class="badge text-bg-danger">
+        期限超過：<%= card.next_review_on.strftime("%Y/%m/%d") %>
+      </span>
+    <% when :today %>
+      <span class="badge text-bg-primary">
+        今日：<%= card.next_review_on.strftime("%Y/%m/%d") %>
+      </span>
+    <% when :this_week %>
+      <span class="badge text-bg-info">
+        今週：<%= card.next_review_on.strftime("%Y/%m/%d") %>
+      </span>
+    <% when :later %>
+      <span class="badge text-bg-light border">
+        次回：<%= card.next_review_on.strftime("%Y/%m/%d") %>
+      </span>
+    <% end %>
+  <% end %>
+</div>

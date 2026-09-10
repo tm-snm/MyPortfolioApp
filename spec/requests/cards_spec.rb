@@ -1100,43 +1100,33 @@ RSpec.describe "Cards", type: :request do
         end
       end
 
-      context "復習予定に変更する場合" do
-        before do
-          sign_in user
-        end
-
-        it "カードを復習予定に変更できる" do
+      context "statusを直接送信する場合" do
+        it "通常更新では復習予定へ変更しない" do
           patch card_path(card), params: {
             card: {
               status: "review_later"
             }
           }
 
-          expect(card.reload).to be_review_later
+          expect(card.reload).to be_normal
         end
-      end
 
-      context "復習予定を解除する場合" do
-        let(:card) do
+        it "通常更新では復習予定を解除しない" do
+          review_card =
           create(
             :card,
             user: user,
-            status: :review_later
+            status: :review_later,
+            next_review_on: Date.current
           )
-        end
 
-        before do
-          sign_in user
-        end
-
-        it "カードを通常状態に戻せる" do
-          patch card_path(card), params: {
+          patch card_path(review_card), params: {
             card: {
               status: "normal"
             }
           }
 
-          expect(card.reload).to be_normal
+          expect(review_card.reload).to be_review_later
         end
       end
     end

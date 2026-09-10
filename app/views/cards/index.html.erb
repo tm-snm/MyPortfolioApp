@@ -1,5 +1,12 @@
 <div class="container py-4">
-  <% filtering_active = params[:q].present? || params[:tag_id].present? || params[:review] == "1" %>
+  <% review_filter_labels = {
+       "all" => "復習予定すべて",
+       "due" => "今日までに復習",
+       "today" => "今日復習",
+       "this_week" => "今週復習",
+       "overdue" => "期限超過"
+     } %>
+  <% filtering_active = params[:q].present? || params[:tag_id].present? || @review_filter.present? %>
   <% conditions_active = filtering_active ||
                          @search_target != "all" ||
                          @sort_order != "newest" %>
@@ -84,17 +91,22 @@
                         class: "form-select" %>
         </div>
 
-        <div class="col-12 col-md-6 col-lg-auto">
-          <div class="form-check mb-2">
-            <%= check_box_tag :review,
-                              "1",
-                              params[:review] == "1",
-                              class: "form-check-input" %>
+        <div class="col-12 col-md-6 col-lg-2">
+          <%= label_tag :review_filter, "復習状況", class: "form-label" %>
 
-            <%= label_tag :review,
-                          "復習予定のみ",
-                          class: "form-check-label" %>
-          </div>
+          <%= select_tag :review_filter,
+                         options_for_select(
+                           [
+                             ["すべてのカード", ""],
+                             ["復習予定すべて", "all"],
+                             ["今日まで", "due"],
+                             ["今日", "today"],
+                             ["今週", "this_week"],
+                             ["期限超過", "overdue"]
+                           ],
+                           @review_filter.to_s
+                         ),
+                         class: "form-select" %>
         </div>
 
         <div class="col-12 col-md-6 col-lg-2">
@@ -124,9 +136,9 @@
     </div>
   </div>
 
-  <% if params[:review] == "1" %>
+  <% if @review_filter.present? %>
     <div class="alert alert-warning py-2 mb-4">
-      復習予定のカードのみ表示しています。
+      <%= review_filter_labels.fetch(@review_filter) %>のカードを表示しています。
     </div>
   <% end %>
 
@@ -153,11 +165,7 @@
                               card_path(card),
                               class: "btn btn-outline-primary btn-sm" %>
 
-                  <% if card.review_later? %>
-                    <span class="badge text-bg-warning">復習予定</span>
-                  <% else %>
-                    <span class="badge text-bg-secondary">通常</span>
-                  <% end %>
+                  <%= render "review_status", card: card %>
                 </div>
               </div>
             </div>

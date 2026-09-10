@@ -1,12 +1,15 @@
 class CardsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_card, only: %i[show edit update destroy]
+  before_action :set_card,
+                only: %i[show edit update destroy schedule_review
+                         mark_reviewed cancel_review]
   before_action :set_available_tags,
                 only: %i[new create edit update new_from_ai preview_from_ai]
 
   def index
     @search_target = normalized_search_target
     @sort_order = normalized_sort_order
+    @review_filter = normalized_review_filter
     @cards = current_user.cards
 
     @cards = @cards.search_by_keyword(params[:q], @search_target) if params[:q].present?
@@ -16,7 +19,7 @@ class CardsController < ApplicationController
       @cards = @cards.tagged_with(@selected_tag.id) if @selected_tag
     end
 
-    @cards = @cards.review_later if params[:review] == "1"
+    @cards = filter_by_review_schedule(@cards)
 
     @cards = @cards.sorted_by(@sort_order)
     @tags = current_user.tags.order(:name)
@@ -86,6 +89,32 @@ class CardsController < ApplicationController
     redirect_to cards_path, notice: "カードを削除しました", status: :see_other
   end
 
+  def schedule_review
+    if @card.schedule_review(next_review_on: review_schedule_params[:next_review_on])
+      redirect_to @card, notice: "次回復習日を設定しました"
+    else
+      render :show, status: :unprocessable_content
+    end
+  end
+
+  def mark_reviewed
+    if @card.mark_reviewed(
+      next_review_on: review_schedule_params[:next_review_on]
+    )
+      redirect_to @card, notice: "復習を記録し、次回復習日を設定しました"
+    else
+      render :show, status: :unprocessable_content
+    end
+  end
+
+  def cancel_review
+    if @card.cancel_review
+      redirect_to @card, notice: "復習予定を解除しました"
+    else
+      render :show, status: :unprocessable_content
+    end
+  end
+
   def new_from_ai
     @card = current_user.cards.build
     @previewed = false
@@ -112,7 +141,7 @@ class CardsController < ApplicationController
   private
 
   def card_params
-    params.require(:card).permit(:title, :body, :future_note, :status)
+    params.require(:card).permit(:title, :body, :future_note)
   end
 
   def create_card_params
@@ -132,6 +161,30 @@ class CardsController < ApplicationController
   def normalized_sort_order
     sort_order = params[:sort].to_s
     Card::SORT_ORDERS.include?(sort_order) ? sort_order : "newest"
+  end
+
+  def normalized_review_filter
+    review_filter = params[:review_filter].to_s
+    return review_filter if Card::REVIEW_FILTERS.include?(review_filter)
+    return "all" if params[:review] == "1"
+
+    nil
+  end
+
+  def filter_by_review_schedule(cards)
+    case @review_filter
+    when "all" then cards.review_later
+    when "due" then cards.review_due_by(Date.current)
+    when "today" then cards.review_due_on(Date.current)
+    when "this_week"
+      cards.review_due_between(Date.current, Date.current.end_of_week)
+    when "overdue" then cards.review_overdue_before(Date.current)
+    else cards
+    end
+  end
+
+  def review_schedule_params
+    params.require(:card).permit(:next_review_on)
   end
 
   def set_card
