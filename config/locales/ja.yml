@@ -13,6 +13,8 @@ ja:
         body: "本文"
         future_note: "未来の自分へのメモ"
         status: "ステータス"
+        next_review_on: "次回復習日"
+        last_reviewed_at: "最終復習日時"
 
       tag:
         name: "タグ名"

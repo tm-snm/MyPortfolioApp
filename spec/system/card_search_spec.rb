@@ -48,7 +48,7 @@ RSpec.describe "カード検索", type: :system do
     fill_in "キーワード", with: "Rails"
     select "タイトル", from: "検索対象"
     select "Rails", from: "タグ"
-    check "復習予定のみ"
+    select "復習予定すべて", from: "復習状況"
     select "古い順", from: "並び順"
     click_button "絞り込む"
 
@@ -60,13 +60,13 @@ RSpec.describe "カード検索", type: :system do
       "q" => "Rails",
       "search_target" => "title",
       "tag_id" => rails_tag.id.to_s,
-      "review" => "1",
+      "review_filter" => "all",
       "sort" => "oldest"
     )
     expect(page).to have_field("キーワード", with: "Rails")
     expect(page).to have_select("検索対象", selected: "タイトル")
     expect(page).to have_select("タグ", selected: "Rails")
-    expect(page).to have_checked_field("復習予定のみ")
+    expect(page).to have_select("復習状況", selected: "復習予定すべて")
     expect(page).to have_select("並び順", selected: "古い順")
     expect(page).to have_content(old_card.title)
     expect(page).to have_content(new_card.title)
@@ -80,5 +80,6 @@ RSpec.describe "カード検索", type: :system do
     expect(find_field("キーワード").value).to be_nil
     expect(page).to have_select("検索対象", selected: "すべて")
     expect(page).to have_select("並び順", selected: "新しい順")
+    expect(page).to have_select("復習状況", selected: "すべてのカード")
   end
 end

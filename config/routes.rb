@@ -7,6 +7,11 @@ Rails.application.routes.draw do
       get :new_from_ai
       post :preview_from_ai
     end
+    member do
+      patch :schedule_review
+      patch :mark_reviewed
+      delete :cancel_review
+    end
   end
   resources :prompt_templates do
     member do

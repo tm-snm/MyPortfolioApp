@@ -1,0 +1,86 @@
+<section class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h2 class="h5">復習スケジュール</h2>
+
+    <%= render "review_status", card: card %>
+
+    <% if card.last_reviewed_at.present? %>
+      <p class="text-muted small mt-2 mb-0">
+        最終復習日時：<%= card.last_reviewed_at.strftime("%Y/%m/%d %H:%M") %>
+      </p>
+    <% end %>
+
+    <% if card.errors[:next_review_on].any? %>
+      <div class="alert alert-danger mt-3 mb-0" role="alert">
+        <ul class="mb-0">
+          <% card.errors.full_messages_for(:next_review_on).each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <hr>
+
+    <%= form_with url: schedule_review_card_path(card),
+                  scope: :card,
+                  method: :patch,
+                  class: "row g-2 align-items-end" do |form| %>
+      <div class="col-12 col-sm-auto">
+        <%= form.label :next_review_on,
+                       card.next_review_on? ? "次回復習日を変更" : "次回復習日",
+                       class: "form-label" %>
+        <%= form.date_field :next_review_on,
+                            value: card.next_review_on,
+                            min: Date.current,
+                            required: true,
+                            class: "form-control" %>
+      </div>
+
+      <div class="col-12 col-sm-auto">
+        <%= form.submit card.next_review_on? ? "復習日を変更" : "復習日を設定",
+                        class: "btn btn-outline-warning w-100" %>
+      </div>
+    <% end %>
+
+    <% if card.review_later? %>
+      <hr>
+
+      <h3 class="h6">復習を記録する</h3>
+      <p class="text-muted small">
+        カードを復習したら、次に見返す日を決めて記録します。
+      </p>
+
+      <%= form_with url: mark_reviewed_card_path(card),
+                    scope: :card,
+                    method: :patch,
+                    class: "row g-2 align-items-end mb-3" do |form| %>
+        <div class="col-12 col-sm-auto">
+          <%= form.label :next_review_on,
+                         "復習後の次回復習日",
+                         for: "reviewed_next_review_on",
+                         class: "form-label" %>
+          <%= form.date_field :next_review_on,
+                              id: "reviewed_next_review_on",
+                              value: params[:action] == "mark_reviewed" ?
+                                params.dig(:card, :next_review_on) : nil,
+                              min: Date.current,
+                              required: true,
+                              class: "form-control" %>
+        </div>
+
+        <div class="col-12 col-sm-auto">
+          <%= form.submit "復習した",
+                          class: "btn btn-success w-100" %>
+        </div>
+      <% end %>
+
+      <%= button_to "復習予定を解除",
+                    cancel_review_card_path(card),
+                    method: :delete,
+                    data: { turbo_confirm: "復習予定を解除しますか？" },
+                    class: "btn btn-outline-secondary",
+                    form: { class: "d-grid d-sm-block" } %>
+    <% end %>
+  </div>
+</section>

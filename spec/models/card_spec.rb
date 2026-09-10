@@ -228,4 +228,184 @@ RSpec.describe Card, type: :model do
       expect(result).not_to include(docker_card)
     end
   end
+
+  describe "review schedule scopes" do
+    let(:reference_date) { Date.new(2026, 9, 9) }
+    let!(:overdue_card) do
+      create(
+        :card,
+        :scheduled_for_review,
+        next_review_on: reference_date.yesterday
+      )
+    end
+    let!(:today_card) do
+      create(
+        :card,
+        :scheduled_for_review,
+        next_review_on: reference_date
+      )
+    end
+    let!(:this_week_card) do
+      create(
+        :card,
+        :scheduled_for_review,
+        next_review_on: reference_date.end_of_week
+      )
+    end
+    let!(:later_card) do
+      create(
+        :card,
+        :scheduled_for_review,
+        next_review_on: reference_date.end_of_week + 1.day
+      )
+    end
+    let!(:unscheduled_card) do
+      create(:card, status: :review_later, next_review_on: nil)
+    end
+    let!(:normal_card) do
+      create(:card, status: :normal, next_review_on: reference_date)
+    end
+
+    it "今日までの復習予定カードを取得する" do
+      result = described_class.review_due_by(reference_date)
+
+      expect(result).to contain_exactly(overdue_card, today_card)
+    end
+
+    it "今日の復習予定カードを取得する" do
+      result = described_class.review_due_on(reference_date)
+
+      expect(result).to contain_exactly(today_card)
+    end
+
+    it "今日から今週末までの復習予定カードを取得する" do
+      result = described_class.review_due_between(
+        reference_date,
+        reference_date.end_of_week
+      )
+
+      expect(result).to contain_exactly(today_card, this_week_card)
+    end
+
+    it "期限超過の復習予定カードを取得する" do
+      result = described_class.review_overdue_before(reference_date)
+
+      expect(result).to contain_exactly(overdue_card)
+    end
+
+    it "日付未設定と通常カードを期限による結果へ含めない" do
+      result = described_class.review_due_by(reference_date.end_of_week)
+
+      expect(result).not_to include(unscheduled_card, normal_card, later_card)
+    end
+  end
+
+  describe "review scheduling" do
+    let(:card) { create(:card) }
+
+    it "次回復習日を設定して復習予定にする" do
+      next_review_on = Date.current + 1.day
+
+      expect(card.schedule_review(next_review_on: next_review_on)).to be(true)
+      expect(card.reload).to have_attributes(
+        status: "review_later",
+        next_review_on: next_review_on
+      )
+    end
+
+    it "次回復習日が空ならスケジュールを保存しない" do
+      expect(card.schedule_review(next_review_on: "")).to be(false)
+      expect(card.errors[:next_review_on]).to be_present
+      expect(card).to have_attributes(
+        status: "normal",
+        next_review_on: nil
+      )
+      expect(card.reload).to be_normal
+    end
+
+    it "過去日は新しい次回復習日として保存しない" do
+      expect(
+        card.schedule_review(next_review_on: Date.current.yesterday)
+      ).to be(false)
+      expect(card.reload).to have_attributes(
+        status: "normal",
+        next_review_on: nil
+      )
+    end
+
+    it "復習日時と次回復習日を同時に記録する" do
+      reviewed_at = Time.zone.local(2026, 9, 9, 12, 30)
+      next_review_on = Date.current + 1.week
+
+      expect(
+        card.mark_reviewed(
+          next_review_on: next_review_on,
+          reviewed_at: reviewed_at
+        )
+      ).to be(true)
+      expect(card.reload).to have_attributes(
+        status: "review_later",
+        next_review_on: next_review_on,
+        last_reviewed_at: reviewed_at
+      )
+    end
+
+    it "次回復習日が不正なら復習日時も保存しない" do
+      expect(
+        card.mark_reviewed(next_review_on: Date.current.yesterday)
+      ).to be(false)
+      expect(card).to have_attributes(
+        status: "normal",
+        next_review_on: nil,
+        last_reviewed_at: nil
+      )
+      expect(card.reload.last_reviewed_at).to be_nil
+    end
+
+    it "復習予定を解除しても最終復習日時を保持する" do
+      reviewed_at = Time.zone.local(2026, 9, 8, 10, 0)
+      card.update!(
+        status: :review_later,
+        next_review_on: Date.current,
+        last_reviewed_at: reviewed_at
+      )
+
+      expect(card.cancel_review).to be(true)
+      expect(card.reload).to have_attributes(
+        status: "normal",
+        next_review_on: nil,
+        last_reviewed_at: reviewed_at
+      )
+    end
+  end
+
+  describe "#review_timing" do
+    let(:today) { Date.new(2026, 9, 9) }
+
+    it "復習予定日と基準日から表示区分を返す" do
+      expect(build(:card).review_timing(today: today)).to eq(:none)
+      expect(
+        build(:card, status: :review_later).review_timing(today: today)
+      ).to eq(:unscheduled)
+      expect(
+        build(:card, :scheduled_for_review, next_review_on: today.yesterday)
+          .review_timing(today: today)
+      ).to eq(:overdue)
+      expect(
+        build(:card, :scheduled_for_review, next_review_on: today)
+          .review_timing(today: today)
+      ).to eq(:today)
+      expect(
+        build(:card, :scheduled_for_review, next_review_on: today.end_of_week)
+          .review_timing(today: today)
+      ).to eq(:this_week)
+      expect(
+        build(
+          :card,
+          :scheduled_for_review,
+          next_review_on: today.end_of_week + 1.day
+        ).review_timing(today: today)
+      ).to eq(:later)
+    end
+  end
 end
