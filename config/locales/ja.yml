@@ -15,6 +15,8 @@ ja:
         status: "ステータス"
         next_review_on: "次回復習日"
         last_reviewed_at: "最終復習日時"
+        understanding_level: "理解度"
+        importance: "重要度"
 
       tag:
         name: "タグ名"
@@ -29,3 +31,14 @@ ja:
         email: "メールアドレス"
         password: "パスワード"
         password_confirmation: "パスワード（確認）"
+
+  enums:
+    card:
+      understanding_level:
+        not_understood: "理解できていない"
+        mostly_understood: "だいたい理解"
+        can_explain: "説明できる"
+      importance:
+        low: "低"
+        medium: "中"
+        high: "高"

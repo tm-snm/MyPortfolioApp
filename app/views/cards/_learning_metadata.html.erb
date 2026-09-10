@@ -1,0 +1,69 @@
+<section class="card shadow-sm mb-4">
+  <div class="card-body">
+    <h2 class="h5">学習状態</h2>
+
+    <%= render "learning_status", card: card %>
+
+    <% learning_error_attributes = %i[understanding_level importance] %>
+    <% if params[:action] == "update_learning_metadata" &&
+          learning_error_attributes.any? { |attribute| card.errors[attribute].any? } %>
+      <div class="alert alert-danger mt-3 mb-0" role="alert">
+        <ul class="mb-0">
+          <% learning_error_attributes
+               .flat_map { |attribute| card.errors.full_messages_for(attribute) }
+               .each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+
+    <hr>
+
+    <%= form_with model: card,
+                  url: learning_metadata_card_path(card),
+                  method: :patch,
+                  class: "row g-2 align-items-end" do |form| %>
+      <div class="col-12 col-sm-5 col-lg-4">
+        <%= form.label :understanding_level,
+                       "理解度",
+                       class: "form-label" %>
+        <%= form.select :understanding_level,
+                        options_for_select(
+                          Card.understanding_levels.keys.map { |level|
+                            [
+                              t("enums.card.understanding_level.#{level}"),
+                              level
+                            ]
+                          },
+                          card.understanding_level
+                        ),
+                        { include_blank: "未設定" },
+                        class: "form-select" %>
+      </div>
+
+      <div class="col-12 col-sm-5 col-lg-4">
+        <%= form.label :importance,
+                       "重要度",
+                       class: "form-label" %>
+        <%= form.select :importance,
+                        options_for_select(
+                          Card.importances.keys.map { |importance|
+                            [
+                              t("enums.card.importance.#{importance}"),
+                              importance
+                            ]
+                          },
+                          card.importance
+                        ),
+                        { include_blank: "未設定" },
+                        class: "form-select" %>
+      </div>
+
+      <div class="col-12 col-lg-auto">
+        <%= form.submit "学習状態を更新",
+                        class: "btn btn-outline-primary w-100" %>
+      </div>
+    <% end %>
+  </div>
+</section>

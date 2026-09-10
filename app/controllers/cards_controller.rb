@@ -2,7 +2,7 @@ class CardsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_card,
                 only: %i[show edit update destroy schedule_review
-                         mark_reviewed cancel_review]
+                         mark_reviewed cancel_review update_learning_metadata]
   before_action :set_available_tags,
                 only: %i[new create edit update new_from_ai preview_from_ai]
 
@@ -89,6 +89,14 @@ class CardsController < ApplicationController
     redirect_to cards_path, notice: "カードを削除しました", status: :see_other
   end
 
+  def update_learning_metadata
+    if @card.update(learning_metadata_params)
+      redirect_to @card, notice: "理解度・重要度を更新しました"
+    else
+      render :show, status: :unprocessable_content
+    end
+  end
+
   def schedule_review
     if @card.schedule_review(next_review_on: review_schedule_params[:next_review_on])
       redirect_to @card, notice: "次回復習日を設定しました"
@@ -98,8 +106,13 @@ class CardsController < ApplicationController
   end
 
   def mark_reviewed
+    permitted_params = review_schedule_params
+
     if @card.mark_reviewed(
-      next_review_on: review_schedule_params[:next_review_on]
+      next_review_on: permitted_params[:next_review_on],
+      understanding_level: permitted_params.fetch(
+        :understanding_level, @card.understanding_level
+      ).presence
     )
       redirect_to @card, notice: "復習を記録し、次回復習日を設定しました"
     else
@@ -183,8 +196,12 @@ class CardsController < ApplicationController
     end
   end
 
+  def learning_metadata_params
+    params.require(:card).permit(:understanding_level, :importance)
+  end
+
   def review_schedule_params
-    params.require(:card).permit(:next_review_on)
+    params.require(:card).permit(:next_review_on, :understanding_level)
   end
 
   def set_card
