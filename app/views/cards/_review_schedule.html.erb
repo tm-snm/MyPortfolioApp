@@ -10,10 +10,13 @@
       </p>
     <% end %>
 
-    <% if card.errors[:next_review_on].any? %>
+    <% review_error_attributes = %i[next_review_on understanding_level] %>
+    <% if review_error_attributes.any? { |attribute| card.errors[attribute].any? } %>
       <div class="alert alert-danger mt-3 mb-0" role="alert">
         <ul class="mb-0">
-          <% card.errors.full_messages_for(:next_review_on).each do |message| %>
+          <% review_error_attributes
+               .flat_map { |attribute| card.errors.full_messages_for(attribute) }
+               .each do |message| %>
             <li><%= message %></li>
           <% end %>
         </ul>
@@ -67,6 +70,26 @@
                               min: Date.current,
                               required: true,
                               class: "form-control" %>
+        </div>
+
+        <div class="col-12 col-sm-auto">
+          <%= form.label :understanding_level,
+                         "復習後の理解度",
+                         class: "form-label" %>
+          <%= form.select :understanding_level,
+                          options_for_select(
+                            Card.understanding_levels.keys.map { |level|
+                              [
+                                t("enums.card.understanding_level.#{level}"),
+                                level
+                              ]
+                            },
+                            params[:action] == "mark_reviewed" ?
+                              params.dig(:card, :understanding_level) :
+                              card.understanding_level
+                          ),
+                          { include_blank: "未設定" },
+                          class: "form-select" %>
         </div>
 
         <div class="col-12 col-sm-auto">

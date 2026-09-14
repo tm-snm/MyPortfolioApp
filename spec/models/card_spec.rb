@@ -71,6 +71,42 @@ RSpec.describe Card, type: :model do
     end
   end
 
+  describe "learning metadata enums" do
+    it "理解度を3段階で定義する" do
+      expect(described_class.understanding_levels).to eq(
+        "not_understood" => 0,
+        "mostly_understood" => 1,
+        "can_explain" => 2
+      )
+    end
+
+    it "重要度を3段階で定義する" do
+      expect(described_class.importances).to eq(
+        "low" => 0,
+        "medium" => 1,
+        "high" => 2
+      )
+    end
+
+    it "理解度と重要度は未設定でも有効である" do
+      card = build(:card, understanding_level: nil, importance: nil)
+
+      expect(card).to be_valid
+    end
+
+    it "定義外の理解度と重要度は無効である" do
+      card = build(
+        :card,
+        understanding_level: "invalid",
+        importance: "invalid"
+      )
+
+      expect(card).to be_invalid
+      expect(card.errors[:understanding_level]).to be_present
+      expect(card.errors[:importance]).to be_present
+    end
+  end
+
   describe ".search_by_keyword" do
     let(:user) { create(:user) }
 
@@ -347,6 +383,50 @@ RSpec.describe Card, type: :model do
         status: "review_later",
         next_review_on: next_review_on,
         last_reviewed_at: reviewed_at
+      )
+    end
+
+    it "復習日時・次回復習日・理解度を同時に記録する" do
+      reviewed_at = Time.zone.local(2026, 9, 9, 12, 30)
+      next_review_on = Date.current + 1.week
+      card.update!(understanding_level: :not_understood, importance: :high)
+
+      expect(
+        card.mark_reviewed(
+          next_review_on: next_review_on,
+          reviewed_at: reviewed_at,
+          understanding_level: :mostly_understood
+        )
+      ).to be(true)
+      expect(card.reload).to have_attributes(
+        status: "review_later",
+        next_review_on: next_review_on,
+        last_reviewed_at: reviewed_at,
+        understanding_level: "mostly_understood",
+        importance: "high"
+      )
+    end
+
+    it "理解度が不正なら復習情報も理解度も保存しない" do
+      card.update!(understanding_level: :not_understood)
+
+      expect(
+        card.mark_reviewed(
+          next_review_on: Date.current + 1.week,
+          understanding_level: "invalid"
+        )
+      ).to be(false)
+      expect(card).to have_attributes(
+        status: "normal",
+        next_review_on: nil,
+        last_reviewed_at: nil,
+        understanding_level: "not_understood"
+      )
+      expect(card.reload).to have_attributes(
+        status: "normal",
+        next_review_on: nil,
+        last_reviewed_at: nil,
+        understanding_level: "not_understood"
       )
     end
 

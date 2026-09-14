@@ -11,6 +11,8 @@ Rails.application.routes.draw do
       patch :schedule_review
       patch :mark_reviewed
       delete :cancel_review
+      patch :learning_metadata,
+            to: "cards#update_learning_metadata"
     end
   end
   resources :prompt_templates do

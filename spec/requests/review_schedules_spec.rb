@@ -247,13 +247,17 @@ RSpec.describe "Review schedules", type: :request do
         next_review_on = Date.current + 1.week
 
         patch mark_reviewed_card_path(card), params: {
-          card: { next_review_on: next_review_on }
+          card: {
+            next_review_on: next_review_on,
+            understanding_level: "mostly_understood"
+          }
         }
 
         expect(card.reload).to have_attributes(
           status: "review_later",
           next_review_on: next_review_on,
-          last_reviewed_at: Time.current
+          last_reviewed_at: Time.current,
+          understanding_level: "mostly_understood"
         )
         expect(response).to redirect_to(card_path(card))
       end
@@ -270,6 +274,25 @@ RSpec.describe "Review schedules", type: :request do
           last_reviewed_at: nil
         )
         expect(response).to have_http_status(:unprocessable_content)
+      end
+
+      it "理解度が不正なら復習情報も理解度も保存しない" do
+        original_next_review_on = card.next_review_on
+
+        patch mark_reviewed_card_path(card), params: {
+          card: {
+            next_review_on: Date.current + 1.week,
+            understanding_level: "invalid"
+          }
+        }
+
+        expect(card.reload).to have_attributes(
+          next_review_on: original_next_review_on,
+          last_reviewed_at: nil,
+          understanding_level: nil
+        )
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.body).to include("理解度は一覧にありません")
       end
 
       it "他ユーザーのカードを変更しない" do
