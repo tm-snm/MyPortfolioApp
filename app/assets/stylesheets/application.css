@@ -213,3 +213,16 @@ textarea.form-control {
     padding: 0.75rem;
   }
 }
+
+.autocomplete-list {
+  max-height: 18rem;
+  overflow-y: auto;
+  z-index: 1050;
+}
+
+.autocomplete-option {
+  overflow-wrap: anywhere;
+  text-align: left;
+  white-space: normal;
+  word-break: break-word;
+}

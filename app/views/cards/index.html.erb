@@ -1,4 +1,16 @@
 <div class="container py-4">
+  <% review_filter_labels = {
+       "all" => "復習予定すべて",
+       "due" => "今日までに復習",
+       "today" => "今日復習",
+       "this_week" => "今週復習",
+       "overdue" => "期限超過"
+     } %>
+  <% filtering_active = params[:q].present? || params[:tag_id].present? || @review_filter.present? %>
+  <% conditions_active = filtering_active ||
+                         @search_target != "all" ||
+                         @sort_order != "newest" %>
+
   <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
     <h1 class="h2 mb-0">カード一覧</h1>
 
@@ -15,16 +27,57 @@
                     method: :get,
                     class: "row g-2 align-items-end" do %>
 
-        <div class="col-12 col-lg">
+        <div class="col-12 col-lg-4"
+             data-controller="card-title-autocomplete"
+             data-card-title-autocomplete-url-value="<%= autocomplete_cards_path %>"
+             data-card-title-autocomplete-delay-value="250">
           <%= label_tag :q, "キーワード", class: "form-label" %>
 
-          <%= search_field_tag :q,
-                              params[:q],
-                              placeholder: "タイトル・本文から検索",
-                              class: "form-control" %>
+          <div class="position-relative">
+            <%= search_field_tag :q,
+                                 params[:q],
+                                 placeholder: "カードを検索",
+                                 class: "form-control",
+                                 autocomplete: "off",
+                                 role: "combobox",
+                                 aria: {
+                                   autocomplete: "list",
+                                   controls: "card-title-autocomplete-list",
+                                   expanded: "false"
+                                 },
+                                 data: {
+                                   card_title_autocomplete_target: "input",
+                                   action: [
+                                     "input->card-title-autocomplete#search",
+                                     "compositionend->card-title-autocomplete#search",
+                                     "keydown->card-title-autocomplete#handleKeydown",
+                                     "blur->card-title-autocomplete#handleBlur"
+                                   ].join(" ")
+                                 } %>
+
+            <div id="card-title-autocomplete-list"
+                 class="autocomplete-list list-group position-absolute top-100 start-0 w-100 d-none"
+                 role="listbox"
+                 data-card-title-autocomplete-target="list"></div>
+          </div>
+
+          <p class="visually-hidden mb-0"
+             aria-live="polite"
+             data-card-title-autocomplete-target="status"></p>
         </div>
 
-        <div class="col-12 col-md-6 col-lg-3">
+        <div class="col-12 col-md-6 col-lg-2">
+          <%= label_tag :search_target, "検索対象", class: "form-label" %>
+
+          <%= select_tag :search_target,
+                         options_for_select(
+                           [["すべて", "all"], ["タイトル", "title"], ["本文", "body"]],
+                           @search_target
+                         ),
+                         class: "form-select" %>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-2">
           <%= label_tag :tag_id, "タグ", class: "form-label" %>
 
           <%= select_tag :tag_id,
@@ -38,17 +91,33 @@
                         class: "form-select" %>
         </div>
 
-        <div class="col-12 col-md-6 col-lg-auto">
-          <div class="form-check mb-2">
-            <%= check_box_tag :review,
-                              "1",
-                              params[:review] == "1",
-                              class: "form-check-input" %>
+        <div class="col-12 col-md-6 col-lg-2">
+          <%= label_tag :review_filter, "復習状況", class: "form-label" %>
 
-            <%= label_tag :review,
-                          "復習予定のみ",
-                          class: "form-check-label" %>
-          </div>
+          <%= select_tag :review_filter,
+                         options_for_select(
+                           [
+                             ["すべてのカード", ""],
+                             ["復習予定すべて", "all"],
+                             ["今日まで", "due"],
+                             ["今日", "today"],
+                             ["今週", "this_week"],
+                             ["期限超過", "overdue"]
+                           ],
+                           @review_filter.to_s
+                         ),
+                         class: "form-select" %>
+        </div>
+
+        <div class="col-12 col-md-6 col-lg-2">
+          <%= label_tag :sort, "並び順", class: "form-label" %>
+
+          <%= select_tag :sort,
+                         options_for_select(
+                           [["新しい順", "newest"], ["古い順", "oldest"]],
+                           @sort_order
+                         ),
+                         class: "form-select" %>
         </div>
 
         <div class="col-12 col-lg-auto">
@@ -56,9 +125,7 @@
             <%= submit_tag "絞り込む",
                           class: "btn btn-outline-primary" %>
 
-            <% if params[:q].present? ||
-                  params[:tag_id].present? ||
-                  params[:review] == "1" %>
+            <% if conditions_active %>
               <%= link_to "条件を解除",
                           cards_path,
                           class: "btn btn-outline-secondary" %>
@@ -69,13 +136,11 @@
     </div>
   </div>
 
-  <% if params[:review] == "1" %>
+  <% if @review_filter.present? %>
     <div class="alert alert-warning py-2 mb-4">
-      復習予定のカードのみ表示しています。
+      <%= review_filter_labels.fetch(@review_filter) %>のカードを表示しています。
     </div>
   <% end %>
-
-  <% filters_active = params[:q].present? || params[:tag_id].present? || params[:review] == "1" %>
 
   <% if @cards.any? %>
     <div class="row g-3">
@@ -100,11 +165,9 @@
                               card_path(card),
                               class: "btn btn-outline-primary btn-sm" %>
 
-                  <% if card.review_later? %>
-                    <span class="badge text-bg-warning">復習予定</span>
-                  <% else %>
-                    <span class="badge text-bg-secondary">通常</span>
-                  <% end %>
+                  <%= render "learning_status", card: card %>
+
+                  <%= render "review_status", card: card %>
                 </div>
               </div>
             </div>
@@ -112,7 +175,7 @@
         </div>
       <% end %>
     </div>
-  <% elsif filters_active %>
+  <% elsif filtering_active %>
     <div class="text-center border rounded p-3 p-sm-5 bg-light">
       <p class="mb-3">
         条件に一致するカードが見つかりませんでした。

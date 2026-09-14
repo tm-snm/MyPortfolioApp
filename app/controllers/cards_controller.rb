@@ -1,22 +1,44 @@
 class CardsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_card, only: %i[show edit update destroy]
+  before_action :set_card,
+                only: %i[show edit update destroy schedule_review
+                         mark_reviewed cancel_review update_learning_metadata]
   before_action :set_available_tags,
                 only: %i[new create edit update new_from_ai preview_from_ai]
 
   def index
-    @cards = current_user.cards.order(created_at: :desc)
+    @search_target = normalized_search_target
+    @sort_order = normalized_sort_order
+    @review_filter = normalized_review_filter
+    @cards = current_user.cards
 
-    @cards = @cards.search_by_keyword(params[:q]) if params[:q].present?
+    @cards = @cards.search_by_keyword(params[:q], @search_target) if params[:q].present?
 
     if params[:tag_id].present?
       @selected_tag = current_user.tags.find_by(id: params[:tag_id])
       @cards = @cards.tagged_with(@selected_tag.id) if @selected_tag
     end
 
-    @cards = @cards.review_later if params[:review] == "1"
+    @cards = filter_by_review_schedule(@cards)
 
+    @cards = @cards.sorted_by(@sort_order)
     @tags = current_user.tags.order(:name)
+  end
+
+  def autocomplete
+    query = params[:q].to_s.strip
+    titles = []
+
+    if query.length >= 2
+      titles = current_user.cards
+                           .matching_title(query)
+                           .sorted_by("newest")
+                           .limit(10)
+                           .pluck(:title)
+                           .uniq
+    end
+
+    render json: { titles: titles }
   end
 
   def show
@@ -67,6 +89,45 @@ class CardsController < ApplicationController
     redirect_to cards_path, notice: "カードを削除しました", status: :see_other
   end
 
+  def update_learning_metadata
+    if @card.update(learning_metadata_params)
+      redirect_to @card, notice: "理解度・重要度を更新しました"
+    else
+      render :show, status: :unprocessable_content
+    end
+  end
+
+  def schedule_review
+    if @card.schedule_review(next_review_on: review_schedule_params[:next_review_on])
+      redirect_to @card, notice: "次回復習日を設定しました"
+    else
+      render :show, status: :unprocessable_content
+    end
+  end
+
+  def mark_reviewed
+    permitted_params = review_schedule_params
+
+    if @card.mark_reviewed(
+      next_review_on: permitted_params[:next_review_on],
+      understanding_level: permitted_params.fetch(
+        :understanding_level, @card.understanding_level
+      ).presence
+    )
+      redirect_to @card, notice: "復習を記録し、次回復習日を設定しました"
+    else
+      render :show, status: :unprocessable_content
+    end
+  end
+
+  def cancel_review
+    if @card.cancel_review
+      redirect_to @card, notice: "復習予定を解除しました"
+    else
+      render :show, status: :unprocessable_content
+    end
+  end
+
   def new_from_ai
     @card = current_user.cards.build
     @previewed = false
@@ -93,7 +154,7 @@ class CardsController < ApplicationController
   private
 
   def card_params
-    params.require(:card).permit(:title, :body, :future_note, :status)
+    params.require(:card).permit(:title, :body, :future_note)
   end
 
   def create_card_params
@@ -103,6 +164,44 @@ class CardsController < ApplicationController
       :future_note,
       :raw_content
     )
+  end
+
+  def normalized_search_target
+    target = params[:search_target].to_s
+    Card::SEARCH_TARGETS.include?(target) ? target : "all"
+  end
+
+  def normalized_sort_order
+    sort_order = params[:sort].to_s
+    Card::SORT_ORDERS.include?(sort_order) ? sort_order : "newest"
+  end
+
+  def normalized_review_filter
+    review_filter = params[:review_filter].to_s
+    return review_filter if Card::REVIEW_FILTERS.include?(review_filter)
+    return "all" if params[:review] == "1"
+
+    nil
+  end
+
+  def filter_by_review_schedule(cards)
+    case @review_filter
+    when "all" then cards.review_later
+    when "due" then cards.review_due_by(Date.current)
+    when "today" then cards.review_due_on(Date.current)
+    when "this_week"
+      cards.review_due_between(Date.current, Date.current.end_of_week)
+    when "overdue" then cards.review_overdue_before(Date.current)
+    else cards
+    end
+  end
+
+  def learning_metadata_params
+    params.require(:card).permit(:understanding_level, :importance)
+  end
+
+  def review_schedule_params
+    params.require(:card).permit(:next_review_on, :understanding_level)
   end
 
   def set_card

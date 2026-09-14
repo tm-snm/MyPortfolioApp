@@ -40,6 +40,11 @@
                         cards_path,
                         class: "btn btn-outline-primary btn-sm" %>
 
+            <%# 今日の復習 %>
+            <%= link_to "今日の復習",
+                        cards_path(review_filter: "due"),
+                        class: "btn btn-outline-warning btn-sm" %>
+
             <%# カード作成 %>
             <%= link_to "カードを作成",
                         new_from_ai_cards_path,
