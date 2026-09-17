@@ -8,6 +8,7 @@ Rails.application.routes.draw do
       post :preview_from_ai
     end
     member do
+      get :export_markdown
       patch :schedule_review
       patch :mark_reviewed
       delete :cancel_review

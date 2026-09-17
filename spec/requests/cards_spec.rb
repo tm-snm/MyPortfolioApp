@@ -841,6 +841,18 @@ RSpec.describe "Cards", type: :request do
         expect(response.body).to include("routesを最初に確認する")
       end
 
+      it "Markdownダウンロードへの導線を表示する" do
+        get card_path(card)
+
+        export_link = response.parsed_body.at_css(
+          "a[href='#{export_markdown_card_path(card)}']"
+        )
+
+        expect(export_link).to be_present
+        expect(export_link.text.squish).to eq("Markdownで保存")
+        expect(export_link["data-turbo"]).to eq("false")
+      end
+
       it "カード内容から生成した復習プロンプトをコピーできるUIを表示する" do
         get card_path(card)
 
@@ -942,6 +954,80 @@ RSpec.describe "Cards", type: :request do
     context "ログインしていない場合" do
       it "ログイン画面へリダイレクトされる" do
         get card_path(card)
+
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+  end
+
+  describe "GET /cards/:id/export_markdown" do
+    let(:card) do
+      create(
+        :card,
+        user: user,
+        title: "Rails/WSL 日本語",
+        body: "## 原因\n\n- 設定不足",
+        future_note: "まずroutesを確認する",
+        created_at: Time.zone.local(2026, 9, 17, 12, 34)
+      )
+    end
+
+    context "ログインしている場合" do
+      before do
+        sign_in user
+      end
+
+      it "自分のカードをMarkdownファイルとしてダウンロードできる" do
+        create(
+          :tagging,
+          card: card,
+          tag: create(:tag, user: user, name: "Rails")
+        )
+
+        get export_markdown_card_path(card)
+
+        disposition = response.headers["Content-Disposition"]
+
+        expect(response).to have_http_status(:ok)
+        expect(response.media_type).to eq("text/markdown")
+        expect(response.charset).to eq("utf-8")
+        expect(disposition).to include("attachment", ".md")
+        expect(response.body).to eq(
+          CardMarkdownExporter.new(card: card).content
+        )
+      end
+
+      it "ダウンロードしてもカードやタグを更新しない" do
+        create(
+          :tagging,
+          card: card,
+          tag: create(:tag, user: user, name: "Rails")
+        )
+        card_attributes = card.reload.attributes
+        tag_attributes = card.tags.first.attributes
+
+        get export_markdown_card_path(card)
+
+        expect(card.reload.attributes).to eq(card_attributes)
+        expect(card.tags.first.reload.attributes).to eq(tag_attributes)
+      end
+
+      it "他ユーザーのカードをダウンロードできない" do
+        get export_markdown_card_path(other_card)
+
+        expect(response).to have_http_status(:not_found)
+      end
+
+      it "存在しないカードでは404を返す" do
+        get export_markdown_card_path(999999)
+
+        expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context "ログインしていない場合" do
+      it "ログイン画面へリダイレクトされる" do
+        get export_markdown_card_path(card)
 
         expect(response).to redirect_to(new_user_session_path)
       end
