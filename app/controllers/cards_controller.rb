@@ -3,6 +3,9 @@ class CardsController < ApplicationController
   before_action :set_card,
                 only: %i[show edit update destroy schedule_review
                          mark_reviewed cancel_review update_learning_metadata]
+  before_action :set_review_quiz_prompt,
+                only: %i[show schedule_review mark_reviewed cancel_review
+                         update_learning_metadata]
   before_action :set_available_tags,
                 only: %i[new create edit update new_from_ai preview_from_ai]
 
@@ -206,6 +209,10 @@ class CardsController < ApplicationController
 
   def set_card
     @card = current_user.cards.find(params[:id])
+  end
+
+  def set_review_quiz_prompt
+    @review_quiz_prompt = ReviewQuizPromptGenerator.new(card: @card).call
   end
 
   def set_available_tags

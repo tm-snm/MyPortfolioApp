@@ -841,6 +841,50 @@ RSpec.describe "Cards", type: :request do
         expect(response.body).to include("routesを最初に確認する")
       end
 
+      it "カード内容から生成した復習プロンプトをコピーできるUIを表示する" do
+        get card_path(card)
+
+        clipboard = response.parsed_body.at_css(
+          "[data-controller='clipboard']"
+        )
+        source = clipboard.at_css("[data-clipboard-target='source']")
+        button = clipboard.at_css("[data-action='clipboard#copy']")
+
+        expect(button.text.squish).to eq("AIで復習する")
+        expect(source.text).to include(
+          "最初の返答では、問題を1問だけ出してください。",
+          "Railsのルーティング",
+          "resourcesについて理解する",
+          "routesを最初に確認する"
+        )
+        expect(clipboard["data-clipboard-usage-url-value"]).to be_nil
+      end
+
+      it "復習プロンプトの表示でカード内容を実行可能なHTMLにしない" do
+        unsafe_card = create(
+          :card,
+          user: user,
+          body: '<script>alert("quiz-xss")</script>'
+        )
+
+        get card_path(unsafe_card)
+
+        source = response.parsed_body.at_css(
+          "[data-clipboard-target='source']"
+        )
+
+        expect(source.text).to include('<script>alert("quiz-xss")</script>')
+        expect(source.inner_html).not_to include("<script")
+      end
+
+      it "復習プロンプトを表示してもカードを更新しない" do
+        updated_at = card.updated_at
+
+        get card_path(card)
+
+        expect(card.reload.updated_at).to eq(updated_at)
+      end
+
       it "本文をMarkdownとして表示する" do
         markdown_card = create(
           :card,
