@@ -35,6 +35,11 @@
               <%= current_user.email %>
             </span>
 
+            <%# ダッシュボード %>
+            <%= link_to "ダッシュボード",
+                        dashboard_path,
+                        class: "btn btn-outline-primary btn-sm" %>
+
             <%# カード一覧 %>
             <%= link_to "カード一覧",
                         cards_path,

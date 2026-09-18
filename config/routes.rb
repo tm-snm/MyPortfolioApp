@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
   devise_for :users
 
+  resource :dashboard, only: :show
+
   resources :cards do
     collection do
       get :autocomplete

@@ -1,0 +1,188 @@
+<% content_for :title, "学習ダッシュボード | Recall Card" %>
+
+<div class="container py-4">
+  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
+    <div>
+      <h1 class="h2 mb-2">学習ダッシュボード</h1>
+      <p class="text-muted mb-0">
+        保存したカードから、学習状況とつまずきの傾向を振り返ります。
+      </p>
+    </div>
+
+    <div class="d-grid d-sm-block">
+      <%= link_to "カードを作成",
+                  new_from_ai_cards_path,
+                  class: "btn btn-primary" %>
+    </div>
+  </div>
+
+  <div class="row g-3 mb-4">
+    <%= render "metric_card",
+               id: "total-cards-metric",
+               title: "総カード数",
+               value: @dashboard[:total_cards],
+               description: "これまでに保存したカード",
+               link_path: cards_path,
+               link_label: "すべてのカードを見る" %>
+
+    <%= render "metric_card",
+               id: "cards-this-month-metric",
+               title: "今月のカード数",
+               value: @dashboard[:cards_this_month],
+               description: "#{Date.current.strftime('%Y年%-m月')}に作成したカード",
+               link_path: nil,
+               link_label: nil %>
+
+    <%= render "metric_card",
+               id: "review-scheduled-metric",
+               title: "復習予定数",
+               value: @dashboard[:review_scheduled_count],
+               description: "復習予定に設定しているカード",
+               link_path: cards_path(review_filter: "all"),
+               link_label: "復習予定のカードを見る" %>
+
+    <%= render "metric_card",
+               id: "overdue-reviews-metric",
+               title: "復習期限超過数",
+               value: @dashboard[:overdue_review_count],
+               description: "復習予定日を過ぎているカード",
+               link_path: cards_path(review_filter: "overdue"),
+               link_label: "期限超過のカードを見る" %>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <div class="col-12 col-lg-5">
+      <section class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h2 class="h5">よく使うタグ TOP5</h2>
+          <p class="small text-muted">
+            カードへの設定回数が多いタグです。
+          </p>
+
+          <% if @dashboard[:top_tags].any? %>
+            <ol class="list-group list-group-numbered">
+              <% @dashboard[:top_tags].each do |tag| %>
+                <li class="list-group-item d-flex justify-content-between align-items-center gap-3">
+                  <%= link_to tag[:name],
+                              cards_path(tag_id: tag[:id]),
+                              class: "min-w-0 break-anywhere" %>
+                  <span class="badge text-bg-primary rounded-pill flex-shrink-0">
+                    <%= tag[:count] %>件
+                  </span>
+                </li>
+              <% end %>
+            </ol>
+          <% else %>
+            <p class="text-muted mb-0">
+              タグ付きのカードがまだありません。
+            </p>
+          <% end %>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-12 col-lg-7">
+      <section class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h2 class="h5">月別カード作成数</h2>
+          <p class="small text-muted">
+            当月を含む直近6か月の作成数です。
+          </p>
+
+          <% monthly_maximum = [
+               @dashboard[:monthly_card_counts].map { |item| item[:count] }.max.to_i,
+               1
+             ].max %>
+
+          <div class="d-grid gap-3">
+            <% @dashboard[:monthly_card_counts].each do |item| %>
+              <% month_label = item[:month].strftime("%Y年%-m月") %>
+              <% percentage = (item[:count] * 100.0 / monthly_maximum).round %>
+
+              <div>
+                <div class="d-flex justify-content-between gap-3 mb-1">
+                  <span class="small"><%= month_label %></span>
+                  <span class="small fw-semibold"><%= item[:count] %>件</span>
+                </div>
+
+                <div class="progress"
+                     role="progressbar"
+                     aria-label="<%= "#{month_label}：#{item[:count]}件" %>"
+                     aria-valuenow="<%= item[:count] %>"
+                     aria-valuemin="0"
+                     aria-valuemax="<%= monthly_maximum %>">
+                  <div class="progress-bar"
+                       style="width: <%= percentage %>%"></div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-12 col-lg-6">
+      <section class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h2 class="h5">最近作成したカード</h2>
+
+          <% if @dashboard[:recent_cards].any? %>
+            <ul class="list-group list-group-flush">
+              <% @dashboard[:recent_cards].each do |card| %>
+                <li class="list-group-item px-0">
+                  <%= link_to card.title,
+                              card_path(card),
+                              class: "fw-semibold break-anywhere" %>
+                  <p class="small text-muted mb-2">
+                    作成日時：<%= card.created_at.strftime("%Y/%m/%d %H:%M") %>
+                  </p>
+                  <div class="d-flex flex-wrap gap-2">
+                    <%= render "cards/learning_status", card: card %>
+                    <%= render "cards/review_status", card: card %>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <p class="text-muted mb-3">まだカードがありません。</p>
+            <%= link_to "最初のカードを作成する",
+                        new_from_ai_cards_path,
+                        class: "btn btn-primary" %>
+          <% end %>
+        </div>
+      </section>
+    </div>
+
+    <div class="col-12 col-lg-6">
+      <section class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h2 class="h5">理解度が低いカード</h2>
+          <p class="small text-muted">
+            理解度が「理解できていない」のカードを新しい順に表示します。
+          </p>
+
+          <% if @dashboard[:low_understanding_cards].any? %>
+            <ul class="list-group list-group-flush">
+              <% @dashboard[:low_understanding_cards].each do |card| %>
+                <li class="list-group-item px-0">
+                  <%= link_to card.title,
+                              card_path(card),
+                              class: "fw-semibold break-anywhere" %>
+                  <div class="mt-2">
+                    <%= render "cards/learning_status", card: card %>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <p class="text-muted mb-0">
+              「理解できていない」に設定されたカードはありません。
+            </p>
+          <% end %>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
