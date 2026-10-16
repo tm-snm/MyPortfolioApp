@@ -1,4 +1,20 @@
 module ApplicationHelper
+  def site_title
+    "Recall Card | つまずきを、次の自分の知識に"
+  end
+
+  def site_description
+    "Recall Cardは、AIや検索で解決した内容を、あとから見返せるカードとして整理・保存するサービスです。"
+  end
+
+  def public_site_url
+    Rails.configuration.x.public_site_url.presence || request.base_url
+  end
+
+  def ogp_image_url
+    image_url("ogp.png", host: public_site_url)
+  end
+
   MARKDOWN_ALLOWED_TAGS = %w[
     a blockquote br code del em h1 h2 h3 h4 h5 h6 hr li ol p pre
     strong table tbody td th thead tr ul

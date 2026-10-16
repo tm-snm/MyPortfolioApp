@@ -1,6 +1,25 @@
 require "rails_helper"
 
 RSpec.describe ApplicationHelper, type: :helper do
+  describe "OGPのURL生成" do
+    it "公開URLが未設定ならリクエストのURLを使う" do
+      allow(Rails.configuration.x).to receive(:public_site_url).and_return(nil)
+      allow(helper.request).to receive(:base_url).and_return("http://localhost:3000")
+
+      expect(helper.public_site_url).to eq("http://localhost:3000")
+    end
+
+    it "公開URLが設定されていればリクエストのホストに依存しない" do
+      allow(Rails.configuration.x).to receive(:public_site_url)
+        .and_return("https://recall-card.onrender.com")
+      allow(helper.request).to receive(:base_url).and_return("http://unexpected.example")
+
+      expect(helper.public_site_url).to eq("https://recall-card.onrender.com")
+      expect(helper.ogp_image_url)
+        .to match(%r{\Ahttps://recall-card\.onrender\.com/assets/ogp(?:-[a-f0-9]+)?\.png\z})
+    end
+  end
+
   describe "#render_markdown" do
     it "Markdownを見出し、リスト、コード、表、リンクへ変換する" do
       markdown = <<~MARKDOWN
