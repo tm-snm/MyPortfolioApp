@@ -48,6 +48,14 @@
                                    class: "form-control" %>
             </div>
 
+            <p class="small text-secondary mb-3">
+              登録前に
+              <%= link_to "利用規約", terms_path %>
+              および
+              <%= link_to "プライバシーポリシー", privacy_path %>
+              をご確認ください。
+            </p>
+
             <div class="d-grid">
               <%= f.submit "登録する",
                            class: "btn btn-primary" %>

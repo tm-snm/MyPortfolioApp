@@ -1,5 +1,18 @@
 <footer class="bg-dark text-white py-4 mt-auto">
   <div class="container text-center">
+    <nav class="d-flex flex-wrap justify-content-center gap-3 mb-2"
+         aria-label="フッターナビゲーション">
+      <%= link_to "利用規約",
+                  terms_path,
+                  class: "link-light" %>
+      <%= link_to "プライバシーポリシー",
+                  privacy_path,
+                  class: "link-light" %>
+      <%= link_to "お問い合わせ",
+                  contact_path,
+                  class: "link-light" %>
+    </nav>
+
     <small>
       &copy; <%= Time.current.year %> Recall Card
     </small>

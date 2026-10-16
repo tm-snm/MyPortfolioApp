@@ -48,4 +48,53 @@ RSpec.describe User, type: :model do
       expect(PromptTemplatePreference.exists?(preference.id)).to be(false)
     end
   end
+
+  describe "アカウント削除" do
+    it "所有データを削除し、他ユーザーのデータと公式テンプレートを残す" do
+      user = create(:user)
+      card = create(:card, user: user)
+      tag = create(:tag, user: user)
+      tagging = create(:tagging, card: card, tag: tag)
+      personal_template = create(:prompt_template, :personal, user: user)
+      official_template = create(:prompt_template)
+      personal_preference = create(
+        :prompt_template_preference,
+        user: user,
+        prompt_template: personal_template
+      )
+      official_preference = create(
+        :prompt_template_preference,
+        user: user,
+        prompt_template: official_template
+      )
+
+      other_user = create(:user)
+      other_card = create(:card, user: other_user)
+      other_tag = create(:tag, user: other_user)
+      other_tagging = create(
+        :tagging,
+        card: other_card,
+        tag: other_tag
+      )
+
+      user.destroy!
+
+      expect(Card.exists?(card.id)).to be(false)
+      expect(Tag.exists?(tag.id)).to be(false)
+      expect(Tagging.exists?(tagging.id)).to be(false)
+      expect(PromptTemplate.exists?(personal_template.id)).to be(false)
+      expect(
+        PromptTemplatePreference.exists?(personal_preference.id)
+      ).to be(false)
+      expect(
+        PromptTemplatePreference.exists?(official_preference.id)
+      ).to be(false)
+
+      expect(User.exists?(other_user.id)).to be(true)
+      expect(Card.exists?(other_card.id)).to be(true)
+      expect(Tag.exists?(other_tag.id)).to be(true)
+      expect(Tagging.exists?(other_tagging.id)).to be(true)
+      expect(PromptTemplate.exists?(official_template.id)).to be(true)
+    end
+  end
 end

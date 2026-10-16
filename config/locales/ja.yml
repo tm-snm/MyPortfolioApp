@@ -1,4 +1,8 @@
 ja:
+  account_deletions:
+    confirmation_required: "アカウント削除への同意を確認してください"
+    invalid_password: "現在のパスワードが正しくありません"
+
   activerecord:
     models:
       card: "カード"

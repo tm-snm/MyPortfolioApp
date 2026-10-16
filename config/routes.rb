@@ -1,5 +1,14 @@
 Rails.application.routes.draw do
-  devise_for :users
+  devise_for :users,
+             controllers: { registrations: "users/registrations" }
+
+  get "account/deletion",
+      to: "account_deletions#show",
+      as: :account_deletion
+
+  get "terms", to: "pages#terms", as: :terms
+  get "privacy", to: "pages#privacy", as: :privacy
+  get "contact", to: "pages#contact", as: :contact
 
   resource :dashboard, only: :show
 
