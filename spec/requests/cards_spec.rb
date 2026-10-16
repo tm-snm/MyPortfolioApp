@@ -6,6 +6,34 @@ RSpec.describe "Cards", type: :request do
   let(:card) { create(:card, user: user) }
   let(:other_card) { create(:card, user: other_user) }
 
+  describe "カード詳細のOGP" do
+    it "個人情報やカード内容を含めずサービス共通の情報を返す" do
+      private_card = create(
+        :card,
+        user: user,
+        title: "非公開タイトル",
+        body: "非公開の本文",
+        future_note: "非公開のメモ",
+        raw_content: "非公開のAI出力"
+      )
+      sign_in user
+
+      get card_path(private_card)
+
+      expect(response).to have_http_status(:ok)
+      head = response.parsed_body.at_css("head")
+      expect(head.at_css('meta[property="og:title"]')["content"])
+        .to eq("Recall Card | つまずきを、次の自分の知識に")
+      expect(head.at_css('meta[property="og:url"]')["content"])
+        .to eq("http://www.example.com/")
+      metadata = head.css("meta").pluck("content").join(" ")
+      expect(metadata).not_to include(
+        private_card.title, private_card.body, private_card.future_note,
+        private_card.raw_content, user.email, card_path(private_card)
+      )
+    end
+  end
+
   describe "GET /cards/new" do
     context "ログインしている場合" do
       before do
