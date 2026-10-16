@@ -60,6 +60,11 @@
                         prompt_templates_path,
                         class: "btn btn-outline-primary btn-sm" %>
 
+            <%# アカウント削除 %>
+            <%= link_to "アカウント削除",
+                        account_deletion_path,
+                        class: "btn btn-outline-danger btn-sm" %>
+
             <%# ログアウト %>
             <%= button_to "ログアウト",
                           destroy_user_session_path,
