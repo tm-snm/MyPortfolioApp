@@ -35,8 +35,12 @@
   </div>
 <% end %>
 
-<h3>Cancel my account</h3>
+<h3>アカウント削除</h3>
 
-<div>Unhappy? <%= button_to "Cancel my account", registration_path(resource_name), data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" }, method: :delete %></div>
+<p>アカウント削除は専用の確認画面から行ってください。</p>
+
+<%= link_to "アカウント削除の確認へ",
+            account_deletion_path,
+            class: "btn btn-outline-danger" %>
 
 <%= link_to "Back", :back %>

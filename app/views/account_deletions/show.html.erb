@@ -1,0 +1,64 @@
+<% content_for :title, "アカウント削除 | Recall Card" %>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-7">
+      <div class="card border-danger shadow-sm">
+        <div class="card-body p-4 p-md-5">
+          <h1 class="h2 text-danger mb-4">アカウント削除</h1>
+
+          <div class="alert alert-danger" role="alert">
+            アカウントを削除すると元に戻せません。
+            以下のデータもすべて削除されます。
+          </div>
+
+          <ul class="mb-4">
+            <li>保存したカードと復習情報</li>
+            <li>作成したタグとカードへのタグ付け</li>
+            <li>個人プロンプトテンプレート</li>
+            <li>テンプレートのお気に入りと利用履歴</li>
+          </ul>
+
+          <%= form_with url: user_registration_path,
+                        method: :delete do |form| %>
+            <div class="mb-3">
+              <%= label_tag :current_password,
+                            "現在のパスワード",
+                            class: "form-label" %>
+              <%= password_field_tag :current_password,
+                                     nil,
+                                     required: true,
+                                     autocomplete: "current-password",
+                                     class: "form-control" %>
+              <div class="form-text">
+                本人確認のため、現在のパスワードを入力してください。
+              </div>
+            </div>
+
+            <div class="form-check mb-4">
+              <%= check_box_tag :deletion_confirmation,
+                                "1",
+                                false,
+                                required: true,
+                                class: "form-check-input" %>
+              <%= label_tag :deletion_confirmation,
+                            "上記の内容を理解し、アカウント削除に同意します",
+                            class: "form-check-label" %>
+            </div>
+
+            <div class="d-flex flex-column flex-sm-row gap-2">
+              <%= form.submit "アカウントを削除する",
+                              class: "btn btn-danger",
+                              data: {
+                                turbo_confirm: "本当にアカウントを削除しますか？この操作は取り消せません。"
+                              } %>
+              <%= link_to "削除せず戻る",
+                          cards_path,
+                          class: "btn btn-outline-secondary" %>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

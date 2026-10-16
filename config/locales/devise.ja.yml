@@ -1,0 +1,36 @@
+ja:
+  devise:
+    failure:
+      already_authenticated: "すでにログインしています"
+      invalid: "メールアドレスまたはパスワードが正しくありません"
+      not_found_in_database: "メールアドレスまたはパスワードが正しくありません"
+      unauthenticated: "ログインまたは新規登録が必要です"
+
+    mailer:
+      reset_password_instructions:
+        subject: "パスワード再設定のご案内"
+
+    passwords:
+      no_token: "パスワード再設定メールのリンクからアクセスしてください"
+      send_instructions: "パスワード再設定方法を記載したメールを送信しました"
+      send_paranoid_instructions: "登録されているメールアドレスの場合、パスワード再設定メールが送信されます"
+      updated: "パスワードを変更し、ログインしました"
+      updated_not_active: "パスワードを変更しました"
+
+    registrations:
+      destroyed: "アカウントを削除しました。ご利用ありがとうございました"
+      signed_up: "アカウント登録が完了しました"
+      updated: "アカウント情報を更新しました"
+      updated_but_not_signed_in: "アカウント情報を更新しました。パスワードを変更したため、再度ログインしてください"
+
+    sessions:
+      signed_in: "ログインしました"
+      signed_out: "ログアウトしました"
+      already_signed_out: "ログアウトしました"
+
+  errors:
+    messages:
+      not_found: "は見つかりませんでした"
+      not_saved:
+        one: "入力内容に1件のエラーがあるため、%{resource}を保存できませんでした"
+        other: "入力内容に%{count}件のエラーがあるため、%{resource}を保存できませんでした"
