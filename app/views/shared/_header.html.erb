@@ -48,7 +48,7 @@
             <%# 今日の復習 %>
             <%= link_to "今日の復習",
                         cards_path(review_filter: "due"),
-                        class: "btn btn-outline-warning btn-sm" %>
+                        class: "btn btn-outline-secondary btn-sm" %>
 
             <%# カード作成 %>
             <%= link_to "カードを作成",
@@ -69,6 +69,7 @@
             <%= button_to "ログアウト",
                           destroy_user_session_path,
                           method: :delete,
+                          data: { turbo_submits_with: "ログアウト中..." },
                           class: "btn btn-outline-secondary btn-sm",
                           form: {
                             class: "d-grid d-lg-block m-0"

@@ -18,6 +18,7 @@
                        class: "form-control",
                        placeholder: "例：Rails",
                        autocomplete: "off",
+                       aria: { describedby: "tag-input-help" },
                        data: {
                          tag_input_target: "input",
                          action: "keydown->tag-input#handleKeydown"
@@ -29,7 +30,7 @@
                    data: { action: "tag-input#add" } %>
   </div>
 
-  <div class="form-text">
+  <div id="tag-input-help" class="form-text">
     候補を選ぶか、タグ名を入力してEnterまたは「追加」を押してください。
   </div>
 

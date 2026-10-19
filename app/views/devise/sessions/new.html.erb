@@ -40,7 +40,8 @@
 
             <div class="d-grid">
               <%= f.submit "ログイン",
-                           class: "btn btn-primary" %>
+                           class: "btn btn-primary",
+                           data: { turbo_submits_with: "ログイン中..." } %>
             </div>
           <% end %>
 

@@ -2,66 +2,24 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>ページが見つかりません | Recall Card</title>
-
   <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background: #f8f9fa;
-      color: #212529;
-    }
-
-    .error-container {
-      max-width: 600px;
-      margin: 120px auto;
-      padding: 32px;
-      text-align: center;
-    }
-
-    .error-code {
-      font-size: 72px;
-      font-weight: bold;
-      margin-bottom: 16px;
-    }
-
-    .error-message {
-      font-size: 24px;
-      margin-bottom: 12px;
-    }
-
-    .error-description {
-      color: #6c757d;
-      margin-bottom: 32px;
-    }
-
-    .back-link {
-      display: inline-block;
-      padding: 10px 20px;
-      border-radius: 6px;
-      background: #0d6efd;
-      color: white;
-      text-decoration: none;
-    }
+    body { margin: 0; background: #f8f9fa; color: #212529; font-family: sans-serif; line-height: 1.6; }
+    main { max-width: 38rem; margin: 10vh auto; padding: 2rem 1rem; text-align: center; overflow-wrap: anywhere; }
+    .error-code { font-size: 4rem; font-weight: bold; margin: 0; }
+    h1 { font-size: 1.5rem; }
+    p { margin-bottom: 2rem; }
+    a { display: inline-block; background: #0d6efd; color: #fff; padding: 0.75rem 1rem; border-radius: 0.375rem; }
+    a:focus-visible { outline: 3px solid #212529; outline-offset: 3px; }
   </style>
 </head>
-
 <body>
-  <main class="error-container">
-    <div class="error-code">404</div>
-
-    <h1 class="error-message">
-      ページが見つかりません
-    </h1>
-
-    <p class="error-description">
-      URLが間違っているか、ページが削除された可能性があります。
-    </p>
-
-    <a href="/" class="back-link">
-      トップページへ戻る
-    </a>
+  <main>
+    <p class="error-code">404</p>
+    <h1>ページが見つかりません</h1>
+    <p>URLが間違っているか、ページが削除された可能性があります。</p>
+    <a href="/">トップページへ戻る</a>
   </main>
 </body>
 </html>

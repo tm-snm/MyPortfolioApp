@@ -226,3 +226,60 @@ textarea.form-control {
   white-space: normal;
   word-break: break-word;
 }
+
+/* Shared interaction rules for existing screens. */
+.skip-link {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 1100;
+  padding: 0.75rem 1rem;
+  background: #fff;
+  color: #0a58ca;
+  border: 2px solid currentColor;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+:focus-visible,
+[tabindex="-1"]:focus {
+  outline: 3px solid #0a58ca;
+  outline-offset: 3px;
+}
+
+main[tabindex="-1"]:focus {
+  outline-offset: -3px;
+}
+
+.form-control[aria-invalid="true"],
+.form-select[aria-invalid="true"] {
+  border-color: #b02a37;
+  border-width: 2px;
+}
+
+.field_with_errors {
+  display: contents;
+}
+
+.btn,
+.mobile-link {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.btn-close {
+  flex-shrink: 0;
+}
+
+.text-warning {
+  color: #806000 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}

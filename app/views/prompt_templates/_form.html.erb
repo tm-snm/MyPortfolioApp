@@ -1,30 +1,20 @@
 <%= form_with model: prompt_template do |form| %>
-  <% if prompt_template.errors.any? %>
-    <div class="alert alert-danger">
-      <p class="mb-2">
-        入力内容に<%= prompt_template.errors.count %>件のエラーがあります。
-      </p>
-
-      <ul class="mb-0">
-        <% prompt_template.errors.full_messages.each do |message| %>
-          <li class="break-anywhere"><%= message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
+  <%= render "shared/form_errors", record: prompt_template, id: "prompt-template-errors" %>
 
   <div class="mb-3">
     <%= form.label :title, "タイトル", class: "form-label" %>
     <%= form.text_field :title,
                         class: "form-control",
-                        placeholder: "例：エラー調査用テンプレート" %>
+                        placeholder: "例：エラー調査用テンプレート",
+                        **field_error_attributes(prompt_template, :title, error_id: "prompt-template-errors") %>
   </div>
 
   <div class="mb-3">
     <%= form.label :category, "カテゴリー", class: "form-label" %>
     <%= form.text_field :category,
                         class: "form-control",
-                        placeholder: "例：技術調査" %>
+                        placeholder: "例：技術調査",
+                        **field_error_attributes(prompt_template, :category, error_id: "prompt-template-errors") %>
   </div>
 
   <div class="mb-3">
@@ -40,12 +30,14 @@
     <%= form.text_area :body,
                        rows: 16,
                        class: "form-control",
-                       placeholder: "外部AIへコピーして使うプロンプトを入力してください" %>
+                       placeholder: "外部AIへコピーして使うプロンプトを入力してください",
+                        **field_error_attributes(prompt_template, :body, error_id: "prompt-template-errors") %>
   </div>
 
   <div class="d-grid d-sm-block">
     <% submit_label =
          prompt_template.persisted? ? "個人テンプレートを更新" : "個人テンプレートを作成" %>
-    <%= form.submit submit_label, class: "btn btn-primary" %>
+    <%= form.submit submit_label, class: "btn btn-primary",
+                    data: { turbo_submits_with: "保存中..." } %>
   </div>
 <% end %>

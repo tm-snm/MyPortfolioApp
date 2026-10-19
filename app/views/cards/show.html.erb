@@ -51,9 +51,17 @@
     <%= link_to "編集", edit_card_path(@card), class: "btn btn-outline-primary" %>
     <%= link_to "Markdownで保存",
                 export_markdown_card_path(@card),
-                class: "btn btn-outline-success",
+                class: "btn btn-outline-secondary",
                 data: { turbo: false } %>
-    <%= button_to "削除", card_path(@card), method: :delete, data: { turbo_confirm: "このカードを削除しますか？" }, class: "btn btn-outline-danger", form: { class: "d-grid" } %>
+    <%= button_to "カードを削除",
+                  card_path(@card),
+                  method: :delete,
+                  data: {
+                    turbo_confirm: "このカードを削除しますか？",
+                    turbo_submits_with: "削除中..."
+                  },
+                  class: "btn btn-outline-danger",
+                  form: { class: "d-grid" } %>
     <%= link_to "カード一覧へ戻る", cards_path, class: "btn btn-outline-secondary" %>
   </div>
 </div>

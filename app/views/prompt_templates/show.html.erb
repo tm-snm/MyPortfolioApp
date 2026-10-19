@@ -86,11 +86,12 @@
                   edit_prompt_template_path(@prompt_template),
                   class: "btn btn-outline-primary" %>
 
-      <%= button_to "削除",
+      <%= button_to "個人テンプレートを削除",
                     prompt_template_path(@prompt_template),
                     method: :delete,
                     data: {
-                      turbo_confirm: "この個人テンプレートを削除しますか？"
+                      turbo_confirm: "この個人テンプレートを削除しますか？",
+                      turbo_submits_with: "削除中..."
                     },
                     class: "btn btn-outline-danger",
                     form: {
