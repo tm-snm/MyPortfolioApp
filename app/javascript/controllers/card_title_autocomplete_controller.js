@@ -89,12 +89,16 @@ export default class extends Controller {
         break;
       case "Escape":
         event.preventDefault();
+        this.cancelScheduledSearch();
+        this.cancelRequest();
         this.closeList();
         break;
     }
   }
 
   handleBlur() {
+    this.cancelScheduledSearch();
+    this.cancelRequest();
     this.blurTimeout = setTimeout(() => this.closeList(), 100);
   }
 
@@ -140,6 +144,7 @@ export default class extends Controller {
   }
 
   renderTitles(titles) {
+    this.inputTarget.removeAttribute("aria-activedescendant");
     this.titles = titles;
     this.activeIndex = -1;
 
@@ -159,6 +164,7 @@ export default class extends Controller {
   }
 
   renderMessage(message, className) {
+    this.inputTarget.removeAttribute("aria-activedescendant");
     this.titles = [];
     this.activeIndex = -1;
 
@@ -175,6 +181,7 @@ export default class extends Controller {
   buildOption(title, index) {
     const option = document.createElement("button");
     option.type = "button";
+    option.tabIndex = -1;
     option.id = "card-title-autocomplete-option-" + index;
     option.className =
       "autocomplete-option list-group-item list-group-item-action";

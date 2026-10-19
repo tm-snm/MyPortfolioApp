@@ -20,7 +20,8 @@
               <%= f.email_field :email,
                                 autofocus: true,
                                 autocomplete: "email",
-                                class: "form-control" %>
+                                class: "form-control",
+                                   **field_error_attributes(resource, :email, error_id: "error_explanation") %>
             </div>
 
             <div class="mb-3">
@@ -35,7 +36,8 @@
 
               <%= f.password_field :password,
                                    autocomplete: "new-password",
-                                   class: "form-control" %>
+                                   class: "form-control",
+                                   **field_error_attributes(resource, :password, error_id: "error_explanation") %>
             </div>
 
             <div class="mb-4">
@@ -45,7 +47,8 @@
 
               <%= f.password_field :password_confirmation,
                                    autocomplete: "new-password",
-                                   class: "form-control" %>
+                                   class: "form-control",
+                                   **field_error_attributes(resource, :password_confirmation, error_id: "error_explanation") %>
             </div>
 
             <p class="small text-secondary mb-3">
@@ -58,7 +61,8 @@
 
             <div class="d-grid">
               <%= f.submit "登録する",
-                           class: "btn btn-primary" %>
+                           class: "btn btn-primary",
+                           data: { turbo_submits_with: "登録中..." } %>
             </div>
           <% end %>
 

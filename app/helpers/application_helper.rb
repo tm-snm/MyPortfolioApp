@@ -1,4 +1,10 @@
 module ApplicationHelper
+  def field_error_attributes(record, attribute, error_id:)
+    return {} unless error_id && record.errors[attribute].any?
+
+    { aria: { invalid: true, describedby: error_id } }
+  end
+
   def site_title
     "Recall Card | つまずきを、次の自分の知識に"
   end

@@ -5,6 +5,11 @@ export default class extends Controller {
   static values = { usageUrl: String };
 
   async copy() {
+    if (this.copying) return;
+
+    this.copying = true;
+    this.buttonTarget.disabled = true;
+    this.buttonTarget.textContent = "コピー中...";
     try {
       await navigator.clipboard.writeText(this.sourceTarget.textContent.trim());
 
@@ -12,19 +17,20 @@ export default class extends Controller {
       this.messageTarget.classList.remove("text-danger", "text-warning");
       this.messageTarget.classList.add("text-success");
       this.buttonTarget.textContent = "もう一度コピー";
-      this.buttonTarget.classList.remove("btn-primary");
-      this.buttonTarget.classList.add("btn-outline-success");
+
       this.showGuidance();
-      this.recordUsage();
+      await this.recordUsage();
     } catch {
       this.messageTarget.textContent =
         "自動コピーできませんでした。プロンプト本文を選択して手動でコピーしてください。";
       this.messageTarget.classList.remove("text-success", "text-warning");
       this.messageTarget.classList.add("text-danger");
       this.buttonTarget.textContent = "コピーを再試行";
-      this.buttonTarget.classList.remove("btn-outline-success");
-      this.buttonTarget.classList.add("btn-primary");
+
       this.showGuidance();
+    } finally {
+      this.copying = false;
+      this.buttonTarget.disabled = false;
     }
   }
 

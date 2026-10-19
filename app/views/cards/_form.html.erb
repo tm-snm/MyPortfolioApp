@@ -1,26 +1,16 @@
 <%= form_with model: card do |form| %>
-  <% if card.errors.any? %>
-    <div class="alert alert-danger">
-      <p class="mb-2">
-        入力内容に<%= card.errors.count %>件のエラーがあります。
-      </p>
-
-      <ul class="mb-0">
-        <% card.errors.full_messages.each do |message| %>
-          <li class="break-anywhere"><%= message %></li>
-        <% end %>
-      </ul>
-    </div>
-  <% end %>
+  <%= render "shared/form_errors", record: card, id: "card-errors" %>
 
   <div class="mb-3">
     <%= form.label :title, "タイトル", class: "form-label" %>
-    <%= form.text_field :title, class: "form-control", placeholder: "例：DockerでGemを追加できなかった原因" %>
+    <%= form.text_field :title, class: "form-control", placeholder: "例：DockerでGemを追加できなかった原因",
+                        **field_error_attributes(card, :title, error_id: "card-errors") %>
   </div>
 
   <div class="mb-3">
     <%= form.label :body, "本文", class: "form-label" %>
-    <%= form.text_area :body, rows: 12, class: "form-control", placeholder: "状況、原因、解決方法などを入力してください" %>
+    <%= form.text_area :body, rows: 12, class: "form-control", placeholder: "状況、原因、解決方法などを入力してください",
+                        **field_error_attributes(card, :body, error_id: "card-errors") %>
   </div>
 
   <div class="mb-4">
@@ -41,7 +31,8 @@
              tag_names_value: tag_names_value %>
 
   <div class="d-grid d-sm-flex gap-2">
-    <% submit_label = card.persisted? ? "カードを更新" : "カードを作成" %>
-    <%= form.submit submit_label, class: "btn btn-primary" %>
+    <% submit_label = card.persisted? ? "カードを更新" : "カードを保存" %>
+    <%= form.submit submit_label, class: "btn btn-primary",
+                    data: { turbo_submits_with: "保存中..." } %>
   </div>
 <% end %>
