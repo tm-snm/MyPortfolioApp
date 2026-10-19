@@ -9,10 +9,14 @@
          "info"
        end %>
 
-  <div class="container mt-3">
+  <div class="container mt-3" data-turbo-temporary>
     <div
       class="alert alert-<%= bootstrap_class %> alert-dismissible fade show"
+      id="flash-<%= type %>"
       role="alert"
+      <% if type.to_sym == :alert && controller.response.status == 422 %>
+        tabindex="-1" data-controller="focus"
+      <% end %>
     >
       <span class="d-block break-anywhere pe-2"><%= message %></span>
 

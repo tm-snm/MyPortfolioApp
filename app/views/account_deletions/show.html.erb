@@ -29,8 +29,12 @@
                                      nil,
                                      required: true,
                                      autocomplete: "current-password",
-                                     class: "form-control" %>
-              <div class="form-text">
+                                     class: "form-control",
+                                     aria: {
+                                       describedby: flash[:alert].present? ?
+                                         "deletion-password-help flash-alert" : "deletion-password-help"
+                                     } %>
+              <div id="deletion-password-help" class="form-text">
                 本人確認のため、現在のパスワードを入力してください。
               </div>
             </div>
@@ -50,7 +54,8 @@
               <%= form.submit "アカウントを削除する",
                               class: "btn btn-danger",
                               data: {
-                                turbo_confirm: "本当にアカウントを削除しますか？この操作は取り消せません。"
+                                turbo_confirm: "本当にアカウントを削除しますか？この操作は取り消せません。",
+                                turbo_submits_with: "削除中..."
                               } %>
               <%= link_to "削除せず戻る",
                           cards_path,

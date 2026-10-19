@@ -123,7 +123,8 @@
         <div class="col-12 col-lg-auto">
           <div class="d-grid d-sm-flex gap-2">
             <%= submit_tag "絞り込む",
-                          class: "btn btn-outline-primary" %>
+                          class: "btn btn-primary",
+                          data: { turbo_submits_with: "検索中..." } %>
 
             <% if conditions_active %>
               <%= link_to "条件を解除",

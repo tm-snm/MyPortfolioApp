@@ -4,29 +4,23 @@
 
     <%= render "learning_status", card: card %>
 
-    <% learning_error_attributes = %i[understanding_level importance] %>
-    <% if params[:action] == "update_learning_metadata" &&
-          learning_error_attributes.any? { |attribute| card.errors[attribute].any? } %>
-      <div class="alert alert-danger mt-3 mb-0" role="alert">
-        <ul class="mb-0">
-          <% learning_error_attributes
-               .flat_map { |attribute| card.errors.full_messages_for(attribute) }
-               .each do |message| %>
-            <li><%= message %></li>
-          <% end %>
-        </ul>
-      </div>
-    <% end %>
-
     <hr>
 
+    <% error_id = params[:action] == "update_learning_metadata" ? "learning-errors" : nil %>
     <%= form_with model: card,
                   url: learning_metadata_card_path(card),
                   method: :patch,
                   class: "row g-2 align-items-end" do |form| %>
+      <% if error_id && card.errors.any? %>
+        <div class="col-12">
+          <%= render "shared/form_errors", record: card, id: "learning-errors",
+                     messages: error_id ? card.errors.full_messages : [] %>
+        </div>
+      <% end %>
       <div class="col-12 col-sm-5 col-lg-4">
         <%= form.label :understanding_level,
                        "理解度",
+                       for: "learning_understanding_level",
                        class: "form-label" %>
         <%= form.select :understanding_level,
                         options_for_select(
@@ -39,7 +33,9 @@
                           card.understanding_level
                         ),
                         { include_blank: "未設定" },
-                        class: "form-select" %>
+                        id: "learning_understanding_level",
+                        class: "form-select",
+                        **field_error_attributes(card, :understanding_level, error_id: error_id) %>
       </div>
 
       <div class="col-12 col-sm-5 col-lg-4">
@@ -57,12 +53,14 @@
                           card.importance
                         ),
                         { include_blank: "未設定" },
-                        class: "form-select" %>
+                        class: "form-select",
+                        **field_error_attributes(card, :importance, error_id: error_id) %>
       </div>
 
       <div class="col-12 col-lg-auto">
         <%= form.submit "学習状態を更新",
-                        class: "btn btn-outline-primary w-100" %>
+                        class: "btn btn-primary w-100",
+                        data: { turbo_submits_with: "更新中..." } %>
       </div>
     <% end %>
   </div>

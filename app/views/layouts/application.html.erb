@@ -29,9 +29,10 @@
   </head>
 
   <body class="d-flex flex-column min-vh-100 bg-light">
+    <a href="#main-content" class="skip-link">本文へ移動</a>
     <%= render "shared/header" %>
 
-    <main class="flex-grow-1">
+    <main id="main-content" class="flex-grow-1" tabindex="-1">
       <%= render "shared/flash" %>
       <%= yield %>
     </main>

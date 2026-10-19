@@ -1,0 +1,12 @@
+<% messages = local_assigns.fetch(:messages) { record.errors.full_messages } %>
+<% if messages.any? %>
+  <div id="<%= id %>" class="alert alert-danger" role="alert"
+       tabindex="-1" data-controller="focus">
+    <p class="fw-semibold mb-2">入力内容に<%= messages.size %>件のエラーがあります。確認してください。</p>
+    <ul class="mb-0">
+      <% messages.each do |message| %>
+        <li class="break-anywhere"><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
