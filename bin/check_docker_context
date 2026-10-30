@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Build with fixtures only; real application files and secrets are never sent.
+repository_root="$(cd "$(dirname "$0")/.." && pwd)"
+temporary_directory="$(mktemp -d /tmp/recall-card-context.XXXXXX)"
+trap 'rm -rf -- "$temporary_directory"' EXIT
+mkdir -p "$temporary_directory/context/config/credentials"
+cp "$repository_root/.dockerignore" "$temporary_directory/context/.dockerignore"
+for path in config/master.key config/credentials/production.key config/credentials/development.key; do
+  printf 'private fixture' > "$temporary_directory/context/$path"
+done
+printf 'encrypted fixture' > "$temporary_directory/context/config/credentials.yml.enc"
+
+if ! docker build --quiet --file - --output "type=local,dest=$temporary_directory/output"   "$temporary_directory/context" > "$temporary_directory/build.log" 2>&1 <<'DOCKERFILE'
+FROM scratch
+COPY . /
+DOCKERFILE
+then
+  echo "Docker context verification failed; check Docker and BuildKit availability." >&2
+  exit 1
+fi
+
+for path in config/master.key config/credentials/production.key config/credentials/development.key; do
+  if [ -e "$temporary_directory/output/$path" ]; then
+    echo "Docker context includes a decryption key path: $path" >&2
+    exit 1
+  fi
+done
+if [ ! -f "$temporary_directory/output/config/credentials.yml.enc" ]; then
+  echo "Docker context must retain encrypted credentials." >&2
+  exit 1
+fi
+echo "Docker context excludes decryption keys and retains encrypted credentials."
