@@ -1,0 +1,17 @@
+title = "Recall Card secret scanning"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "rails-decryption-key"
+description = "Rails plaintext decryption key file"
+regex = '''(?i)\b[0-9a-f]{32}\b'''
+path = '''(^|/)config/(master\.key|credentials/[^/]+\.key)$'''
+
+[[allowlists]]
+description = "One-way SHA256 fingerprints used only to detect the exposed credentials (#126)"
+condition = "AND"
+paths = ['''(^|/)bin/check_runtime_credentials$''']
+regexTarget = "line"
+regexes = ['''^  EXPOSED_(KEY|SECRET)_DIGEST = "[0-9a-f]{64}"$''']

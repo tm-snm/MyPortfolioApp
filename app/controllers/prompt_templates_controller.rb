@@ -60,7 +60,7 @@ class PromptTemplatesController < ApplicationController
   def favorite
     preference_for(@prompt_template).update!(favorite: true)
 
-    redirect_back fallback_location: prompt_templates_path,
+    redirect_back fallback_location: prompt_templates_path, allow_other_host: false,
                   notice: "お気に入りに登録しました",
                   status: :see_other
   end
@@ -76,7 +76,7 @@ class PromptTemplatesController < ApplicationController
       preference&.destroy!
     end
 
-    redirect_back fallback_location: prompt_templates_path,
+    redirect_back fallback_location: prompt_templates_path, allow_other_host: false,
                   notice: "お気に入りを解除しました",
                   status: :see_other
   end

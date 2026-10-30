@@ -8,4 +8,15 @@ class PromptTemplatePreference < ApplicationRecord
   }
 
   validates :prompt_template_id, uniqueness: { scope: :user_id }
+
+  validate :available_template
+
+  private
+
+  def available_template
+    return unless user && prompt_template
+    return if prompt_template.official? || prompt_template.user == user
+
+    errors.add(:prompt_template, "は共通または自分のものを指定してください")
+  end
 end
