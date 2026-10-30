@@ -605,7 +605,7 @@ MVPでは、他ユーザーとの共有機能は実装しません。
 
 ### 10-1. 使用予定の技術
 
-- フレームワーク：Ruby on Rails 7系
+- フレームワーク：Ruby on Rails 8.1系
 - 言語：Ruby
 - DB：PostgreSQL
 - フロントエンド：Hotwire / Turbo / Stimulus
@@ -669,7 +669,7 @@ MVPでは、他ユーザーとの共有機能は実装しません。
 ### 使用バージョン
 
 - Ruby 3.4.10
-- Rails 7.2.3.1
+- Rails 8.1.4
 - PostgreSQL 17.10
 - Docker Compose
 
@@ -705,3 +705,8 @@ docker compose exec -e RAILS_ENV=production web bundle exec ruby bin/check_runti
 ```
 
 本番更新・影響調査・手動確認は [credentials更新手順](docs/security/credentials_rotation.md) を参照してください。
+
+### Rails 8.1への更新（Issue #127）
+
+更新理由・互換性確認・検証結果・デプロイと切り戻し手順は、
+[Rails 8.1更新記録](docs/rails_8_1_upgrade.md) を参照してください。

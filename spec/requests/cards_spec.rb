@@ -162,7 +162,7 @@ RSpec.describe "Cards", type: :request do
 
           post cards_path, params: ai_card_params
 
-          expect(response).to have_http_status(:unprocessable_entity)
+          expect(response).to have_http_status(:unprocessable_content)
           expect(response.body).to include(raw_content.strip)
           expect(response.body).to include("Rails, Docker")
           expect(response.body).to include("カード内容を確認・編集する")
@@ -265,7 +265,7 @@ RSpec.describe "Cards", type: :request do
         it "422を返す" do
           post cards_path, params: invalid_params
 
-          expect(response).to have_http_status(:unprocessable_entity)
+          expect(response).to have_http_status(:unprocessable_content)
         end
 
         it "バリデーションエラーを表示する" do
@@ -1213,7 +1213,7 @@ RSpec.describe "Cards", type: :request do
 
           expect(card.title).to eq(original_title)
           expect(card.body).to eq(original_body)
-          expect(response).to have_http_status(:unprocessable_entity)
+          expect(response).to have_http_status(:unprocessable_content)
         end
 
         it "タグ全解除後の再表示で古い選択状態を復元しない" do
@@ -1234,7 +1234,7 @@ RSpec.describe "Cards", type: :request do
                            .css('[data-action="tag-input#remove"]')
                            .pluck("data-tag-name")
 
-          expect(response).to have_http_status(:unprocessable_entity)
+          expect(response).to have_http_status(:unprocessable_content)
           expect(tag_names_field["value"]).to eq("")
           expect(selected_names).to be_empty
           expect(card.reload.tags).to contain_exactly(tag)
@@ -1506,7 +1506,7 @@ RSpec.describe "Cards", type: :request do
               tag_names: "Rails, Docker"
             }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(response.body).to include("AIの出力を貼り付けてください")
         expect(response.body).to include('name="card[raw_content]"')
 
@@ -1519,7 +1519,7 @@ RSpec.describe "Cards", type: :request do
             params: { card: { raw_content: "" } },
             headers: { "ACCEPT" => Mime[:turbo_stream].to_s }
 
-        expect(response).to have_http_status(:unprocessable_entity)
+        expect(response).to have_http_status(:unprocessable_content)
         expect(response.media_type).to eq(Mime[:turbo_stream].to_s)
         expect(response.body).to include('action="update" target="ai_card_builder"')
         expect(response.body).to include("AIの出力を貼り付けてください")

@@ -35,7 +35,7 @@ class PromptTemplatesController < ApplicationController
     if @prompt_template.save
       redirect_to @prompt_template, notice: "個人テンプレートを作成しました"
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -46,7 +46,7 @@ class PromptTemplatesController < ApplicationController
     if @prompt_template.update(prompt_template_params)
       redirect_to @prompt_template, notice: "個人テンプレートを更新しました"
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
