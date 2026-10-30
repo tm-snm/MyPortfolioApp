@@ -27,10 +27,16 @@ RSpec.describe "Production credentials" do
           }
         end
         response = Rack::MockRequest.new(Rails.application).get(
-          "https://example.com/credentials_probe#{ENV['PROBE_ISSUE'] == '1' ? '?issue=1' : ''}",
+          "https://#{ENV.fetch('PROBE_HOST', 'recall-card.onrender.com')}/credentials_probe#{ENV['PROBE_ISSUE'] == '1' ? '?issue=1' : ''}",
+          "HTTP_HOST" => ENV.fetch("PROBE_HOST", "recall-card.onrender.com"),
           "HTTP_COOKIE" => ENV.fetch("PROBE_COOKIE", "")
         )
-        result = { status: response.status, body: response.body, cookie: response["set-cookie"] }
+        result = {
+          status: response.status, body: response.body, cookie: response["set-cookie"],
+          csp: response["content-security-policy"],
+          log_level: Rails.logger.level,
+          mailer_url: Rails.application.config.action_mailer.default_url_options
+        }
         puts JSON.generate(result)
       rescue StandardError => error
         warn "Production probe failed: #{error.class.name}"
@@ -56,17 +62,19 @@ RSpec.describe "Production credentials" do
     end
   end
 
-  def boot(key: @key, secret_key_base: nil, cookie: nil, issue: false)
+  def boot(key: @key, secret_key_base: nil, cookie: nil, issue: false, host: "recall-card.onrender.com", log_level: "fatal")
     environment = {
       "RAILS_ENV" => "production",
       "RAILS_MASTER_KEY" => key,
       "SECRET_KEY_BASE" => secret_key_base,
       "SECRET_KEY_BASE_DUMMY" => nil,
       "DISABLE_BOOTSNAP" => "1",
-      "RAILS_LOG_LEVEL" => "fatal",
+      "RAILS_LOG_LEVEL" => log_level,
       "PROBE_CREDENTIALS_PATH" => @credentials_path,
       "PROBE_ABSENT_KEY_PATH" => File.join(@directory, "absent.key"),
       "PROBE_COOKIE" => cookie,
+      "PROBE_HOST" => host,
+      "APP_ADDITIONAL_HOSTS" => nil,
       "PROBE_ISSUE" => issue ? "1" : "0"
     }
     output, status = Open3.capture2e(environment, RbConfig.ruby, "-e", probe, chdir: root)
@@ -79,6 +87,31 @@ RSpec.describe "Production credentials" do
 
     expect(status.success?).to be(true)
     expect(result.fetch("status")).to eq(200)
+  end
+
+  it "rejects an unapproved Host and enforces CSP on the approved host" do
+    blocked, blocked_status = boot(host: "unapproved.example")
+    expect(blocked_status.success?).to be(true)
+    expect(blocked.fetch("status")).to eq(403)
+    allowed, allowed_status = boot
+    expect(allowed_status.success?).to be(true)
+    expect(allowed.fetch("csp")).to include("object-src 'none'", "frame-ancestors 'none'")
+  end
+
+  it "issues Secure, HttpOnly, SameSite=Lax session cookies over HTTPS" do
+    result, status = boot(issue: true)
+    expect(status.success?).to be(true)
+    cookie = Array(result.fetch("cookie")).join(";").downcase
+    expect(cookie).to include("secure", "httponly", "samesite=lax")
+  end
+
+  it "refuses debug SQL logging and fixes password recovery URLs independently of Host" do
+    result, status = boot(log_level: "debug")
+    expect(status.success?).to be(true)
+    expect(result.fetch("log_level")).to eq(Logger::INFO)
+    expect(result.fetch("mailer_url")).to eq(
+      "host" => "recall-card.onrender.com", "protocol" => "https"
+    )
   end
 
   it "refuses to boot without a decryption key" do

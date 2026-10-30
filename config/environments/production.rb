@@ -3,6 +3,11 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   config.x.public_site_url = "https://recall-card.onrender.com"
 
+  # Exact hostnames only. Confirm custom domains and health checks before deploy.
+  config.hosts = [ URI(config.x.public_site_url).host ]
+  config.hosts += ENV.fetch("APP_ADDITIONAL_HOSTS", "").split(",").map(&:strip).reject(&:empty?)
+  config.session_store :cookie_store, secure: true, httponly: true, same_site: :lax
+
   # Settings specified here will take precedence over those in config/application.rb.
 
   # Code is not reloaded between requests.
@@ -63,8 +68,10 @@ Rails.application.configure do
 
   # "info" includes generic and useful information about system operation, but avoids logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII). If you
-  # want to log everything, set the level to "debug".
-  config.log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
+  # need less output, choose warn/error/fatal. Debug SQL logging is not allowed.
+  # SQL can contain literal search/content values; do not enable debug in production.
+  requested_log_level = ENV.fetch("RAILS_LOG_LEVEL", "info")
+  config.log_level = %w[info warn error fatal].include?(requested_log_level) ? requested_log_level : "info"
 
   # Use a different cache store in production.
   # config.cache_store = :mem_cache_store
@@ -76,6 +83,27 @@ Rails.application.configure do
   # Disable caching for Action Mailer templates even if Action Controller
   # caching is enabled.
   config.action_mailer.perform_caching = false
+
+  config.action_mailer.default_url_options = {
+    host: URI(config.x.public_site_url).host, protocol: "https"
+  }
+  config.action_mailer.raise_delivery_errors = true
+
+  # Values are supplied by the deployment owner; never embed SMTP credentials.
+  if ENV["SMTP_ADDRESS"].present?
+    config.action_mailer.delivery_method = :smtp
+    config.action_mailer.smtp_settings = {
+      address: ENV.fetch("SMTP_ADDRESS"),
+      port: Integer(ENV.fetch("SMTP_PORT", "587")),
+      domain: URI(config.x.public_site_url).host,
+      user_name: ENV["SMTP_USERNAME"],
+      password: ENV["SMTP_PASSWORD"],
+      authentication: :plain,
+      enable_starttls: true,
+      enable_starttls_auto: false,
+      openssl_verify_mode: "peer"
+    }
+  end
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.

@@ -2,6 +2,26 @@ require "rails_helper"
 
 RSpec.describe PromptTemplatePreference, type: :model do
   describe "バリデーション" do
+    it "他ユーザーの個人テンプレートを関連付けて保存できない" do
+      preference = build(
+        :prompt_template_preference,
+        prompt_template: create(:prompt_template, :personal)
+      )
+
+      expect { preference.save }.not_to change(PromptTemplatePreference, :count)
+      expect(preference.errors[:prompt_template]).to be_present
+    end
+
+    it "自分の個人テンプレートを関連付けられる" do
+      user = create(:user)
+      preference = build(
+        :prompt_template_preference, user: user,
+        prompt_template: create(:prompt_template, :personal, user: user)
+      )
+
+      expect(preference.save).to be(true)
+    end
+
     it "ユーザーとテンプレートがあれば有効である" do
       preference = build(:prompt_template_preference)
 

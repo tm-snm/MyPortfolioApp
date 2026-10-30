@@ -710,3 +710,13 @@ docker compose exec -e RAILS_ENV=production web bundle exec ruby bin/check_runti
 
 更新理由・互換性確認・検証結果・デプロイと切り戻し手順は、
 [Rails 8.1更新記録](docs/rails_8_1_upgrade.md) を参照してください。
+
+### セキュリティ監査（Issue #128）
+
+対策・検査コマンド・手動確認・本番で残る確認は、[セキュリティ監査記録](docs/security/security_audit_128.md) を参照してください。
+Google認証の追加・設定は行いません。DB変更はありません。
+メール復旧は DEVISE_MAILER_SENDER と SMTP_ADDRESS / SMTP_PORT / SMTP_USERNAME / SMTP_PASSWORD の安全な設定・実配送確認が必要です。
+本番の追加ドメインは APP_ADDITIONAL_HOSTS に完全なホスト名をカンマ区切りで指定します。
+認証の試行制限は専用FileStoreを使うため、本番の複数インスタンス全体に有効かは構成確認が必要です。
+
+Gemfile / lock変更後は開発用webイメージを再ビルドしてください。秘密値はログ・Issue・PRへ記載しないでください。

@@ -1,5 +1,7 @@
 module Users
   class RegistrationsController < Devise::RegistrationsController
+    include AuthenticationRateLimiting
+
     def destroy
       unless params[:deletion_confirmation] == "1"
         flash.now[:alert] = I18n.t(

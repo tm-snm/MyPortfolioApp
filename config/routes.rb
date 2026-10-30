@@ -1,6 +1,10 @@
 Rails.application.routes.draw do
   devise_for :users,
-             controllers: { registrations: "users/registrations" }
+             controllers: {
+               registrations: "users/registrations",
+               sessions: "users/sessions",
+               passwords: "users/passwords"
+             }
 
   get "account/deletion",
       to: "account_deletions#show",
