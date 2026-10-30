@@ -5,6 +5,8 @@
 # 環境変数・秘密情報
 .env
 .env.*
+config/master.key
+config/credentials/*.key
 
 # Rails実行時の生成物
 log/*

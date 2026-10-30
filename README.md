@@ -681,3 +681,27 @@ docker compose build
 docker compose run --rm web bin/rails db:prepare
 docker compose up -d
 ```
+
+
+### Rails credentialsの管理（Issue #126）
+
+`config/credentials.yml.enc` だけをGit管理し、復号鍵は管理しません。
+開発環境では、現在の暗号化ファイルに対応する `config/master.key` を安全な経路で受け取り、
+WSL側で `chmod 600 config/master.key` としてください。鍵をIssue・PR・チャットへ貼らないでください。
+Docker Composeの `.env` はRailsへ自動では渡されません。現在の開発構成は、bind mountされた鍵ファイルを読みます。
+CIに本番の鍵は不要です。
+
+```bash
+docker compose exec web ruby bin/check_secret_files
+bash bin/check_docker_context
+```
+
+本番は `RAILS_MASTER_KEY` を使って復号鍵を供給します。`SECRET_KEY_BASE` による上書きは外し、
+credentialsの値を使う運用にそろえます。鍵・credentialsの切替は同じデプロイで行ってください。
+本番相当の設定をローカルで検査する場合は次を使います。出力は判定結果だけです。
+
+```bash
+docker compose exec -e RAILS_ENV=production web bundle exec ruby bin/check_runtime_credentials
+```
+
+本番更新・影響調査・手動確認は [credentials更新手順](docs/security/credentials_rotation.md) を参照してください。
