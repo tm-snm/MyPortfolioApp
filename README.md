@@ -669,7 +669,7 @@ MVPでは、他ユーザーとの共有機能は実装しません。
 ### 使用バージョン
 
 - Ruby 3.4.10
-- Rails 8.1.4
+- Rails 8.1.4.1
 - PostgreSQL 17.10
 - Docker Compose
 
@@ -714,6 +714,7 @@ docker compose exec -e RAILS_ENV=production web bundle exec ruby bin/check_runti
 ### セキュリティ監査（Issue #128）
 
 対策・検査コマンド・手動確認・本番で残る確認は、[セキュリティ監査記録](docs/security/security_audit_128.md) を参照してください。
+依存Gemの追加修正と43件の照合結果は、[Issue #148の更新記録](docs/security/dependency_update_148.md) を参照してください。
 Google認証の追加・設定は行いません。DB変更はありません。
 メール復旧は DEVISE_MAILER_SENDER と SMTP_ADDRESS / SMTP_PORT / SMTP_USERNAME / SMTP_PASSWORD の安全な設定・実配送確認が必要です。
 本番の追加ドメインは APP_ADDITIONAL_HOSTS に完全なホスト名をカンマ区切りで指定します。
