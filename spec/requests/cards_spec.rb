@@ -966,6 +966,22 @@ RSpec.describe "Cards", type: :request do
         expect(markdown_html).not_to include("<script", "javascript:")
       end
 
+      it "メモの改行を維持し危険なHTMLとURLを除去する" do
+        unsafe_card = create(
+          :card,
+          user: user,
+          future_note: "1行目\n2行目<script>alert(1)</script><a href='javascript:alert(1)'>リンク</a>"
+        )
+
+        get card_path(unsafe_card)
+
+        document = response.parsed_body
+        expect(document.text).to include("1行目", "2行目")
+        expect(document.css("br")).not_to be_empty
+        expect(document.css("script").map(&:text)).not_to include("alert(1)")
+        expect(document.css("a[href^='javascript:']")).to be_empty
+      end
+
       it "他ユーザーのカード詳細を表示できない" do
         get card_path(other_card)
 

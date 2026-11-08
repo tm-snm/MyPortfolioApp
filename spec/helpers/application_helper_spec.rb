@@ -72,6 +72,27 @@ RSpec.describe ApplicationHelper, type: :helper do
       )
     end
 
+    it "通常の改行をbrとして表示する" do
+      expect(helper.render_markdown("1行目\n2行目")).to include("1行目<br", "2行目")
+    end
+
+    it "文字参照や制御文字を含むURLを実行可能な形で残さない" do
+      markdown = <<~MARKDOWN
+        [文字参照](javascript&#x3a;alert%281%29)
+        [制御文字](java&#x09;script:alert%281%29)
+        [HTMLデータ](data:text/html;base64,PHNjcmlwdD4=)
+        [通常リンク](https://example.com/path?q=1)
+      MARKDOWN
+
+      document = Nokogiri::HTML5.fragment(helper.render_markdown(markdown))
+
+      destinations = document.css("a[href]").map { |link| link["href"] }
+
+      expect(destinations).to include("https://example.com/path?q=1")
+      expect(destinations).not_to include(a_string_matching(/\A\s*(javascript|vbscript|data):/i))
+      expect(destinations).not_to include(a_string_matching(/[\t\r\n]/))
+    end
+
     it "空値と通常テキストを安全に表示する" do
       expect(helper.render_markdown(nil)).to eq("")
       expect(helper.render_markdown("通常の本文")).to include(
