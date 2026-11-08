@@ -2,7 +2,7 @@ source "https://rubygems.org"
 
 ruby file: ".ruby-version"
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "7.2.3.1"
+gem "rails", "8.1.4.1"
 # The original asset pipeline for Rails [https://github.com/rails/sprockets-rails]
 gem "sprockets-rails"
 # Use postgresql as the database for Active Record
@@ -34,7 +34,7 @@ gem "bootsnap", require: false
 
 gem "devise", "~> 5.0"
 
-gem "rails-i18n", "~> 7.0.0"
+gem "rails-i18n", "~> 8.1.0"
 
 gem "commonmarker", "~> 2.10"
 
@@ -48,6 +48,7 @@ group :development, :test do
 
   # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
   gem "brakeman", require: false
+  gem "bundler-audit", "~> 0.9.3", require: false
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false

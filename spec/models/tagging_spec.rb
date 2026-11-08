@@ -20,5 +20,13 @@ RSpec.describe Tagging, type: :model do
 
       expect(duplicate_tagging).not_to be_valid
     end
+
+    it "他ユーザーのタグを関連付けて保存できない" do
+      foreign_tag = create(:tag)
+      tagging = build(:tagging, card: card, tag: foreign_tag)
+
+      expect { tagging.save }.not_to change(Tagging, :count)
+      expect(tagging.errors[:tag]).to be_present
+    end
   end
 end

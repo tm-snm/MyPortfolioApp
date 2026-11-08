@@ -75,9 +75,9 @@ class CardsController < ApplicationController
 
     if @card.raw_content.present?
       @previewed = true
-      render :new_from_ai, status: :unprocessable_entity
+      render :new_from_ai, status: :unprocessable_content
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -93,7 +93,7 @@ class CardsController < ApplicationController
     redirect_to @card, notice: "カードを更新しました"
   rescue ActiveRecord::RecordInvalid => e
     @card.errors.add(:base, "タグの設定に失敗しました") unless e.record == @card
-    render :edit, status: :unprocessable_entity
+    render :edit, status: :unprocessable_content
   end
 
   def destroy
@@ -153,7 +153,7 @@ class CardsController < ApplicationController
 
     if raw_content.blank?
       @raw_content_error = "AIの出力を貼り付けてください"
-      return render_ai_creation(status: :unprocessable_entity)
+      return render_ai_creation(status: :unprocessable_content)
     end
 
     parsed = CardParser.new(raw_content).parse

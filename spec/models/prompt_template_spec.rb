@@ -112,13 +112,15 @@ RSpec.describe PromptTemplate, type: :model do
         prompt_template: newer_template,
         last_used_at: 1.day.ago
       )
-      create(
+      # Simulate legacy inconsistent data to retain the read-time isolation test.
+      legacy_preference = build(
         :prompt_template_preference,
         user: user,
         prompt_template: other_users_template,
         favorite: true,
         last_used_at: Time.current
       )
+      legacy_preference.save!(validate: false)
     end
 
     it ".favorited_byは指定ユーザーのお気に入りを返す" do

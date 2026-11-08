@@ -8,6 +8,9 @@ Rails.application.configure do
   # since you don't have to restart the web server when you make code changes.
   config.enable_reloading = true
 
+  # Request filters cannot redact literal values in generated SQL search clauses.
+  config.log_level = :info
+
   # Do not eager load code on boot.
   config.eager_load = false
 

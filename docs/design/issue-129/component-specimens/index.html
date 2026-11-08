@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>スレートグレーの部品見本 | Recall Card #129</title>
+<link rel="icon" href="data:,">
+<style>
+:root{
+--primary:#2457D6;--primary-hover:#1E49B5;--primary-active:#183B94;
+--page:#EEF1F5;--surface:#FFFFFF;--side:#F5F6F8;--hero:#F2F4F7;
+--ink:#1D2B42;--muted:#566277;--line:#D5DCE6;--selected:#E3EAF7;
+--input-line:#7F8BA0;--danger:#A13B49;--danger-bg:#FBEFF1;
+--success:#236346;--success-bg:#EDF7F0;--info-bg:#EAF0FC;
+--tag-ink:#4E5D73;--tag-bg:#EDF1F6;--disabled-ink:#5E6A7B;--disabled-bg:#E7EBF0;
+font-size:16px;color-scheme:light;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;font-size:1rem;line-height:1.7}
+a{color:var(--primary);text-underline-offset:4px}
+h1,h2,h3,p{margin:0}h1{font-size:2rem;line-height:1.4;letter-spacing:-.025em}h2{font-size:1.375rem;line-height:1.5}h3{font-size:1rem;line-height:1.5}
+button,input,textarea{font:inherit}
+button,input,textarea,a{scroll-margin:24px}
+button{cursor:pointer}
+button:disabled{cursor:default}
+:focus-visible,.focus-demo{outline:3px solid var(--primary);outline-offset:2px;box-shadow:0 0 0 2px var(--surface)}
+:focus:not(:focus-visible):not(.focus-demo){outline:none}
+.skip{position:absolute;left:16px;top:8px;transform:translateY(-200%);padding:10px 16px;background:white;z-index:10}
+.skip:focus{transform:none}
+.header{background:var(--surface);border-bottom:1px solid var(--line)}
+.header-inner{max-width:1344px;margin:auto;padding:16px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.brand{font-weight:700;font-size:1.125rem}
+.badge{font-size:.875rem;background:var(--selected);color:var(--primary);padding:4px 12px;border-radius:6px}
+main{max-width:1344px;margin:auto;padding:40px 32px 48px}
+.eyebrow{color:var(--primary);font-size:.875rem;font-weight:700;letter-spacing:.08em;margin-bottom:8px}
+.intro{max-width:860px}.intro>p:last-child{color:var(--muted);margin-top:12px}
+.anchor-nav{display:flex;flex-wrap:wrap;gap:8px 24px;margin:20px 0 0}.anchor-nav a{min-height:44px;display:inline-flex;align-items:center}
+.tokens{display:flex;gap:16px 28px;flex-wrap:wrap;margin-top:24px;padding:16px 20px;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+.token{display:flex;align-items:center;gap:10px;font-size:.875rem;color:var(--muted)}
+.swatch{width:24px;height:24px;flex:none;border:1px solid var(--input-line);border-radius:6px}
+section{margin-top:32px;scroll-margin-top:24px}
+.section-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.number{color:var(--primary);font-size:.875rem;font-weight:700;letter-spacing:.08em}.caption{color:var(--muted);font-size:.875rem}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.specimen{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow-wrap:anywhere;display:flex;flex-direction:column;min-width:0}
+.card-head{padding:12px 20px;background:var(--hero);border-bottom:1px solid var(--line)}
+.state{display:block;font-size:.75rem;color:var(--muted);letter-spacing:.07em;margin-top:2px}
+.card-body{padding:24px 20px 20px;display:flex;flex-direction:column;gap:12px;flex:1}
+.note{color:var(--muted);font-size:.875rem;margin-top:auto;padding-top:8px}
+.btn{min-height:44px;border:1px solid transparent;border-radius:6px;padding:9px 16px;font-weight:600;line-height:1.5;display:inline-flex;align-items:center;justify-content:center;gap:8px;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.primary{background:var(--primary);color:white}
+.primary:not(:disabled):hover{background:var(--primary-hover)}
+.primary:not(:disabled):active{background:var(--primary-active)}
+.secondary{color:var(--primary);background:white;border-color:var(--primary)}
+.secondary:not(:disabled):hover{background:var(--info-bg)}
+.danger{color:var(--danger);background:white;border-color:var(--danger)}
+.danger:not(:disabled):hover{background:var(--danger-bg)}
+.btn:disabled{color:var(--disabled-ink);background:var(--disabled-bg);border-color:var(--input-line)}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+label,.label{display:block;font-weight:600;font-size:.875rem;margin-bottom:6px}
+.optional{font-weight:400;color:var(--muted)}
+.field{display:block;min-height:44px;width:100%;min-width:0;border:1px solid var(--input-line);border-radius:6px;background:white;color:var(--ink);padding:9px 12px;line-height:1.5}
+.field::placeholder{color:var(--muted);opacity:1}
+textarea.field{resize:vertical;min-height:100px}
+.field[aria-invalid="true"]{border:2px solid var(--danger);padding:8px 11px}
+.field[readonly]{background:var(--disabled-bg);color:var(--disabled-ink)}
+.help{font-size:.875rem;color:var(--muted);margin-top:6px}
+.error{font-size:.875rem;color:var(--danger);font-weight:500}
+.error-box{background:var(--danger-bg);border-left:3px solid var(--danger);padding:10px 12px;border-radius:0 6px 6px 0}
+.status{font-size:.875rem;color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.tag{font-size:.875rem;background:var(--tag-bg);color:var(--tag-ink);border:1px solid var(--line);border-radius:6px;padding:2px 8px;min-height:28px;display:inline-flex;align-items:center;gap:4px;max-width:100%;overflow-wrap:anywhere}
+.tag.selected{padding-right:0;min-height:44px}
+.remove{color:var(--tag-ink);background:transparent;border:0;border-left:1px solid var(--line);border-radius:0 5px 5px 0;min-width:44px;min-height:44px;font-size:.875rem;padding:6px}
+.remove:hover:not(:disabled){background:var(--selected)}
+.remove:disabled{background:var(--disabled-bg);color:var(--disabled-ink)}
+.sending-tags .tag{background:var(--disabled-bg);color:var(--disabled-ink)}
+.live{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:24px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px}
+.live form{display:flex;flex-direction:column;gap:16px;min-width:0}
+.live-aside{padding:24px;background:var(--hero);border-radius:8px;min-width:0}
+.live-aside h3{font-size:1.125rem}.live-aside ol{padding-left:20px;margin:12px 0 0}
+.live-aside li+li{margin-top:8px}
+.live-output{min-height:52px;background:var(--hero);border:1px solid var(--line);padding:12px;border-radius:6px;font-size:.875rem}
+.live-output.is-error{background:var(--danger-bg);color:var(--danger);border-color:var(--danger)}
+.live-output.is-success{background:var(--success-bg);color:var(--success);border-color:var(--success)}
+.footnote{margin-top:16px;font-size:.875rem;color:var(--muted)}
+.footer{max-width:1344px;margin:0 auto;padding:20px 32px 32px;color:var(--muted);font-size:.875rem}
+@media(max-width:1199px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}main{padding:32px 24px}.header-inner{padding:16px 24px}}
+@media(max-width:767px){h1{font-size:1.5rem}main{padding:24px 16px 32px}.header-inner{padding:12px 16px;gap:8px}.grid,.live{grid-template-columns:minmax(0,1fr)}.live{padding:20px;gap:24px}.card-body{padding:20px}.tokens{padding:16px;gap:12px}.anchor-nav{gap:4px 16px}.live-aside{padding:20px}.footer{padding:16px}.brand{font-size:1rem}}
+@media print{body{background:white}main{padding:20px}.specimen{break-inside:avoid}.anchor-nav,.skip{display:none}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.live{break-before:page}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">本文へ移動</a>
+<header class="header"><div class="header-inner"><span class="brand">Recall Card <span class="optional">/ 部品見本</span></span><span class="badge">B スレートグレー · #129</span></div></header>
+<main id="main" tabindex="-1">
+<div class="intro"><p class="eyebrow">COMPONENT SPECIMENS · 2026.11.09</p><h1>共通部品の状態見本</h1><p>ボタン・フォーム・タグを、通常／エラー／送信中／フォーカスで比較します。下部の操作欄では、入力保持とキーボード操作を試せます。</p></div>
+<nav class="anchor-nav" aria-label="見本の目次"><a href="#buttons">ボタン</a><a href="#forms">フォーム</a><a href="#tags">タグ</a><a href="#live">操作して確認</a></nav>
+<div class="tokens" aria-label="基準の配色">
+<div class="token"><span class="swatch" style="background:#2457D6"></span><span>主操作 <strong>#2457D6</strong></span></div>
+<div class="token"><span class="swatch" style="background:#EEF1F5"></span><span>背景 <strong>#EEF1F5</strong></span></div>
+<div class="token"><span class="swatch" style="background:#FFFFFF"></span><span>面 <strong>#FFFFFF</strong></span></div>
+<div class="token"><span class="swatch" style="background:#1D2B42"></span><span>本文 <strong>#1D2B42</strong></span></div>
+</div>
+
+<section id="buttons" aria-labelledby="buttons-title">
+<div class="section-head"><span class="number">01</span><h2 id="buttons-title">ボタン</h2><span class="caption">高さ44px以上 / 角丸6px</span></div>
+<div class="grid">
+<article class="specimen"><div class="card-head"><h3>通常</h3><span class="state">DEFAULT</span></div><div class="card-body"><div class="stack"><button type="button" class="btn primary" data-static>カードを保存</button><button type="button" class="btn secondary" data-static>カード一覧へ戻る</button><button type="button" class="btn danger" data-static>カードを削除</button></div><p class="note">主操作・副操作・危険操作を区別します。ここで削除は実行されません。</p></div></article>
+<article class="specimen"><div class="card-head"><h3>エラー</h3><span class="state">AFTER FAILURE</span></div><div class="card-body"><p class="error error-box">保存できませんでした。入力内容を確認してください。</p><button type="button" class="btn primary" data-static>もう一度保存</button><p class="note">ボタン全体を赤くせず、失敗の説明と再操作を分けます。</p></div></article>
+<article class="specimen"><div class="card-head"><h3>送信中</h3><span class="state">BUSY / DISABLED</span></div><div class="card-body" aria-busy="true"><button type="button" class="btn primary" disabled>保存中...</button><button type="button" class="btn secondary" disabled>貼り付け内容を再解析</button><p class="status">送信が終わるまでお待ちください。</p><p class="note">具体的な文言と無効化を併用し、競合する再操作を防ぎます。</p></div></article>
+<article class="specimen"><div class="card-head"><h3>フォーカス</h3><span class="state">FOCUS SAMPLE</span></div><div class="card-body"><button type="button" class="btn primary focus-demo" data-static>カードを保存</button><p class="help">青3pxの外周リング＋2pxの間隔。</p><p class="note">ここは輪郭を常時表示した見本です。実際のTab操作は下部で確認できます。</p></div></article>
+</div>
+</section>
+
+<section id="forms" aria-labelledby="forms-title">
+<div class="section-head"><span class="number">02</span><h2 id="forms-title">フォーム</h2><span class="caption">本文16px / 可視ラベル / 入力枠 #7F8BA0</span></div>
+<div class="grid">
+<article class="specimen"><div class="card-head"><h3>通常</h3><span class="state">DEFAULT</span></div><div class="card-body"><div><label for="normal-title">タイトル <span class="optional">必須</span></label><input class="field" id="normal-title" required value="Dockerの接続先を確認する" aria-describedby="normal-help"><p id="normal-help" class="help">後から探せる具体的な名前を付けます。</p></div><p class="note">ラベルと説明を見せ、placeholderだけに頼りません。</p></div></article>
+<article class="specimen"><div class="card-head"><h3>エラー</h3><span class="state">INVALID</span></div><div class="card-body"><div><label for="invalid-title">タイトル <span class="optional">必須</span></label><input class="field" id="invalid-title" required aria-invalid="true" aria-describedby="invalid-help"><p id="invalid-help" class="error">タイトルを入力してください。</p></div><p class="note">2pxの赤い枠＋修正方法。入力欄と説明を関連付けます。</p></div></article>
+<article class="specimen"><div class="card-head"><h3>送信中</h3><span class="state">READONLY / PRESERVED</span></div><div class="card-body" aria-busy="true"><div><label for="busy-title">タイトル <span class="optional">必須</span></label><input class="field" id="busy-title" required value="Dockerの接続先を確認する" readonly aria-describedby="busy-help"><p id="busy-help" class="help">保存中... 入力内容を保持しています。</p></div><p class="note">readonlyの見た目の例。アプリでのロック対象は#143で詰めます。</p></div></article>
+<article class="specimen"><div class="card-head"><h3>フォーカス</h3><span class="state">FOCUS SAMPLE</span></div><div class="card-body"><div><label for="focus-title">タイトル <span class="optional">必須</span></label><input class="field focus-demo" id="focus-title" required value="Dockerの接続先を確認する" aria-describedby="focus-help"><p id="focus-help" class="help">入力位置を外周リングで示します。</p></div><p class="note">外周リングが文字やエラー説明を覆わないよう余白を確保します。</p></div></article>
+</div>
+</section>
+
+<section id="tags" aria-labelledby="tags-title">
+<div class="section-head"><span class="number">03</span><h2 id="tags-title">タグ</h2><span class="caption">静的ラベルと解除操作を区別</span></div>
+<div class="grid">
+<article class="specimen"><div class="card-head"><h3>通常</h3><span class="state">LABEL / SELECTED</span></div><div class="card-body"><p class="caption">表示用</p><div class="tags"><span class="tag">Docker</span><span class="tag">Rails</span></div><p class="caption">選択中</p><div class="tags"><span class="tag selected">Docker<button type="button" class="remove" data-static aria-label="Dockerを選択から外す（通常見本）">解除</button></span></div><p class="note">解除操作は44px以上。タグ名は長くても折り返します。</p></div></article>
+<article class="specimen"><div class="card-head"><h3>エラー</h3><span class="state">SAVE FAILURE</span></div><div class="card-body"><div class="tags"><span class="tag">Docker</span><span class="tag">Rails</span></div><p class="error error-box">タグの設定に失敗しました。再度お試しください。</p><p class="note">保存失敗の見本です。タグに新しい文字数制限等は追加しません。</p></div></article>
+<article class="specimen"><div class="card-head"><h3>送信中</h3><span class="state">BUSY / PRESERVED</span></div><div class="card-body sending-tags" aria-busy="true"><div class="tags"><span class="tag selected">Docker<button type="button" class="remove" aria-label="Dockerを選択から外す（送信中見本）" disabled>解除</button></span><span class="tag">Rails</span></div><p class="status">保存中... 選択したタグを保持しています。</p><p class="note">送信中の解除操作は無効化します。タグの値は消しません。</p></div></article>
+<article class="specimen"><div class="card-head"><h3>フォーカス</h3><span class="state">FOCUS SAMPLE</span></div><div class="card-body"><div class="tags"><span class="tag selected">Docker<button type="button" class="remove focus-demo" data-static aria-label="Dockerを選択から外す（フォーカス見本）">解除</button></span></div><p class="help">タグ全体でなく、操作できる解除ボタンにフォーカスします。</p><p class="note">静的なタグはTab移動の対象にしません。</p></div></article>
+</div>
+</section>
+
+<section id="live" aria-labelledby="live-title">
+<div class="section-head"><span class="number">04</span><h2 id="live-title">操作して確認</h2><span class="caption">この見本の中だけで状態を切り替えます</span></div>
+<div class="live">
+<form id="demo-form" novalidate>
+<div><label for="demo-title">タイトル <span class="optional">必須</span></label><input class="field" id="demo-title" required name="title" value="Dockerの接続先を確認する" aria-describedby="demo-title-help"><p id="demo-title-help" class="help">入力欄のフォーカスはTabキーで確認できます。</p><p id="demo-title-error" class="error" hidden>タイトルを入力してください。</p></div>
+<div><label for="demo-body">本文 <span class="optional">必須</span></label><textarea class="field" id="demo-body" required name="body" rows="3" aria-describedby="demo-body-help">Composeのサービス名 db を接続先に指定する。</textarea><p id="demo-body-help" class="help">エラー・送信中でもこの内容を保持します。</p><p id="demo-body-error" class="error" hidden>本文を入力してください。</p></div>
+<div><span class="label">選択中のタグ</span><div class="tags" id="demo-tags"><span class="tag selected" data-demo-tag="Docker">Docker<button type="button" class="remove" aria-label="Dockerを選択から外す" data-remove-tag="Docker">解除</button></span><span class="tag selected" data-demo-tag="Rails">Rails<button type="button" class="remove" aria-label="Railsを選択から外す" data-remove-tag="Rails">解除</button></span></div><p class="help" id="demo-tag-help" role="status" aria-live="polite">2件選択中</p></div>
+<div class="row"><button class="btn primary" id="demo-submit" type="submit">保存を試す</button><button class="btn secondary" id="demo-error" type="button">保存失敗を表示</button><button class="btn secondary" id="demo-reset" type="button">見本をリセット</button></div>
+<p class="live-output" id="demo-result" role="status" aria-live="polite" tabindex="-1">準備できました。入力後に「保存を試す」を押してください。</p>
+</form>
+<aside class="live-aside" aria-label="見本の使い方"><h3>確認できること</h3><ol><li>Tabキーで、入力欄・タグ解除・ボタンを順に移動できます。</li><li>タイトルを空にして保存すると、エラーと入力位置の案内を確認できます。</li><li>「保存を試す」で約3秒間の送信中表示になります。</li><li>「保存失敗を表示」で、入力・選択中タグが残ることを確認できます。</li></ol><p class="help">フォームの値はこのページ内だけで扱います。サーバー送信・DB保存・ブラウザへの永続保存はありません。</p><p class="help">上部の「フォーカス」列は輪郭を固定表示した見本です。実際のキーボードフォーカスは、この操作欄とほかの操作可能な要素で試せます。</p></aside>
+</div><p class="footnote">送信中の入力欄・タグのロックは状態を確認するための見本です。実アプリでの送信イベント・入力保持の詳細は#136／#143で確定します。</p>
+</section>
+</main>
+<footer class="footer">共通仕様 承認日 2026-11-09 / 部品見本 v1 / アプリへの反映は #130</footer>
+<script>
+(function(){
+"use strict";
+var form=document.getElementById("demo-form");
+var title=document.getElementById("demo-title");
+var body=document.getElementById("demo-body");
+var submit=document.getElementById("demo-submit");
+var fail=document.getElementById("demo-error");
+var reset=document.getElementById("demo-reset");
+var tags=document.getElementById("demo-tags");
+var tagHelp=document.getElementById("demo-tag-help");
+var result=document.getElementById("demo-result");
+var initialTags=tags.innerHTML;
+var timer=null;
+function clearErrors(){
+[["title",title],["body",body]].forEach(function(pair){
+document.getElementById("demo-"+pair[0]+"-error").hidden=true;
+pair[1].removeAttribute("aria-invalid");
+pair[1].setAttribute("aria-describedby","demo-"+pair[0]+"-help");
+});
+}
+function setBusy(busy){
+form.setAttribute("aria-busy",String(busy));
+title.readOnly=busy;body.readOnly=busy;
+submit.disabled=busy;fail.disabled=busy;reset.disabled=busy;
+submit.textContent=busy?"保存中...":"保存を試す";
+tags.querySelectorAll("button").forEach(function(btn){btn.disabled=busy;});
+}
+function show(message,kind){
+result.textContent=message;
+result.className="live-output"+(kind?" is-"+kind:"");
+}
+function validate(){
+clearErrors();
+var invalid=[];
+[["title",title],["body",body]].forEach(function(pair){
+if(!pair[1].value.trim()){
+pair[1].setAttribute("aria-invalid","true");
+pair[1].setAttribute("aria-describedby","demo-"+pair[0]+"-help demo-"+pair[0]+"-error");
+document.getElementById("demo-"+pair[0]+"-error").hidden=false;
+invalid.push(pair[1]);
+}
+});
+if(invalid.length){show("入力内容を確認してください。本文とタグは保持されています。","error");invalid[0].focus();return false;}
+return true;
+}
+form.addEventListener("submit",function(event){
+event.preventDefault();
+if(submit.disabled||!validate())return;
+setBusy(true);show("保存中... 入力内容と選択中のタグを保持しています。","");
+timer=setTimeout(function(){setBusy(false);show("見本内の確認が完了しました。実際のカードは保存されていません。","success");submit.focus();timer=null;},3000);
+});
+fail.addEventListener("click",function(){clearErrors();show("保存できませんでした。入力内容と選択中のタグは保持されています。もう一度お試しください。","error");result.focus();});
+reset.addEventListener("click",function(){
+if(timer)clearTimeout(timer);
+timer=null;setBusy(false);clearErrors();
+title.value="Dockerの接続先を確認する";body.value="Composeのサービス名 db を接続先に指定する。";
+tags.innerHTML=initialTags;tagHelp.textContent="2件選択中";
+show("見本を初期状態に戻しました。","");title.focus();
+});
+tags.addEventListener("click",function(event){
+var button=event.target.closest("[data-remove-tag]");
+if(!button||button.disabled)return;
+var name=button.getAttribute("data-remove-tag");
+button.closest("[data-demo-tag]").remove();
+var left=tags.querySelectorAll("[data-demo-tag]").length;
+tagHelp.textContent=name+"を選択から外しました。"+left+"件選択中";
+var next=tags.querySelector("button");
+(next||submit).focus();
+});
+
+})();
+</script>
+</body>
+</html>

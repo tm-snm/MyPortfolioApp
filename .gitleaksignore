@@ -1,0 +1,6 @@
+# Historical fingerprints are reviewed in docs/security/security_audit_128.md.
+# Never ignore an entire path, rule, or history range.
+881c8a68427fd8224bccf14b945ab4e98a8f3aed:config/master.key:rails-decryption-key:1
+0716b094562572b6d8e178340441ad480b64ab55:config/initializers/devise.rb:generic-api-key:17
+ef38cbd32ea5eb2f5a8d8e8d70ed59afd6a40c37:bin/check_runtime_credentials:generic-api-key:10
+ef38cbd32ea5eb2f5a8d8e8d70ed59afd6a40c37:bin/check_runtime_credentials:generic-api-key:11

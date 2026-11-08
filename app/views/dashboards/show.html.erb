@@ -111,8 +111,7 @@
                      aria-valuenow="<%= item[:count] %>"
                      aria-valuemin="0"
                      aria-valuemax="<%= monthly_maximum %>">
-                  <div class="progress-bar"
-                       style="width: <%= percentage %>%"></div>
+                  <div class="progress-bar progress-width-<%= percentage %>"></div>
                 </div>
               </div>
             <% end %>

@@ -1,0 +1,57 @@
+[
+  {
+    "key": "creation",
+    "title": "【P1・要件整理】カード作成フローを簡略化する要件を整理する",
+    "path": "docs/design/issue-129/review-issues/creation.md"
+  },
+  {
+    "key": "information",
+    "title": "【P1・検討】画面の情報量・ナビゲーション・共通操作を整理する",
+    "path": "docs/design/issue-129/review-issues/information.md"
+  },
+  {
+    "key": "search",
+    "title": "【P2・要件整理】検索・タグ・絞り込みと一覧への復帰を見直す",
+    "path": "docs/design/issue-129/review-issues/search.md"
+  },
+  {
+    "key": "reading",
+    "title": "【P2・要件整理】カードの閲覧・編集・再利用をシンプルにする",
+    "path": "docs/design/issue-129/review-issues/reading.md"
+  },
+  {
+    "key": "review",
+    "title": "【P2・要件整理】復習予定・復習記録・理解度の操作を整理する",
+    "path": "docs/design/issue-129/review-issues/review.md"
+  },
+  {
+    "key": "onboarding",
+    "title": "【P1・検討】初回利用・テンプレート選択・案内文を分かりやすくする",
+    "path": "docs/design/issue-129/review-issues/onboarding.md"
+  },
+  {
+    "key": "accessibility",
+    "title": "【P1・検討】モバイル・キーボード・アクセシビリティの受け入れ条件を整理する",
+    "path": "docs/design/issue-129/review-issues/accessibility.md"
+  },
+  {
+    "key": "feedback",
+    "title": "【P1・要件整理】空状態・エラー・送信中・入力保持の共通ルールを整理する",
+    "path": "docs/design/issue-129/review-issues/feedback.md"
+  },
+  {
+    "key": "dashboard",
+    "title": "【P2・検討】ダッシュボードと機能の役割・情報優先度を見直す",
+    "path": "docs/design/issue-129/review-issues/dashboard.md"
+  },
+  {
+    "key": "account",
+    "title": "【P1・検討】認証・復旧・退会・公開情報の案内を見直す",
+    "path": "docs/design/issue-129/review-issues/account.md"
+  },
+  {
+    "key": "quality",
+    "title": "【P1・評価計画】実操作・表示速度・Turbo/Stimulusの品質を確認する要件を整理する",
+    "path": "docs/design/issue-129/review-issues/quality.md"
+  }
+]
