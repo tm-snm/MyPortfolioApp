@@ -1,0 +1,79 @@
+[
+  {
+    "key": "creation",
+    "url": "https://github.com/tm-snm/MyPortfolioApp/issues/136",
+    "title": "【P1・要件整理】カード作成フローを簡略化する要件を整理する",
+    "verified": true,
+    "number": 136
+  },
+  {
+    "key": "information",
+    "url": "https://github.com/tm-snm/MyPortfolioApp/issues/137",
+    "title": "【P1・検討】画面の情報量・ナビゲーション・共通操作を整理する",
+    "verified": true,
+    "number": 137
+  },
+  {
+    "key": "search",
+    "url": "https://github.com/tm-snm/MyPortfolioApp/issues/138",
+    "title": "【P2・要件整理】検索・タグ・絞り込みと一覧への復帰を見直す",
+    "verified": true,
+    "number": 138
+  },
+  {
+    "key": "reading",
+    "url": "https://github.com/tm-snm/MyPortfolioApp/issues/139",
+    "title": "【P2・要件整理】カードの閲覧・編集・再利用をシンプルにする",
+    "verified": true,
+    "number": 139
+  },
+  {
+    "key": "review",
+    "url": "https://github.com/tm-snm/MyPortfolioApp/issues/140",
+    "title": "【P2・要件整理】復習予定・復習記録・理解度の操作を整理する",
+    "verified": true,
+    "number": 140
+  },
+  {
+    "key": "onboarding",
+    "url": "https://github.com/tm-snm/MyPortfolioApp/issues/141",
+    "title": "【P1・検討】初回利用・テンプレート選択・案内文を分かりやすくする",
+    "verified": true,
+    "number": 141
+  },
+  {
+    "key": "accessibility",
+    "url": "https://github.com/tm-snm/MyPortfolioApp/issues/142",
+    "title": "【P1・検討】モバイル・キーボード・アクセシビリティの受け入れ条件を整理する",
+    "verified": true,
+    "number": 142
+  },
+  {
+    "key": "feedback",
+    "url": "https://github.com/tm-snm/MyPortfolioApp/issues/143",
+    "title": "【P1・要件整理】空状態・エラー・送信中・入力保持の共通ルールを整理する",
+    "verified": true,
+    "number": 143
+  },
+  {
+    "key": "dashboard",
+    "url": "https://github.com/tm-snm/MyPortfolioApp/issues/144",
+    "title": "【P2・検討】ダッシュボードと機能の役割・情報優先度を見直す",
+    "verified": true,
+    "number": 144
+  },
+  {
+    "key": "account",
+    "url": "https://github.com/tm-snm/MyPortfolioApp/issues/145",
+    "title": "【P1・検討】認証・復旧・退会・公開情報の案内を見直す",
+    "verified": true,
+    "number": 145
+  },
+  {
+    "key": "quality",
+    "url": "https://github.com/tm-snm/MyPortfolioApp/issues/146",
+    "title": "【P1・評価計画】実操作・表示速度・Turbo/Stimulusの品質を確認する要件を整理する",
+    "verified": true,
+    "number": 146
+  }
+]
