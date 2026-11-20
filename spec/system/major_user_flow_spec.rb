@@ -110,7 +110,7 @@ RSpec.describe "主要ユーザーフロー", type: :system do
     click_link "カード一覧"
 
     fill_in "キーワード", with: "Docker"
-    click_button "絞り込む"
+    click_button "検索"
 
     expect(page).to have_content("編集後のDocker権限エラー")
     expect(page).not_to have_content("Rubyの配列について")

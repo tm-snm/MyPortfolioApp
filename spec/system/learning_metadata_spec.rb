@@ -32,9 +32,10 @@ RSpec.describe "学習状態", type: :system do
     within("section.card", text: "学習状態") do
       expect(page).to have_content("理解度：未設定")
       expect(page).to have_content("重要度：未設定")
-      select "だいたい理解", from: "理解度"
-      select "高", from: "重要度"
-      click_button "学習状態を更新"
+      expect(page).to have_css("details:not([open]) > summary", text: "理解度・重要度を変更")
+      select "だいたい理解", from: "理解度", visible: :all
+      select "高", from: "重要度", visible: :all
+      click_button "学習状態を更新", visible: :all
     end
 
     expect(page).to have_content("理解度・重要度を更新しました")

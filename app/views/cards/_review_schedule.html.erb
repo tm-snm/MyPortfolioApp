@@ -2,109 +2,106 @@
   <div class="card-body">
     <h2 class="h5">復習スケジュール</h2>
 
-    <%= render "review_status", card: card %>
-
     <% if card.last_reviewed_at.present? %>
       <p class="text-muted small mt-2 mb-0">
         最終復習日時：<%= card.last_reviewed_at.strftime("%Y/%m/%d %H:%M") %>
       </p>
     <% end %>
 
-    <hr>
-
-    <% schedule_error_id = params[:action] == "schedule_review" ? "schedule-errors" : nil %>
-    <%= form_with url: schedule_review_card_path(card),
-                  scope: :card,
-                  method: :patch,
-                  class: "row g-2 align-items-end" do |form| %>
-      <% if schedule_error_id && card.errors.any? %>
-        <div class="col-12">
-          <%= render "shared/form_errors", record: card, id: "schedule-errors",
-                     messages: schedule_error_id ? card.errors.full_messages : [] %>
-        </div>
-      <% end %>
-      <div class="col-12 col-sm-auto">
-        <%= form.label :next_review_on,
-                       card.next_review_on? ? "次回復習日を変更" : "次回復習日",
-                       class: "form-label" %>
-        <%= form.date_field :next_review_on,
-                            value: schedule_error_id ? params.dig(:card, :next_review_on) : card.next_review_on,
-                            min: Date.current,
-                            required: true,
-                            class: "form-control",
-                            **field_error_attributes(card, :next_review_on, error_id: schedule_error_id) %>
-      </div>
-
-      <div class="col-12 col-sm-auto">
-        <%= form.submit card.next_review_on? ? "復習日を変更" : "復習日を設定",
-                        class: "btn btn-primary w-100",
-                        data: { turbo_submits_with: "更新中..." } %>
-      </div>
-    <% end %>
-
-    <% if card.review_later? %>
-      <hr>
-
-      <h3 class="h6">復習を記録する</h3>
-      <p class="text-muted small">
-        カードを復習したら、次に見返す日を決めて記録します。
-      </p>
-
-      <% reviewed_error_id = params[:action] == "mark_reviewed" ? "reviewed-errors" : nil %>
-      <%= form_with url: mark_reviewed_card_path(card),
+    <% schedule_error_id = action_name == "schedule_review" ? "schedule-errors" : nil %>
+    <details class="card-detail-options" <%= "open" if schedule_error_id && card.errors.any? %>>
+      <summary><%= card.next_review_on? ? "次回復習日を変更" : "次回復習日を設定" %></summary>
+      <%= form_with url: schedule_review_card_path(card),
                     scope: :card,
                     method: :patch,
-                    class: "row g-2 align-items-end mb-3" do |form| %>
-        <% if reviewed_error_id && card.errors.any? %>
+                    class: "row g-2 align-items-end" do |form| %>
+        <% if schedule_error_id && card.errors.any? %>
           <div class="col-12">
-            <%= render "shared/form_errors", record: card, id: "reviewed-errors",
-                       messages: reviewed_error_id ? card.errors.full_messages : [] %>
+            <%= render "shared/form_errors", record: card, id: "schedule-errors",
+                       messages: card.errors.full_messages %>
           </div>
         <% end %>
-        <div class="col-12 col-sm-auto">
+        <div class="col-12">
           <%= form.label :next_review_on,
-                         "復習後の次回復習日",
-                         for: "reviewed_next_review_on",
+                         card.next_review_on? ? "次回復習日を変更" : "次回復習日",
                          class: "form-label" %>
           <%= form.date_field :next_review_on,
-                              id: "reviewed_next_review_on",
-                              value: params[:action] == "mark_reviewed" ?
-                                params.dig(:card, :next_review_on) : nil,
+                              value: schedule_error_id ? params.dig(:card, :next_review_on) : card.next_review_on,
                               min: Date.current,
                               required: true,
                               class: "form-control",
-                              **field_error_attributes(card, :next_review_on, error_id: reviewed_error_id) %>
+                              **field_error_attributes(card, :next_review_on, error_id: schedule_error_id) %>
         </div>
 
-        <div class="col-12 col-sm-auto">
-          <%= form.label :understanding_level,
-                         "復習後の理解度",
-                         for: "reviewed_understanding_level",
-                         class: "form-label" %>
-          <%= form.select :understanding_level,
-                          options_for_select(
-                            Card.understanding_levels.keys.map { |level|
-                              [
-                                t("enums.card.understanding_level.#{level}"),
-                                level
-                              ]
-                            },
-                            params[:action] == "mark_reviewed" ?
-                              params.dig(:card, :understanding_level) :
-                              card.understanding_level
-                          ),
-                          { include_blank: "未設定" },
-                          id: "reviewed_understanding_level",
-                          class: "form-select",
-                          **field_error_attributes(card, :understanding_level, error_id: reviewed_error_id) %>
-        </div>
-
-        <div class="col-12 col-sm-auto">
-          <%= form.submit "復習した",
+        <div class="col-12">
+          <%= form.submit card.next_review_on? ? "復習日を変更" : "復習日を設定",
                           class: "btn btn-primary w-100",
-                          data: { turbo_submits_with: "記録中..." } %>
+                          data: { turbo_submits_with: "更新中..." } %>
         </div>
       <% end %>
+    </details>
+
+    <% if card.review_later? %>
+      <% reviewed_error_id = action_name == "mark_reviewed" ? "reviewed-errors" : nil %>
+      <% review_due = [:today, :overdue].include?(card.review_timing) %>
+      <details class="card-detail-options border-top" <%= "open" if review_due || (reviewed_error_id && card.errors.any?) %>>
+        <summary>復習を記録</summary>
+        <p class="text-muted small">カードを復習したら、次に見返す日を決めて記録します。</p>
+        <%= form_with url: mark_reviewed_card_path(card),
+                      scope: :card,
+                      method: :patch,
+                      class: "row g-2 align-items-end mb-3" do |form| %>
+          <% if reviewed_error_id && card.errors.any? %>
+            <div class="col-12">
+              <%= render "shared/form_errors", record: card, id: "reviewed-errors",
+                         messages: card.errors.full_messages %>
+            </div>
+          <% end %>
+          <div class="col-12">
+            <%= form.label :next_review_on,
+                           "復習後の次回復習日",
+                           for: "reviewed_next_review_on",
+                           class: "form-label" %>
+            <%= form.date_field :next_review_on,
+                                id: "reviewed_next_review_on",
+                                value: reviewed_error_id ?
+                                  params.dig(:card, :next_review_on) : nil,
+                                min: Date.current,
+                                required: true,
+                                class: "form-control",
+                                **field_error_attributes(card, :next_review_on, error_id: reviewed_error_id) %>
+          </div>
+
+          <div class="col-12">
+            <%= form.label :understanding_level,
+                           "復習後の理解度",
+                           for: "reviewed_understanding_level",
+                           class: "form-label" %>
+            <%= form.select :understanding_level,
+                            options_for_select(
+                              Card.understanding_levels.keys.map { |level|
+                                [
+                                  t("enums.card.understanding_level.#{level}"),
+                                  level
+                                ]
+                              },
+                              reviewed_error_id ?
+                                params.dig(:card, :understanding_level) :
+                                card.understanding_level
+                            ),
+                            { include_blank: "未設定" },
+                            id: "reviewed_understanding_level",
+                            class: "form-select",
+                            **field_error_attributes(card, :understanding_level, error_id: reviewed_error_id) %>
+          </div>
+
+          <div class="col-12">
+            <%= form.submit "復習した",
+                            class: "btn btn-primary w-100",
+                            data: { turbo_submits_with: "記録中..." } %>
+          </div>
+        <% end %>
+      </details>
 
       <%= button_to "復習予定を解除",
                     cancel_review_card_path(card),

@@ -15,7 +15,10 @@ RSpec.describe "アカウント削除", type: :system do
     fill_in "パスワード", with: "password123"
     click_button "ログイン"
 
-    click_link "アカウント削除"
+    within("header details") do
+      expect(page).to have_css("summary", text: "アカウント")
+      click_link "アカウント削除", visible: :all
+    end
 
     expect(page).to have_current_path(account_deletion_path)
     expect(page).to have_content("削除すると元に戻せません")
