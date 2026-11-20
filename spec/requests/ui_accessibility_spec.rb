@@ -13,6 +13,41 @@ RSpec.describe "既存画面の操作とアクセシビリティ", type: :reques
     expect(document.at_css("main#main-content")["tabindex"]).to eq("-1")
   end
 
+  it "通常一覧と今日の復習で見出しとナビの現在地を切り替える" do
+    get cards_path
+    document = response.parsed_body
+    expect(document.at_css("main h1").text).to eq("カード一覧")
+    expect(document.css("header [aria-current]").pluck("href")).to eq([ cards_path ])
+
+    get cards_path, params: { review_filter: "due" }
+    document = response.parsed_body
+    expect(document.at_css("main h1").text).to eq("今日の復習")
+    expect(document.css("header [aria-current]").pluck("href")).to eq([ cards_path(review_filter: "due") ])
+    expect(document.at_css("main").text).to include("復習期限を過ぎたカード")
+  end
+
+  it "未ログインの公開ページにログインと新規登録の入口を表示する" do
+    sign_out user
+    get terms_path
+
+    document = response.parsed_body
+    expect(document.css("header nav a").pluck("href")).to eq([ new_user_session_path, new_user_registration_path ])
+    expect(document.css("footer nav a").pluck("href")).to include(terms_path, privacy_path, contact_path)
+  end
+
+  it "期限超過のカードでは本文の後に復習記録を開いて表示する" do
+    card = create(:card, :scheduled_for_review, user: user, next_review_on: Date.current)
+    travel 1.day do
+      get card_path(card)
+
+      document = response.parsed_body
+      details = document.at_css("#reviewed_next_review_on").ancestors("details").first
+      expect(details.key?("open")).to be(true)
+      headings = document.css("main h2").map(&:text)
+      expect(headings.index("本文")).to be < headings.index("復習スケジュール")
+    end
+  end
+
   it "カードの保存失敗時は入力とタグを保持し、エラーを入力欄に関連付ける" do
     expect do
       post cards_path, params: {
@@ -91,7 +126,7 @@ RSpec.describe "既存画面の操作とアクセシビリティ", type: :reques
 
     document = response.parsed_body
     expect(document.css('[data-controller="focus"]').size).to eq(1)
-    expect(document.at_css("#learning-errors")).to be_present
+    expect(document.at_css("details[open] #learning-errors")).to be_present
     expect(document.at_css("#reviewed-errors")).to be_nil
     expect(document.at_css("#reviewed_understanding_level")["aria-invalid"]).to be_nil
     expect(card.reload.understanding_level).to be_nil
@@ -105,7 +140,7 @@ RSpec.describe "既存画面の操作とアクセシビリティ", type: :reques
 
     expect(response).to have_http_status(:unprocessable_content)
     document = response.parsed_body
-    expect(document.at_css("#reviewed_next_review_on")["aria-describedby"]).to eq("reviewed-errors")
+    expect(document.at_css("details[open] #reviewed_next_review_on")["aria-describedby"]).to eq("reviewed-errors")
     expect(document.at_css("#reviewed_understanding_level")["aria-describedby"]).to eq("reviewed-errors")
     expect(document.at_css("#learning-errors")).to be_nil
     expect(card.reload.last_reviewed_at).to be_nil
@@ -119,7 +154,7 @@ RSpec.describe "既存画面の操作とアクセシビリティ", type: :reques
 
     expect(response).to have_http_status(:unprocessable_content)
     document = response.parsed_body
-    expect(document.at_css("#card_next_review_on")["value"]).to eq(past_date.to_s)
+    expect(document.at_css("details[open] #card_next_review_on")["value"]).to eq(past_date.to_s)
     expect(document.at_css("#card_next_review_on")["aria-describedby"]).to eq("schedule-errors")
     expect(card.reload.next_review_on).to be_nil
   end

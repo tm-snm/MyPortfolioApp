@@ -4,64 +4,65 @@
 
     <%= render "learning_status", card: card %>
 
-    <hr>
-
-    <% error_id = params[:action] == "update_learning_metadata" ? "learning-errors" : nil %>
-    <%= form_with model: card,
-                  url: learning_metadata_card_path(card),
-                  method: :patch,
-                  class: "row g-2 align-items-end" do |form| %>
-      <% if error_id && card.errors.any? %>
+    <% error_id = action_name == "update_learning_metadata" ? "learning-errors" : nil %>
+    <details class="card-detail-options mt-2" <%= "open" if error_id && card.errors.any? %>>
+      <summary>理解度・重要度を変更</summary>
+      <%= form_with model: card,
+                    url: learning_metadata_card_path(card),
+                    method: :patch,
+                    class: "row g-2 align-items-end" do |form| %>
+        <% if error_id && card.errors.any? %>
+          <div class="col-12">
+            <%= render "shared/form_errors", record: card, id: "learning-errors",
+                       messages: card.errors.full_messages %>
+          </div>
+        <% end %>
         <div class="col-12">
-          <%= render "shared/form_errors", record: card, id: "learning-errors",
-                     messages: error_id ? card.errors.full_messages : [] %>
+          <%= form.label :understanding_level,
+                         "理解度",
+                         for: "learning_understanding_level",
+                         class: "form-label" %>
+          <%= form.select :understanding_level,
+                          options_for_select(
+                            Card.understanding_levels.keys.map { |level|
+                              [
+                                t("enums.card.understanding_level.#{level}"),
+                                level
+                              ]
+                            },
+                            card.understanding_level
+                          ),
+                          { include_blank: "未設定" },
+                          id: "learning_understanding_level",
+                          class: "form-select",
+                          **field_error_attributes(card, :understanding_level, error_id: error_id) %>
+        </div>
+
+        <div class="col-12">
+          <%= form.label :importance,
+                         "重要度",
+                         class: "form-label" %>
+          <%= form.select :importance,
+                          options_for_select(
+                            Card.importances.keys.map { |importance|
+                              [
+                                t("enums.card.importance.#{importance}"),
+                                importance
+                              ]
+                            },
+                            card.importance
+                          ),
+                          { include_blank: "未設定" },
+                          class: "form-select",
+                          **field_error_attributes(card, :importance, error_id: error_id) %>
+        </div>
+
+        <div class="col-12">
+          <%= form.submit "学習状態を更新",
+                          class: "btn btn-primary w-100",
+                          data: { turbo_submits_with: "更新中..." } %>
         </div>
       <% end %>
-      <div class="col-12 col-sm-5 col-lg-4">
-        <%= form.label :understanding_level,
-                       "理解度",
-                       for: "learning_understanding_level",
-                       class: "form-label" %>
-        <%= form.select :understanding_level,
-                        options_for_select(
-                          Card.understanding_levels.keys.map { |level|
-                            [
-                              t("enums.card.understanding_level.#{level}"),
-                              level
-                            ]
-                          },
-                          card.understanding_level
-                        ),
-                        { include_blank: "未設定" },
-                        id: "learning_understanding_level",
-                        class: "form-select",
-                        **field_error_attributes(card, :understanding_level, error_id: error_id) %>
-      </div>
-
-      <div class="col-12 col-sm-5 col-lg-4">
-        <%= form.label :importance,
-                       "重要度",
-                       class: "form-label" %>
-        <%= form.select :importance,
-                        options_for_select(
-                          Card.importances.keys.map { |importance|
-                            [
-                              t("enums.card.importance.#{importance}"),
-                              importance
-                            ]
-                          },
-                          card.importance
-                        ),
-                        { include_blank: "未設定" },
-                        class: "form-select",
-                        **field_error_attributes(card, :importance, error_id: error_id) %>
-      </div>
-
-      <div class="col-12 col-lg-auto">
-        <%= form.submit "学習状態を更新",
-                        class: "btn btn-primary w-100",
-                        data: { turbo_submits_with: "更新中..." } %>
-      </div>
-    <% end %>
+    </details>
   </div>
 </section>

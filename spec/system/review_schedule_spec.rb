@@ -26,8 +26,9 @@ RSpec.describe "復習スケジュール", type: :system do
 
     visit card_path(card)
 
-    fill_in "次回復習日", with: Date.current
-    click_button "復習日を設定"
+    expect(page).to have_css("details:not([open]) > summary", text: "次回復習日を設定")
+    fill_in "次回復習日", with: Date.current, visible: :all
+    click_button "復習日を設定", visible: :all
 
     expect(page).to have_content("次回復習日を設定しました")
     expect(page).to have_content("今日：2026/09/09")
@@ -35,7 +36,7 @@ RSpec.describe "復習スケジュール", type: :system do
 
     click_link "今日の復習"
 
-    expect(page).to have_select("復習状況", selected: "今日まで")
+    expect(page).to have_select("復習状況", selected: "今日まで", visible: :all)
     expect(page).to have_content(card.title)
 
     click_link "詳細を見る", href: card_path(card)

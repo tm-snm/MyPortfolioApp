@@ -26,7 +26,7 @@ class CardsController < ApplicationController
 
     @cards = filter_by_review_schedule(@cards)
 
-    @cards = @cards.sorted_by(@sort_order)
+    @cards = @cards.sorted_by(@sort_order).includes(:tags)
     @tags = current_user.tags.order(:name)
   end
 

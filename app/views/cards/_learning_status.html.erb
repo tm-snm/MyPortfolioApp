@@ -18,11 +18,12 @@
      else "text-bg-light border"
      end %>
 
+<% subtle = local_assigns.fetch(:subtle, false) %>
 <div class="d-flex flex-wrap align-items-center gap-2">
-  <span class="badge text-bg-info">
+  <span class="badge <%= subtle ? "card-list-tag" : "text-bg-info" %>">
     理解度：<%= understanding_label %>
   </span>
-  <span class="badge <%= importance_badge_class %>">
+  <span class="badge <%= subtle ? "card-list-tag" : importance_badge_class %>">
     重要度：<%= importance_label %>
   </span>
 </div>
