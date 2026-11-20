@@ -44,7 +44,7 @@ RSpec.describe "主要ユーザーフロー", type: :system do
     expect(page).to have_content(prompt_template.title)
 
     click_link(
-      "詳細を見る",
+      "テンプレートを開く",
       href: prompt_template_path(prompt_template)
     )
 

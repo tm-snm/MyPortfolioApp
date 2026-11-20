@@ -439,8 +439,9 @@ RSpec.describe "PromptTemplates", type: :request do
         expect(page.at_css('main a[href="' + new_from_ai_cards_path + '"]').text)
           .to eq("AI回答を貼り付ける")
         expect(page.at_css("#all-templates-heading").text).to eq("すべてのテンプレート")
-        expect(page.at_css('main a[href="' + prompt_template_path(official_template) + '"]'))
-          .to be_present
+        official_link = page.at_css("main a[href='#{prompt_template_path(official_template)}']")
+        expect(official_link.text).to eq("テンプレートを開く")
+        expect(official_link["aria-label"]).to eq("テンプレートを開く（#{official_template.title}）")
       end
 
       it "最近使ったテンプレートを新しい順に5件まで表示する" do

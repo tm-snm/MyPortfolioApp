@@ -46,6 +46,6 @@ RSpec.describe "テンプレートのクイックアクセス", type: :system do
 
     expect(page).to have_no_css("#quick-access-heading")
     expect(page).to have_content("すべてのテンプレート")
-    expect(page).to have_link("詳細を見る", href: prompt_template_path(prompt_template))
+    expect(page).to have_link("テンプレートを開く", href: prompt_template_path(prompt_template))
   end
 end
