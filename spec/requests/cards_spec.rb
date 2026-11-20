@@ -156,6 +156,30 @@ RSpec.describe "Cards", type: :request do
           )
         end
 
+        it "原文を空にしたAIフォームでも、保存失敗時に編集内容を保持して修正できる" do
+          submitted = ai_card_params[:card].merge(title: "", raw_content: "")
+          params = { ai_previewed: "1", card: submitted, tag_names: "Rails, Docker" }
+
+          expect { post cards_path, params: params }
+            .not_to change { [ Card.count, Tag.count, Tagging.count ] }
+
+          expect(response).to have_http_status(:unprocessable_content)
+          document = response.parsed_body
+          expect(document.at_css("#parsed-card-heading")).to be_present
+          expect(document.at_css("#ai-card-errors")).to be_present
+          expect(document.at_css("#card_body").text.strip).to eq(submitted[:body])
+          expect(document.at_css("#card_future_note").text.strip).to eq(submitted[:future_note])
+          expect(document.at_css("#tag_names")["value"]).to eq("Rails, Docker")
+          expect(document.at_css(".markdown-content")).to be_nil
+
+          submitted[:title] = "修正後のタイトル"
+          expect { post cards_path, params: params }.to change(user.cards, :count).by(1)
+          card = user.cards.find_by!(title: "修正後のタイトル")
+          expect(card).to have_attributes(body: submitted[:body], raw_content: "")
+          expect(card.tags.pluck(:name)).to contain_exactly("Rails", "Docker")
+          expect(response).to redirect_to(card)
+        end
+
         it "バリデーション失敗時もAIの元出力とタグ入力を保持する" do
           ai_card_params[:card][:title] = ""
           ai_card_params[:tag_names] = "Rails, Docker"
@@ -1385,7 +1409,9 @@ RSpec.describe "Cards", type: :request do
         expect(response).to have_http_status(:ok)
         expect(response.body).to include('turbo-frame id="ai_card_builder"')
         expect(response.body).to include('name="card[raw_content]"')
-        expect(response.body).to include("カード作成の4ステップ")
+        document = response.parsed_body
+        expect(document.at_css("main a[href='#{prompt_templates_path}']")).to be_present
+        expect(document.at_css("main a[href='#{new_card_path}']")).to be_present
       end
     end
 
@@ -1503,6 +1529,66 @@ RSpec.describe "Cards", type: :request do
           post preview_from_ai_cards_path,
               params: { card: { raw_content: raw_content } }
         end.not_to change(Card, :count)
+      end
+
+      context "編集後に再解析する場合" do
+        let(:edited_fields) do
+          { title: "編集中のタイトル", body: "編集中の本文", future_note: "編集中のメモ" }
+        end
+
+        it "本文と抽出したタイトルを置き換え、空にしたメモとタグを保持する" do
+          expect do
+            post preview_from_ai_cards_path, params: {
+              ai_previewed: "1",
+              card: edited_fields.merge(raw_content: raw_content, future_note: ""),
+              tag_names: "Rails, Docker"
+            }
+          end.not_to change { [ Card.count, Tag.count, Tagging.count ] }
+
+          expect(response).to have_http_status(:ok)
+          document = response.parsed_body
+          expect(document.at_css("#card_title")["value"]).to eq("RailsのStrong Parametersについて")
+          expect(document.at_css("#card_body").text).to include("受け取るパラメータを制限")
+          expect(document.at_css("#card_future_note").text.strip).to be_empty
+          expect(document.at_css("#tag_names")["value"]).to eq("Rails, Docker")
+          expect(document.at_css(".markdown-content")).to be_present
+        end
+
+        it "タイトルを抽出できない場合は編集中のタイトルを保持し、本文に全文を設定する" do
+          post preview_from_ai_cards_path, params: {
+            ai_previewed: "1",
+            card: edited_fields.merge(raw_content: "見出しのない回答")
+          }
+
+          expect(response).to have_http_status(:ok)
+          document = response.parsed_body
+          expect(document.at_css("#card_title")["value"]).to eq(edited_fields[:title])
+          expect(document.at_css("#card_body").text.strip).to eq("見出しのない回答")
+          expect(document.at_css("#card_future_note").text.strip).to eq(edited_fields[:future_note])
+        end
+
+        it "空白で再解析しても編集内容とタグを保持し、開いた原文欄にエラーを表示する" do
+          expect do
+            post preview_from_ai_cards_path,
+                 params: {
+                   ai_previewed: "1",
+                   card: edited_fields.merge(raw_content: "  "),
+                   tag_names: "Rails, Docker"
+                 },
+                 headers: { "ACCEPT" => Mime[:turbo_stream].to_s }
+          end.not_to change { [ Card.count, Tag.count, Tagging.count ] }
+
+          expect(response).to have_http_status(:unprocessable_content)
+          document = Nokogiri::HTML.fragment(response.body)
+          expect(document.at_css('turbo-stream[target="ai_card_builder"]')).to be_present
+          expect(document.at_css("#card_title")["value"]).to eq(edited_fields[:title])
+          expect(document.at_css("#card_body").text.strip).to eq(edited_fields[:body])
+          expect(document.at_css("#card_future_note").text.strip).to eq(edited_fields[:future_note])
+          expect(document.at_css("#tag_names")["value"]).to eq("Rails, Docker")
+          expect(document.at_css("details[open] #card_raw_content").text.delete_prefix("\n")).to eq("  ")
+          expect(document.css('[data-controller="focus"]').pluck("id")).to eq([ "raw-content-help" ])
+          expect(document.at_css(".markdown-content")).to be_nil
+        end
       end
 
       it "形式が崩れていても500エラーにならない" do

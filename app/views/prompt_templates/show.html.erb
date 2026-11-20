@@ -1,4 +1,4 @@
-<div class="container py-4">
+<div class="container creation-page py-4 py-md-5">
   <div class="mb-4">
     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
       <% if @prompt_template.official? %>
@@ -12,69 +12,56 @@
       </span>
     </div>
 
-    <h1 class="h2 break-anywhere"><%= @prompt_template.title %></h1>
+    <h1 class="creation-heading break-anywhere"><%= @prompt_template.title %></h1>
 
     <% if @prompt_template.description.present? %>
-      <p class="text-muted">
+      <p class="creation-muted mb-0 break-anywhere">
         <%= @prompt_template.description %>
       </p>
     <% end %>
   </div>
 
-  <%= render "shared/card_creation_steps", current_step: 1 %>
-
-  <div
-    class="card shadow-sm mb-3"
+  <section
+    class="creation-surface p-3 p-md-4 mb-3"
+    aria-labelledby="use-template-heading"
     data-controller="clipboard"
     data-clipboard-usage-url-value="<%= record_usage_prompt_template_path(@prompt_template) %>">
-    <div class="card-body">
-      <h2 class="h5 mb-3">プロンプト本文</h2>
+    <h2 id="use-template-heading" class="h5 mb-3">このテンプレートを使う</h2>
 
-      <pre
-        class="prompt-template-content mb-3"
-        data-clipboard-target="source"><%= @prompt_template.body %></pre>
+    <div class="d-grid d-sm-flex align-items-sm-center gap-2 gap-sm-3 mb-3">
+      <button
+        type="button"
+        class="btn btn-primary"
+        hidden
+        data-clipboard-target="button"
+        data-action="clipboard#copy">
+        プロンプトをコピー
+      </button>
 
-      <div class="d-grid d-sm-flex align-items-sm-center gap-2 gap-sm-3">
-        <button
-          type="button"
-          class="btn btn-primary"
-          data-clipboard-target="button"
-          data-action="clipboard#copy">
-          プロンプトをコピー
-        </button>
-
-        <span
-          class="small break-anywhere"
-          data-clipboard-target="message"
-          role="status"
-          aria-live="polite">
-        </span>
-      </div>
-
-      <div class="alert alert-info mt-3 mb-0 d-none" data-clipboard-target="guidance">
-        <p class="fw-semibold mb-2">次は外部AIで回答を作成します。</p>
-
-        <ol class="ps-3 ps-sm-4 mb-3">
-          <li>コピーしたプロンプトを普段使っている外部AIへ貼り付ける</li>
-          <li>AIが整理した回答をコピーする</li>
-          <li>Recall Cardへ戻り、回答を貼り付ける</li>
-        </ol>
-
-        <div class="d-grid d-sm-block">
-          <%= link_to "AI回答を貼り付ける",
-                      new_from_ai_cards_path,
-                      class: "btn btn-primary" %>
-        </div>
-      </div>
-
-      <noscript>
-        <div class="alert alert-info mt-3 mb-0">
-          プロンプトを手動でコピーして外部AIへ貼り付け、回答をコピーしたら
-          <%= link_to "貼り付け画面へ進む", new_from_ai_cards_path %>へ進んでください。
-        </div>
-      </noscript>
+      <span
+        class="small break-anywhere"
+        data-clipboard-target="message"
+        role="status"
+        aria-live="polite">
+      </span>
     </div>
-  </div>
+
+    <p class="creation-muted mb-1">
+      コピーしたプロンプトを普段使っている外部AIに貼り付けます。
+      整理された回答をコピーしてRecall Cardに戻ってください。
+    </p>
+    <%= link_to "AI回答を貼り付ける", new_from_ai_cards_path, class: "mobile-link mb-2" %>
+
+    <details class="creation-disclosure" data-clipboard-target="manualPanel">
+      <summary>プロンプト本文</summary>
+      <pre class="prompt-template-content mb-0"
+           data-clipboard-target="source"><%= @prompt_template.body %></pre>
+    </details>
+
+    <noscript>
+      <p class="form-text mb-0">プロンプト本文を開き、選択して手動でコピーしてください。</p>
+    </noscript>
+  </section>
 
   <div class="d-grid d-sm-flex flex-sm-wrap gap-2">
     <%= render "favorite_button",

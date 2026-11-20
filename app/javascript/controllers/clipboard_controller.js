@@ -1,8 +1,12 @@
 import { Controller } from "@hotwired/stimulus";
 
 export default class extends Controller {
-  static targets = ["source", "message", "guidance", "button"];
+  static targets = ["source", "message", "guidance", "button", "manualPanel"];
   static values = { usageUrl: String };
+
+  connect() {
+    this.buttonTarget.hidden = false;
+  }
 
   async copy() {
     if (this.copying) return;
@@ -26,6 +30,7 @@ export default class extends Controller {
       this.messageTarget.classList.remove("text-success", "text-warning");
       this.messageTarget.classList.add("text-danger");
       this.buttonTarget.textContent = "コピーを再試行";
+      if (this.hasManualPanelTarget) this.manualPanelTarget.open = true;
 
       this.showGuidance();
     } finally {
@@ -35,7 +40,7 @@ export default class extends Controller {
   }
 
   showGuidance() {
-    this.guidanceTarget.classList.remove("d-none");
+    if (this.hasGuidanceTarget) this.guidanceTarget.classList.remove("d-none");
   }
 
   async recordUsage() {
@@ -52,7 +57,7 @@ export default class extends Controller {
         credentials: "same-origin",
       });
 
-      if (!response.ok) throw new Error("Failed to record template usage");
+      if (response.status !== 204) throw new Error("Failed to record template usage");
     } catch {
       this.messageTarget.textContent =
         "コピーしましたが、最近使った履歴を更新できませんでした。";
