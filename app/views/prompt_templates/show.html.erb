@@ -1,13 +1,11 @@
-<div class="container creation-page py-4 py-md-5">
+<div class="container creation-page prompt-template-page py-4 py-md-5">
   <div class="mb-4">
     <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-      <% if @prompt_template.official? %>
-        <span class="badge text-bg-primary">公式</span>
-      <% else %>
-        <span class="badge text-bg-success">個人</span>
-      <% end %>
+      <span class="badge template-type<%= " template-type-official" if @prompt_template.official? %>">
+        <%= @prompt_template.official? ? "公式" : "個人" %>
+      </span>
 
-      <span class="badge text-bg-light border text-dark break-anywhere">
+      <span class="badge tag-badge template-type">
         <%= @prompt_template.category %>
       </span>
     </div>
