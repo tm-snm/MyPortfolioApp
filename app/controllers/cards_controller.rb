@@ -188,11 +188,18 @@ class CardsController < ApplicationController
   end
 
   def handle_invalid_authenticity_token(error)
-    ai_submission = action_name == "preview_from_ai" || (action_name == "create" && ai_previewed_submission?)
-    raise error if !ai_submission || user_signed_in?
+    raise error if user_signed_in?
+
+    operation =
+      case action_name
+      when "preview_from_ai", "create" then "作成"
+      when "update" then "更新"
+      else
+        raise error
+      end
 
     redirect_to new_user_session_path,
-                alert: "もう一度ログインしてからカードを作成してください",
+                alert: "もう一度ログインしてからカードを#{operation}してください",
                 status: :see_other
   end
 

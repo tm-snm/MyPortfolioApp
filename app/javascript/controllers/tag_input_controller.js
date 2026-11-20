@@ -14,7 +14,7 @@ export default class extends Controller {
     if (!["Enter", ","].includes(event.key)) return;
 
     event.preventDefault();
-    this.addFromInput();
+    if (!this.inputTarget.readOnly) this.addFromInput();
   }
 
   add(event) {

@@ -220,6 +220,29 @@ RSpec.describe "Security boundaries", type: :request do
       end
     end
 
+    it "returns expired manual creates and updates to sign-in without writing" do
+      own = create(:card, user: user)
+      payload = { card: { title: "保存しないタイトル", body: "本文" }, tag_names: "未保存のタグ" }
+
+      expect do
+        post cards_path, params: payload, headers: { "X-CSRF-Token" => "expired" }
+      end.not_to change { [ Card.count, Tag.count, Tagging.count ] }
+      expect(response).to have_http_status(:see_other)
+      expect(response).to redirect_to(new_user_session_path)
+
+      expect do
+        patch card_path(own), params: payload, headers: { "X-CSRF-Token" => "expired" }
+      end.not_to change { [ own.reload.attributes, Tag.count, Tagging.count ] }
+      expect(response).to have_http_status(:see_other)
+      expect(response).to redirect_to(new_user_session_path)
+
+      sign_in user
+      expect do
+        patch card_path(own), params: payload, headers: { "X-CSRF-Token" => "forged" }
+      end.not_to change { [ own.reload.attributes, Tag.count, Tagging.count ] }
+      expect(response).to have_http_status(:unprocessable_content)
+    end
+
     it "protects the clipboard usage fetch and destructive member requests" do
       sign_in user
       own = create(:card, user: user)

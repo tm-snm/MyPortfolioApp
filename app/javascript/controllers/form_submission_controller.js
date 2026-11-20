@@ -3,14 +3,21 @@ import { Controller } from "@hotwired/stimulus";
 // Turbo serializes the form before submit-start. Lock editing until the
 // response arrives so it cannot overwrite changes made after serialization.
 export default class extends Controller {
-  static targets = ["networkError"];
+  static targets = ["networkError", "cancelLink", "status"];
   static values = { signInPath: String };
 
   start(event) {
     if (event.target !== this.element) return;
 
+    this.submitting = true;
     this.networkErrorTarget.hidden = true;
     const submitter = event.detail.formSubmission.submitter;
+    if (this.hasStatusTarget) this.statusTarget.textContent = submitter?.dataset.turboSubmitsWith ?? "";
+    if (this.hasCancelLinkTarget) {
+      this.cancelLinkTarget.setAttribute("aria-disabled", "true");
+      this.cancelLinkTarget.classList.add("disabled");
+    }
+
     this.buttons = Array.from(
       this.element.querySelectorAll('input[type="submit"], button')
     ).filter((button) => button !== submitter && !button.disabled);
@@ -20,7 +27,17 @@ export default class extends Controller {
     this.inputs.forEach((input) => { input.readOnly = true; });
   }
 
+  preventWhileSubmitting(event) {
+    if (this.submitting) event.preventDefault();
+  }
+
   end() {
+    this.submitting = false;
+    if (this.hasStatusTarget) this.statusTarget.textContent = "";
+    if (this.hasCancelLinkTarget) {
+      this.cancelLinkTarget.removeAttribute("aria-disabled");
+      this.cancelLinkTarget.classList.remove("disabled");
+    }
     this.buttons?.forEach((button) => { button.disabled = false; });
     this.buttons = [];
     this.inputs?.forEach((input) => { input.readOnly = false; });
@@ -31,11 +48,16 @@ export default class extends Controller {
     if (event.target !== this.element || !event.detail.fetchResponse.serverError) return;
 
     event.preventDefault();
-    this.networkErrorTarget.hidden = false;
+    this.showNetworkError();
   }
 
   requestFailed(event) {
-    if (event.target === this.element) this.networkErrorTarget.hidden = false;
+    if (event.target === this.element) this.showNetworkError();
+  }
+
+  showNetworkError() {
+    this.networkErrorTarget.hidden = false;
+    this.networkErrorTarget.focus();
   }
 
   handleMissingFrame(event) {
@@ -52,7 +74,7 @@ export default class extends Controller {
       visit(response);
     } else if (!response.ok) {
       event.preventDefault();
-      this.networkErrorTarget.hidden = false;
+      this.showNetworkError();
     }
   }
 
