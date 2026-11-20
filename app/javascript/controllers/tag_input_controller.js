@@ -39,7 +39,7 @@ export default class extends Controller {
     if (event.target !== this.element.closest("form")) return;
 
     this.addFromInput();
-    this.inputTarget.value = this.selectedNames.join(", ");
+    event.formData.set(this.inputTarget.name, this.selectedNames.join(", "));
   }
 
   addFromInput() {

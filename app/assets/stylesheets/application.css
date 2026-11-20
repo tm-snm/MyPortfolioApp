@@ -278,6 +278,72 @@ main[tabindex="-1"]:focus {
   color: #806000 !important;
 }
 
+main:has(.creation-page) {
+  background-color: #eef1f5;
+}
+
+.creation-page {
+  --creation-accent: #2457d6;
+  --creation-border: #d5dce6;
+  max-width: 48rem;
+  color: #1d2b42;
+}
+
+.creation-heading {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 700;
+}
+
+.creation-muted {
+  color: #566277;
+}
+
+.creation-surface {
+  background-color: #fff;
+  border: 1px solid var(--creation-border);
+  border-radius: 0.5rem;
+}
+
+.creation-page .btn-primary {
+  --bs-btn-bg: var(--creation-accent);
+  --bs-btn-border-color: var(--creation-accent);
+  --bs-btn-hover-bg: #1e49b5;
+  --bs-btn-hover-border-color: #1e49b5;
+  --bs-btn-active-bg: #183b94;
+  --bs-btn-active-border-color: #183b94;
+  --bs-btn-disabled-bg: var(--creation-accent);
+  --bs-btn-disabled-border-color: var(--creation-accent);
+}
+
+.creation-page .form-control:not([aria-invalid="true"]) {
+  border-color: #7f8ba0;
+}
+
+.creation-disclosure {
+  border: 1px solid var(--creation-border);
+  border-radius: 0.375rem;
+  padding-inline: 0.75rem;
+  overflow-wrap: anywhere;
+}
+
+.creation-disclosure > summary {
+  align-content: center;
+  min-height: 2.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.creation-disclosure[open] {
+  padding-bottom: 0.75rem;
+}
+
+.creation-page .prompt-template-content {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background-color: #f5f6f8;
+  border-radius: 0.375rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;

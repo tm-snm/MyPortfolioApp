@@ -187,6 +187,39 @@ RSpec.describe "Security boundaries", type: :request do
       end.to change(user.cards, :count).by(1)
     end
 
+    it "protects AI reanalysis and accepts the token from the rendered save form" do
+      sign_in user
+      original = "【タイトル】\n最初の解析\n【本文】\n本文"
+      get new_from_ai_cards_path
+      initial_token = response.parsed_body.at_css('main form input[name="authenticity_token"]')["value"]
+      post preview_from_ai_cards_path, params: {
+        authenticity_token: initial_token, card: { raw_content: original }
+      }
+      expect(response).to have_http_status(:ok)
+      save_form_token = response.parsed_body.at_css('main form input[name="authenticity_token"]')["value"]
+
+      payload = { ai_previewed: "1", card: { raw_content: original } }
+      expect { post preview_from_ai_cards_path, params: payload }.not_to change(Card, :count)
+      expect(response).to have_http_status(:unprocessable_content)
+
+      expect do
+        post preview_from_ai_cards_path, params: payload.merge(authenticity_token: save_form_token)
+      end.not_to change(Card, :count)
+      expect(response).to have_http_status(:ok)
+    end
+
+    it "returns expired AI submissions to sign-in without replay or writes" do
+      payload = { ai_previewed: "1", card: { title: "タイトル", body: "本文", raw_content: "原文" } }
+
+      [ preview_from_ai_cards_path, cards_path ].each do |path|
+        expect do
+          post path, params: payload, headers: { "X-CSRF-Token" => "expired" }
+        end.not_to change { [ Card.count, Tag.count, Tagging.count ] }
+        expect(response).to have_http_status(:see_other)
+        expect(response).to redirect_to(new_user_session_path)
+      end
+    end
+
     it "protects the clipboard usage fetch and destructive member requests" do
       sign_in user
       own = create(:card, user: user)
