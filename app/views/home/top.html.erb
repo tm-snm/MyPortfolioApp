@@ -2,9 +2,9 @@
 
 <section class="hero-section py-5">
   <div class="container py-lg-5">
-    <div class="row align-items-center g-5">
+    <div class="row align-items-center gx-4 gx-lg-5 gy-5">
       <div class="col-lg-7">
-        <p class="text-primary fw-semibold mb-2">
+        <p class="hero-eyebrow fw-semibold mb-2">
           未来の自分へ残す、つまずき解決カード
         </p>
 
@@ -13,22 +13,27 @@
           次に使える知識として残す。
         </h1>
 
-        <p class="lead text-secondary mb-4">
+        <p class="lead creation-muted mb-4">
           Recall Cardは、AIや検索で解決した内容を、
           あとから見返せるカードとして整理・保存するサービスです。
         </p>
 
-        <div class="d-flex flex-wrap gap-2">
-          <%= link_to "特徴を見る", "#{root_path}#features",
-                      class: "btn btn-primary btn-lg" %>
+        <div class="d-grid d-sm-flex flex-sm-wrap gap-2">
+          <% if user_signed_in? %>
+            <%= link_to "カード一覧へ", cards_path, class: "btn btn-primary btn-lg" %>
+            <%= link_to "テンプレートを選ぶ", prompt_templates_path,
+                        class: "btn btn-outline-secondary btn-lg" %>
+          <% else %>
+            <%= link_to "新規登録", new_user_registration_path, class: "btn btn-primary btn-lg" %>
+            <%= link_to "ログイン", new_user_session_path, class: "btn btn-outline-secondary btn-lg" %>
+          <% end %>
 
-          <%= link_to "使い方を見る", "#{root_path}#steps",
-                      class: "btn btn-outline-secondary btn-lg" %>
+          <%= link_to "使い方を見る", "#steps", class: "btn btn-link btn-lg" %>
         </div>
       </div>
 
       <div class="col-lg-5">
-        <div class="card shadow-sm border-0">
+        <div class="card creation-surface shadow-sm">
           <div class="card-body p-4">
             <p class="small text-secondary mb-2">
               Recall Cardの例
@@ -112,36 +117,30 @@
       <h2 class="fw-bold">基本的な使い方</h2>
     </div>
 
-    <div class="row g-4">
-      <div class="col-md-4">
-        <div class="text-center">
-          <span class="step-number">1</span>
-          <h3 class="h5 mt-3">テンプレートをコピー</h3>
-          <p class="text-secondary">
-            アプリ内のプロンプトを外部AIへ貼り付けます。
-          </p>
-        </div>
-      </div>
+    <ol class="row g-4 list-unstyled text-center mb-0" role="list">
+      <li class="col-md-4">
+        <span class="step-number" aria-hidden="true">1</span>
+        <h3 class="h5 mt-3">テンプレートを開く</h3>
+        <p class="creation-muted mb-0">
+          残したい内容に合うひな形を選び、プロンプト（外部AIへの指示文）をコピーして、普段使う外部AIに貼り付けます。
+        </p>
+      </li>
 
-      <div class="col-md-4">
-        <div class="text-center">
-          <span class="step-number">2</span>
-          <h3 class="h5 mt-3">AI出力を貼り付ける</h3>
-          <p class="text-secondary">
-            AIの回答をRecall Cardへ貼り付けます。
-          </p>
-        </div>
-      </div>
+      <li class="col-md-4">
+        <span class="step-number" aria-hidden="true">2</span>
+        <h3 class="h5 mt-3">AI回答を貼り付ける</h3>
+        <p class="creation-muted mb-0">
+          外部AIが整えた回答をコピーし、Recall Cardの「AI回答を貼り付ける」画面に貼り付けます。
+        </p>
+      </li>
 
-      <div class="col-md-4">
-        <div class="text-center">
-          <span class="step-number">3</span>
-          <h3 class="h5 mt-3">確認して保存</h3>
-          <p class="text-secondary">
-            分割結果を編集して、自分のカードとして保存します。
-          </p>
-        </div>
-      </div>
-    </div>
+      <li class="col-md-4">
+        <span class="step-number" aria-hidden="true">3</span>
+        <h3 class="h5 mt-3">内容を確認して保存</h3>
+        <p class="creation-muted mb-0">
+          「内容を確認」でタイトルや本文を確認し、必要に応じて編集して「カードを保存」を押します。
+        </p>
+      </li>
+    </ol>
   </div>
 </section>

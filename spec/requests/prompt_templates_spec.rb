@@ -410,10 +410,17 @@ RSpec.describe "PromptTemplates", type: :request do
 
         get prompt_templates_path
 
-        favorite_section = response.parsed_body.at_css("#favorite-templates")
+        page = response.parsed_body
+        favorite_section = page.at_css("#favorite-templates")
 
         expect(favorite_section.text).to include(official_template.title)
         expect(favorite_section.text).not_to include(other_users_template.title)
+        expect(page.at_css("#recent-templates")).to be_nil
+        expect(page.css("main h2").map(&:text)).to eq(
+          [ "クイックアクセス", "すべてのテンプレート" ]
+        )
+        expect(page.at_css('main a[href="#all-templates-heading"]').text)
+          .to eq("すべてのテンプレートを見る")
       end
 
       it "他ユーザーが同じ公式テンプレートをお気に入りにしても表示しない" do
@@ -426,12 +433,14 @@ RSpec.describe "PromptTemplates", type: :request do
 
         get prompt_templates_path
 
-        favorite_section = response.parsed_body.at_css("#favorite-templates")
+        page = response.parsed_body
 
-        expect(favorite_section.text).not_to include(official_template.title)
-        expect(favorite_section.text).to include(
-          "お気に入りはまだありません。"
-        )
+        expect(page.at_css("#quick-access-heading")).to be_nil
+        expect(page.at_css('main a[href="' + new_from_ai_cards_path + '"]').text)
+          .to eq("AI回答を貼り付ける")
+        expect(page.at_css("#all-templates-heading").text).to eq("すべてのテンプレート")
+        expect(page.at_css('main a[href="' + prompt_template_path(official_template) + '"]'))
+          .to be_present
       end
 
       it "最近使ったテンプレートを新しい順に5件まで表示する" do
@@ -453,9 +462,10 @@ RSpec.describe "PromptTemplates", type: :request do
 
         get prompt_templates_path
 
-        recent_titles = response.parsed_body
-                                .css("#recent-templates .list-group-item")
-                                .map { |link| link.text.squish }
+        page = response.parsed_body
+        recent_titles = page.css("#recent-templates .list-group-item").map { |link| link.text.squish }
+
+        expect(page.at_css("#favorite-templates")).to be_nil
 
         expect(recent_titles.length).to eq(5)
         expect(recent_titles).to eq(
