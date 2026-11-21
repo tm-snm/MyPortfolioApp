@@ -4,12 +4,13 @@ import { Controller } from "@hotwired/stimulus";
 // response arrives so it cannot overwrite changes made after serialization.
 export default class extends Controller {
   static targets = ["networkError", "cancelLink", "status"];
-  static values = { signInPath: String };
+  static values = { signInPath: String, validationErrorId: String };
 
   start(event) {
     if (event.target !== this.element) return;
 
     this.submitting = true;
+    this.clearPreviousValidation();
     this.networkErrorTarget.hidden = true;
     const submitter = event.detail.formSubmission.submitter;
     if (this.hasStatusTarget) this.statusTarget.textContent = submitter?.dataset.turboSubmitsWith ?? "";
@@ -42,6 +43,28 @@ export default class extends Controller {
     this.buttons = [];
     this.inputs?.forEach((input) => { input.readOnly = false; });
     this.inputs = [];
+  }
+
+  clearPreviousValidation() {
+    if (!this.hasValidationErrorIdValue) return;
+
+    const errorId = this.validationErrorIdValue;
+    const escapedId = CSS.escape(errorId);
+    const summary = this.element.querySelector(`#${escapedId}`);
+    if (!summary) return;
+
+    this.element.querySelectorAll(`[aria-describedby~="${escapedId}"]`).forEach((field) => {
+      const descriptions = field.getAttribute("aria-describedby").trim().split(/\s+/)
+        .filter((description) => description !== errorId);
+
+      field.removeAttribute("aria-invalid");
+      if (descriptions.length) {
+        field.setAttribute("aria-describedby", descriptions.join(" "));
+      } else {
+        field.removeAttribute("aria-describedby");
+      }
+    });
+    summary.remove();
   }
 
   preserveOnServerError(event) {

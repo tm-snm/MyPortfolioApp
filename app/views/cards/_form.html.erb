@@ -1,7 +1,9 @@
+<% error_id = "card-errors" %>
 <%= form_with model: card,
               class: "creation-surface p-3 p-md-4",
               data: {
                 controller: "form-submission",
+                form_submission_validation_error_id_value: error_id,
                 action: [
                   "submit->form-submission#preventWhileSubmitting",
                   "turbo:submit-start->form-submission#start",
@@ -20,18 +22,18 @@
     </p>
   </div>
 
-  <%= render "shared/form_errors", record: card, id: "card-errors" %>
+  <%= render "shared/form_errors", record: card, id: error_id %>
 
   <div class="mb-3">
     <%= form.label :title, "タイトル（必須）", class: "form-label" %>
     <%= form.text_field :title, class: "form-control", placeholder: "例：DockerでGemを追加できなかった原因",
-                        **field_error_attributes(card, :title, error_id: "card-errors") %>
+                        **field_error_attributes(card, :title, error_id: error_id) %>
   </div>
 
   <div class="mb-3">
     <%= form.label :body, "本文（必須）", class: "form-label" %>
     <%= form.text_area :body, rows: 12, class: "form-control", placeholder: "状況、原因、解決方法などを入力してください",
-                        **field_error_attributes(card, :body, error_id: "card-errors") %>
+                        **field_error_attributes(card, :body, error_id: error_id) %>
   </div>
 
   <div class="mb-4">
