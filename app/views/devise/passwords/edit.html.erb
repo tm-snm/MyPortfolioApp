@@ -11,8 +11,8 @@
                    html: { method: :put },
                    data: account_form_submission_data(validation_error_id: "error_explanation") do |f| %>
         <%= render "devise/shared/submission_feedback",
-                   message: "パスワードの変更結果を確認できませんでした。新しいパスワードでログインできるか確認してください。",
-                   recovery_label: "ログイン画面を開く（別タブ）", recovery_path: new_session_path(resource_name) %>
+                   message: "パスワードの変更結果を確認できませんでした。別タブでは、ログイン済みの場合はカード一覧、未ログインの場合はログイン画面が開きます。ログイン画面が開いたら、新しいパスワードでログインできるか確認してください。",
+                   recovery_label: "ログイン状態を確認する（別タブ）", recovery_path: cards_path %>
         <%= render "devise/shared/error_messages", resource: resource %>
         <%= f.hidden_field :reset_password_token %>
 
