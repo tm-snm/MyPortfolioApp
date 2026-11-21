@@ -1,11 +1,11 @@
 <% content_for :title, "プライバシーポリシー | Recall Card" %>
 
-<div class="container py-5">
+<div class="container creation-page public-info-page py-4 py-md-5">
   <div class="row justify-content-center">
-    <div class="col-lg-9">
-      <article class="card shadow-sm">
-        <div class="card-body p-4 p-md-5">
-          <h1 class="h2 mb-4">プライバシーポリシー</h1>
+    <div class="col-12">
+      <article class="creation-surface">
+        <div class="p-3 p-md-5">
+          <h1 class="creation-heading mb-4">プライバシーポリシー</h1>
 
           <p>
             TM（以下「運営者」といいます。）は、Webサービス「Recall Card」（以下「本サービス」といいます。）における利用者情報の取り扱いについて、以下のとおりプライバシーポリシーを定めます。
@@ -73,8 +73,8 @@
             利用者は、本サービスへ入力する情報を自身の責任で管理してください。第三者の個人情報を入力する場合は、必要な権限または同意を得てください。また、パスワード、APIキー、秘密鍵、個人番号、決済情報その他の機密情報を入力しないでください。
           </p>
 
-          <h2 class="h4 mt-5">4. 外部サービスの利用</h2>
-          <div class="table-responsive">
+          <h2 id="external-services-heading" class="h4 mt-5">4. 外部サービスの利用</h2>
+          <div class="table-responsive" role="region" tabindex="0" aria-labelledby="external-services-heading">
             <table class="table table-bordered align-middle">
               <thead>
                 <tr>
@@ -121,6 +121,10 @@
           <p>
             なお、現在の本サービスは、利用者が入力したカード内容をAIサービスへ自動送信しません。
           </p>
+          <aside class="creation-muted border-start ps-3" aria-label="カード作成の使い方">
+            普段使う外部AIで回答を作り、その回答をRecall Cardに貼り付けます。
+            <%= link_to "カード作成の使い方", root_path(anchor: "steps"), class: "mobile-link" %>
+          </aside>
 
           <h2 class="h4 mt-5">5. 第三者提供</h2>
           <p>
@@ -147,7 +151,7 @@
             <li>必要な範囲に限定したデータアクセス</li>
           </ul>
 
-          <h2 class="h4 mt-5">7. 保存期間と削除</h2>
+          <h2 id="retention-and-deletion" class="h4 mt-5" tabindex="-1">7. 保存期間と削除</h2>
           <h3 class="h5 mt-4">アカウント情報・利用者入力データ</h3>
           <p>
             アカウントが存在する間、または本サービスの提供に必要な間保存します。利用者がアカウントを削除した場合、利用者に紐づくアカウント情報、カード、タグ、個人プロンプトテンプレート等を稼働中のデータベースから削除します。

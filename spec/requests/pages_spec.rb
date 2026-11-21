@@ -20,6 +20,9 @@ RSpec.describe "公開ページ", type: :request do
       expect(response.body).to include("Render")
       expect(response.body).to include("jsDelivr")
       expect(response.body).to include("Gmail")
+      document = response.parsed_body
+      expect(document.at_css('[role="region"][aria-labelledby="external-services-heading"] table')).to be_present
+      expect(document.at_css("#retention-and-deletion").text).to include("保存期間と削除")
     end
   end
 
@@ -30,6 +33,8 @@ RSpec.describe "公開ページ", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("お問い合わせ")
       expect(response.body).to include("tm.rc.port.app@gmail.com")
+      link = response.parsed_body.at_css('main a[href="mailto:tm.rc.port.app@gmail.com"]')
+      expect(link.text.strip).to eq("メールでお問い合わせ")
     end
   end
 
@@ -37,16 +42,15 @@ RSpec.describe "公開ページ", type: :request do
     it "トップページのフッターから公開ページへ移動できる" do
       get root_path
 
-      expect(response.body).to include(%(href="#{terms_path}"))
-      expect(response.body).to include(%(href="#{privacy_path}"))
-      expect(response.body).to include(%(href="#{contact_path}"))
+      links = response.parsed_body.css("footer nav a").pluck("href")
+      expect(links).to contain_exactly(terms_path, privacy_path, contact_path)
     end
 
     it "新規登録画面から利用規約とプライバシーポリシーを確認できる" do
       get new_user_registration_path
 
-      expect(response.body).to include(%(href="#{terms_path}"))
-      expect(response.body).to include(%(href="#{privacy_path}"))
+      links = response.parsed_body.css("main form a").pluck("href")
+      expect(links).to include(terms_path, privacy_path)
     end
   end
 end

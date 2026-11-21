@@ -164,7 +164,7 @@ RSpec.describe "既存画面の操作とアクセシビリティ", type: :reques
 
   it "既存のアカウント編集を日本語で表示し、誤ったパスワードでは更新しない" do
     get edit_user_registration_path
-    expect(response.body).to include("アカウントを編集", "アカウントを更新")
+    expect(response.body).to include("アカウント設定", "アカウントを更新")
 
     original_email = user.email
     put user_registration_path, params: {
@@ -178,15 +178,19 @@ RSpec.describe "既存画面の操作とアクセシビリティ", type: :reques
     expect(user.reload.email).to eq(original_email)
   end
 
-  it "アカウント削除の失敗ではFlashへ案内し、本人を削除しない" do
+  it "アカウント削除の失敗では該当欄にエラーを関連付け、本人を削除しない" do
     delete user_registration_path, params: {
       deletion_confirmation: "1", current_password: "incorrect"
     }
 
     expect(response).to have_http_status(:unprocessable_content)
     document = response.parsed_body
-    expect(document.at_css("#flash-alert")["data-controller"]).to eq("focus")
-    expect(document.at_css("#current_password")["aria-describedby"]).to include("flash-alert")
+    expect(document.at_css("#account-deletion-errors")["data-controller"]).to eq("focus")
+    expect(document.at_css("#current_password")["aria-invalid"]).to eq("true")
+    expect(document.at_css("#current_password")["aria-describedby"])
+      .to eq("deletion-password-help account-deletion-errors")
+    expect(document.at_css("#deletion_confirmation")["checked"]).to be_nil
+    expect(document.at_css("#current_password")["value"]).to be_nil
     expect(User.exists?(user.id)).to be(true)
   end
 
