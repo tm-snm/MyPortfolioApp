@@ -282,13 +282,14 @@ main[tabindex="-1"]:focus {
   color: #806000 !important;
 }
 
-main:has(.creation-page, .template-catalog) {
+main:has(.creation-page, .template-catalog, .dashboard-page) {
   background-color: #eef1f5;
 }
 
 .hero-section,
 .template-catalog,
-.creation-page {
+.creation-page,
+.dashboard-page {
   --recall-accent: #2457d6;
   --recall-border: #d5dce6;
   color: #1d2b42;
@@ -336,7 +337,7 @@ main:has(.creation-page, .template-catalog) {
   border-radius: 0.5rem;
 }
 
-:is(.hero-section, .template-catalog, .creation-page) .btn-primary {
+:is(.hero-section, .template-catalog, .creation-page, .dashboard-page) .btn-primary {
   --bs-btn-bg: var(--recall-accent);
   --bs-btn-border-color: var(--recall-accent);
   --bs-btn-hover-bg: #1e49b5;
@@ -362,7 +363,7 @@ main:has(.creation-page, .template-catalog) {
   --bs-btn-active-border-color: #1e49b5;
 }
 
-:is(.hero-section, .template-catalog, .prompt-template-page, .manual-card-page, .account-page) .btn-outline-secondary {
+:is(.hero-section, .template-catalog, .prompt-template-page, .manual-card-page, .account-page, .dashboard-page) .btn-outline-secondary {
   --bs-btn-color: #566277;
   --bs-btn-border-color: #566277;
 }
@@ -375,22 +376,48 @@ main:has(.creation-page, .template-catalog) {
   color: #1e49b5;
 }
 
-:is(.hero-section, .template-catalog, .prompt-template-page, .manual-card-page, .account-page) .btn,
-.template-catalog .list-group-item {
+:is(.hero-section, .template-catalog, .prompt-template-page, .manual-card-page, .account-page, .dashboard-page) .btn,
+.template-catalog .list-group-item,
+.dashboard-link {
   min-height: 2.75rem;
 }
 
-:is(.hero-section, .template-catalog, .prompt-template-page, .manual-card-page, .account-page) a.btn {
+:is(.hero-section, .template-catalog, .prompt-template-page, .manual-card-page, .account-page, .dashboard-page) a.btn,
+.dashboard-link {
   align-content: center;
 }
 
-:is(.hero-section, .template-catalog, .prompt-template-page, .manual-card-page, .account-page) .btn:focus-visible,
+:is(.hero-section, .template-catalog, .prompt-template-page, .manual-card-page, .account-page, .dashboard-page) .btn:focus-visible,
+.dashboard-link:focus-visible,
 :is(.prompt-template-page, .manual-card-page, .account-page) .form-control:focus-visible,
 .account-page .form-check-input:focus-visible,
 .manual-card-page .btn-close:focus-visible {
   outline: 3px solid var(--recall-accent);
   outline-offset: 2px;
   box-shadow: none;
+}
+
+.dashboard-page .btn {
+  text-wrap: balance;
+}
+
+.dashboard-link {
+  display: inline-block;
+  max-width: 100%;
+  color: var(--recall-accent);
+}
+
+.dashboard-link:hover {
+  color: #1e49b5;
+}
+
+.dashboard-page .badge {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.dashboard-page .progress-bar {
+  --bs-progress-bar-bg: var(--recall-accent);
 }
 
 .manual-card-page .tag-badge .btn-close {
