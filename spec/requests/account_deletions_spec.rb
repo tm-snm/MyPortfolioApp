@@ -17,6 +17,9 @@ RSpec.describe "アカウント削除", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.body).to include("アカウント削除")
       expect(response.body).to include("現在のパスワード")
+      document = response.parsed_body
+      expect(document.at_css("main a[href='#{privacy_path(anchor: "retention-and-deletion")}']")).to be_present
+      expect(document.css("main a[href='#{cards_path}']").last.text).to include("削除せず戻る")
     end
   end
 
@@ -37,6 +40,9 @@ RSpec.describe "アカウント削除", type: :request do
       expect(response.body).to include(
         "アカウント削除への同意を確認してください"
       )
+      document = response.parsed_body
+      expect(document.at_css("#deletion_confirmation")["aria-describedby"]).to eq("account-deletion-errors")
+      expect(document.at_css("#current_password")["aria-invalid"]).to be_nil
     end
 
     it "現在のパスワードが誤っている場合は削除しない" do
@@ -56,6 +62,9 @@ RSpec.describe "アカウント削除", type: :request do
       card = create(:card, user: user)
       tag = create(:tag, user: user)
       tagging = create(:tagging, card: card, tag: tag)
+      personal_template = create(:prompt_template, :personal, user: user)
+      shared_template = create(:prompt_template)
+      preference = create(:prompt_template_preference, user: user, prompt_template: shared_template)
       other_user = create(:user)
       other_card = create(:card, user: other_user)
 
@@ -72,6 +81,9 @@ RSpec.describe "アカウント削除", type: :request do
       expect(Card.exists?(card.id)).to be(false)
       expect(Tag.exists?(tag.id)).to be(false)
       expect(Tagging.exists?(tagging.id)).to be(false)
+      expect(PromptTemplate.exists?(personal_template.id)).to be(false)
+      expect(PromptTemplatePreference.exists?(preference.id)).to be(false)
+      expect(PromptTemplate.exists?(shared_template.id)).to be(true)
       expect(User.exists?(other_user.id)).to be(true)
       expect(Card.exists?(other_card.id)).to be(true)
 

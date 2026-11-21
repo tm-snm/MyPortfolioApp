@@ -3,7 +3,7 @@ import { Controller } from "@hotwired/stimulus";
 // Turbo serializes the form before submit-start. Lock editing until the
 // response arrives so it cannot overwrite changes made after serialization.
 export default class extends Controller {
-  static targets = ["networkError", "cancelLink", "status"];
+  static targets = ["networkError", "cancelLink", "status", "resetOnFailure"];
   static values = { signInPath: String, validationErrorId: String };
 
   start(event) {
@@ -19,12 +19,14 @@ export default class extends Controller {
       this.cancelLinkTarget.classList.add("disabled");
     }
 
-    this.buttons = Array.from(
-      this.element.querySelectorAll('input[type="submit"], button')
-    ).filter((button) => button !== submitter && !button.disabled);
-    this.buttons.forEach((button) => { button.disabled = true; });
+    this.disabledControls = Array.from(
+      this.element.querySelectorAll('input[type="submit"], button, input[type="checkbox"]')
+    ).filter((control) => control !== submitter && !control.disabled);
+    this.disabledControls.forEach((control) => { control.disabled = true; });
 
-    this.inputs = this.element.querySelectorAll('input[type="text"]:not([readonly]), textarea:not([readonly])');
+    this.inputs = this.element.querySelectorAll(
+      'input:is([type="text"], [type="email"], [type="password"]):not([readonly]), textarea:not([readonly])'
+    );
     this.inputs.forEach((input) => { input.readOnly = true; });
   }
 
@@ -39,8 +41,8 @@ export default class extends Controller {
       this.cancelLinkTarget.removeAttribute("aria-disabled");
       this.cancelLinkTarget.classList.remove("disabled");
     }
-    this.buttons?.forEach((button) => { button.disabled = false; });
-    this.buttons = [];
+    this.disabledControls?.forEach((control) => { control.disabled = false; });
+    this.disabledControls = [];
     this.inputs?.forEach((input) => { input.readOnly = false; });
     this.inputs = [];
   }
@@ -79,6 +81,13 @@ export default class extends Controller {
   }
 
   showNetworkError() {
+    this.resetOnFailureTargets.forEach((input) => {
+      if (input.type === "checkbox") {
+        input.checked = false;
+      } else {
+        input.value = "";
+      }
+    });
     this.networkErrorTarget.hidden = false;
     this.networkErrorTarget.focus();
   }

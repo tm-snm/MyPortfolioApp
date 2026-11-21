@@ -56,6 +56,13 @@ RSpec.describe "Authentication security", type: :request do
 
     get edit_user_password_path, params: { reset_password_token: token }
     expect(response).to have_http_status(:ok)
+    feedback = response.parsed_body.at_css('[data-form-submission-target="networkError"]')
+    recovery_link = feedback.at_css("a")
+    expect(recovery_link.text).to eq("ログイン状態を確認する（別タブ）")
+    expect(recovery_link["href"]).to eq(cards_path)
+    expect(recovery_link["target"]).to eq("_blank")
+    expect(feedback.text).to include("ログイン済みの場合はカード一覧", "未ログインの場合はログイン画面")
+
     put user_password_path, params: {
       user: { reset_password_token: token, password: "changed-password-128", password_confirmation: "changed-password-128" }
     }

@@ -1,69 +1,67 @@
 <% content_for :title, "アカウント削除 | Recall Card" %>
+<% error_id = "account-deletion-errors" %>
+<% password_error = @deletion_error_field == :current_password %>
+<% confirmation_error = @deletion_error_field == :deletion_confirmation %>
 
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-lg-7">
-      <div class="card border-danger shadow-sm">
-        <div class="card-body p-4 p-md-5">
-          <h1 class="h2 text-danger mb-4">アカウント削除</h1>
+<div class="container creation-page account-page py-4 py-md-5">
+  <h1 class="creation-heading mb-3">アカウント削除</h1>
 
-          <div class="alert alert-danger" role="alert">
-            アカウントを削除すると元に戻せません。
-            以下のデータもすべて削除されます。
-          </div>
+  <section class="creation-surface p-3 p-md-4 mb-4" aria-labelledby="deletion-effects-heading">
+    <h2 id="deletion-effects-heading" class="h5 text-danger">アカウントを削除すると元に戻せません。</h2>
+    <p>次のデータも削除されます。</p>
+    <ul>
+      <li>保存したカードと復習情報</li>
+      <li>作成したタグとカードへのタグ付け</li>
+      <li>個人プロンプトテンプレート</li>
+      <li>テンプレートのお気に入りと利用履歴</li>
+    </ul>
+    <p>必要なカードは削除する前に控えてください。</p>
+    <p class="mb-0">
+      バックアップやログの扱いは
+      <%= link_to "プライバシーポリシーの「保存期間と削除」", privacy_path(anchor: "retention-and-deletion") %>
+      をご確認ください。
+    </p>
+  </section>
 
-          <ul class="mb-4">
-            <li>保存したカードと復習情報</li>
-            <li>作成したタグとカードへのタグ付け</li>
-            <li>個人プロンプトテンプレート</li>
-            <li>テンプレートのお気に入りと利用履歴</li>
-          </ul>
+  <%= form_with url: user_registration_path,
+                method: :delete,
+                class: "creation-surface p-3 p-md-4",
+                data: account_form_submission_data(validation_error_id: error_id) do |form| %>
+    <%= render "devise/shared/submission_feedback",
+               message: "削除結果を確認できませんでした。別タブでログイン状態を確認してください。削除が完了していないことを確認した場合は、パスワードと同意を改めて入力してください。",
+               recovery_label: "カード一覧を開く（別タブ）", recovery_path: cards_path %>
+    <%= render "shared/form_errors", messages: [@deletion_error].compact, id: error_id %>
 
-          <%= form_with url: user_registration_path,
-                        method: :delete do |form| %>
-            <div class="mb-3">
-              <%= label_tag :current_password,
-                            "現在のパスワード",
-                            class: "form-label" %>
-              <%= password_field_tag :current_password,
-                                     nil,
-                                     required: true,
-                                     autocomplete: "current-password",
-                                     class: "form-control",
-                                     aria: {
-                                       describedby: flash[:alert].present? ?
-                                         "deletion-password-help flash-alert" : "deletion-password-help"
-                                     } %>
-              <div id="deletion-password-help" class="form-text">
-                本人確認のため、現在のパスワードを入力してください。
-              </div>
-            </div>
-
-            <div class="form-check mb-4">
-              <%= check_box_tag :deletion_confirmation,
-                                "1",
-                                false,
-                                required: true,
-                                class: "form-check-input" %>
-              <%= label_tag :deletion_confirmation,
-                            "上記の内容を理解し、アカウント削除に同意します",
-                            class: "form-check-label" %>
-            </div>
-
-            <div class="d-flex flex-column flex-sm-row gap-2">
-              <%= form.submit "アカウントを削除する",
-                              class: "btn btn-danger",
-                              data: {
-                                turbo_confirm: "本当にアカウントを削除しますか？この操作は取り消せません。",
-                                turbo_submits_with: "削除中..."
-                              } %>
-              <%= link_to "削除せず戻る",
-                          cards_path,
-                          class: "btn btn-outline-secondary" %>
-            </div>
-          <% end %>
-        </div>
+    <div class="mb-3">
+      <%= label_tag :current_password, "現在のパスワード", class: "form-label" %>
+      <%= password_field_tag :current_password, nil, required: true,
+                             autocomplete: "current-password", class: "form-control",
+                             data: { form_submission_target: "resetOnFailure" },
+                             aria: {
+                               invalid: (true if password_error),
+                               describedby: [ "deletion-password-help", (error_id if password_error) ].compact.join(" ")
+                             } %>
+      <div id="deletion-password-help" class="form-text">
+        本人確認のため、現在のパスワードを入力してください。
       </div>
     </div>
-  </div>
+
+    <div class="form-check mb-4">
+      <%= check_box_tag :deletion_confirmation, "1", false, required: true, class: "form-check-input",
+                        data: { form_submission_target: "resetOnFailure" },
+                        aria: { invalid: (true if confirmation_error), describedby: (error_id if confirmation_error) } %>
+      <%= label_tag :deletion_confirmation, "上記の内容を理解し、アカウント削除に同意します",
+                    class: "form-check-label" %>
+    </div>
+
+    <div class="d-grid d-sm-flex gap-2">
+      <%= form.submit "アカウントを削除する", class: "btn btn-danger",
+                      data: {
+                        turbo_confirm: "本当にアカウントを削除しますか？この操作は取り消せません。",
+                        turbo_submits_with: "削除中…"
+                      } %>
+      <%= link_to "削除せず戻る", cards_path, class: "btn btn-outline-secondary",
+                  data: { form_submission_target: "cancelLink", action: "form-submission#preventWhileSubmitting" } %>
+    </div>
+  <% end %>
 </div>

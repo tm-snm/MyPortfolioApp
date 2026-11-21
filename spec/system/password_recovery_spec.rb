@@ -19,4 +19,20 @@ RSpec.describe "パスワード復旧", type: :system do
     expect(page).to have_current_path(cards_path)
     expect(user.reload.valid_password?("new-system-password-128")).to be(true)
   end
+
+  it "使えないリンクから再設定メールを要求し直せる" do
+    driven_by(:rack_test)
+
+    visit edit_user_password_path(reset_password_token: "invalid-fixture")
+    fill_in "新しいパスワード", with: "unused-test-password", exact: true
+    fill_in "新しいパスワード（確認）", with: "unused-test-password"
+    click_button "パスワードを変更"
+
+    expect(page).to have_content("このリンクでは再設定できません。")
+    expect(page).to have_no_button("パスワードを変更")
+    click_link "再設定メールをもう一度リクエストする"
+
+    expect(page).to have_current_path(new_user_password_path)
+    expect(page).to have_button("再設定メールを送信")
+  end
 end

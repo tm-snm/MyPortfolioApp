@@ -39,7 +39,7 @@
                       aria: { current: ("page" if controller_path == "users/registrations") } %>
           <%= button_to "ログアウト", destroy_user_session_path, method: :delete,
                         class: "site-nav-link",
-                        data: { turbo_submits_with: "ログアウト中..." },
+                        data: { turbo_submits_with: "ログアウト中…" },
                         form: { class: "m-0" } %>
           <%= link_to "アカウント削除", account_deletion_path, class: "site-nav-link site-danger-link",
                       aria: { current: ("page" if controller_path == "account_deletions") } %>

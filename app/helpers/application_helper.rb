@@ -1,8 +1,26 @@
 module ApplicationHelper
-  def field_error_attributes(record, attribute, error_id:)
-    return {} unless error_id && record.errors[attribute].any?
+  def field_error_attributes(record, attribute, error_id:, description_id: nil)
+    invalid = error_id && record.errors[attribute].any?
+    descriptions = [ description_id, (error_id if invalid) ].compact
+    return {} if descriptions.empty?
 
-    { aria: { invalid: true, describedby: error_id } }
+    { aria: { invalid: (true if invalid), describedby: descriptions.join(" ") } }
+  end
+
+  def account_form_submission_data(validation_error_id:, handle_server_errors: true)
+    actions = %w[
+      submit->form-submission#preventWhileSubmitting
+      turbo:submit-start->form-submission#start
+      turbo:submit-end->form-submission#end
+      turbo:fetch-request-error->form-submission#requestFailed
+    ]
+    actions << "turbo:before-fetch-response->form-submission#preserveOnServerError" if handle_server_errors
+
+    {
+      controller: "form-submission",
+      form_submission_validation_error_id_value: validation_error_id,
+      action: actions.join(" ")
+    }
   end
 
   def site_title
