@@ -81,6 +81,18 @@ RSpec.describe "Review schedules", type: :request do
       )
     end
 
+    it "今日までの復習が0件なら、検索条件の不一致と区別する" do
+      overdue_card.update!(next_review_on: Date.current.tomorrow)
+      today_card.update!(next_review_on: Date.current.tomorrow)
+
+      get cards_path(review_filter: "due")
+      expect(response.body).to include("今日までに復習するカードはありません。")
+
+      get cards_path(review_filter: "due", q: "検索に一致しない語")
+      expect(response.body).to include("条件に一致するカードが見つかりませんでした。")
+      expect(response.parsed_body.at_css(".card-search-conditions a").text).to eq("条件を解除")
+    end
+
     it "復習予定すべてには日付未設定を含める" do
       get cards_path, params: { review_filter: "all" }
 
