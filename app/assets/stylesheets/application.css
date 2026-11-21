@@ -411,7 +411,9 @@ main:has(.creation-page, .template-catalog, .dashboard-page) {
   color: #1e49b5;
 }
 
-.dashboard-page .badge {
+.dashboard-page .badge,
+.card-list-item .badge,
+.card-detail-page .badge {
   white-space: normal;
   overflow-wrap: anywhere;
 }
