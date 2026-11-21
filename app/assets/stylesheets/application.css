@@ -330,7 +330,7 @@ main:has(.creation-page, .template-catalog) {
   --bs-btn-active-color: #183b94;
 }
 
-:is(.template-catalog, .prompt-template-page) .btn-outline-primary {
+:is(.template-catalog, .prompt-template-page, .manual-card-page) .btn-outline-primary {
   --bs-btn-color: var(--recall-accent);
   --bs-btn-border-color: var(--recall-accent);
   --bs-btn-hover-bg: var(--recall-accent);
@@ -339,7 +339,7 @@ main:has(.creation-page, .template-catalog) {
   --bs-btn-active-border-color: #1e49b5;
 }
 
-:is(.hero-section, .template-catalog, .prompt-template-page) .btn-outline-secondary {
+:is(.hero-section, .template-catalog, .prompt-template-page, .manual-card-page) .btn-outline-secondary {
   --bs-btn-color: #566277;
   --bs-btn-border-color: #566277;
 }
@@ -352,20 +352,26 @@ main:has(.creation-page, .template-catalog) {
   color: #1e49b5;
 }
 
-:is(.hero-section, .template-catalog, .prompt-template-page) .btn,
+:is(.hero-section, .template-catalog, .prompt-template-page, .manual-card-page) .btn,
 .template-catalog .list-group-item {
   min-height: 2.75rem;
 }
 
-:is(.hero-section, .template-catalog, .prompt-template-page) a.btn {
+:is(.hero-section, .template-catalog, .prompt-template-page, .manual-card-page) a.btn {
   align-content: center;
 }
 
-:is(.hero-section, .template-catalog, .prompt-template-page) .btn:focus-visible,
-.prompt-template-page .form-control:focus-visible {
+:is(.hero-section, .template-catalog, .prompt-template-page, .manual-card-page) .btn:focus-visible,
+:is(.prompt-template-page, .manual-card-page) .form-control:focus-visible,
+.manual-card-page .btn-close:focus-visible {
   outline: 3px solid var(--recall-accent);
   outline-offset: 2px;
   box-shadow: none;
+}
+
+.manual-card-page .tag-badge .btn-close {
+  min-width: 1.5rem;
+  min-height: 1.5rem;
 }
 
 .template-type {

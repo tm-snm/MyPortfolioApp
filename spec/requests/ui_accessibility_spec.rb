@@ -61,6 +61,8 @@ RSpec.describe "既存画面の操作とアクセシビリティ", type: :reques
     expect(document.at_css("#card_title")["aria-invalid"]).to eq("true")
     expect(document.at_css("#card_title")["aria-describedby"]).to eq("card-errors")
     expect(document.at_css("#card-errors")["data-controller"]).to eq("focus")
+    form = document.at_css('form[data-controller="form-submission"]')
+    expect(form["data-form-submission-validation-error-id-value"]).to eq("card-errors")
     expect(document.at_css("#card_body").text).to include("修正前の本文")
     expect(document.at_css("#tag_names")["value"]).to eq("Rails, Docker")
     expect(document.at_css("#card_body")["aria-invalid"]).to be_nil
@@ -101,6 +103,7 @@ RSpec.describe "既存画面の操作とアクセシビリティ", type: :reques
     document = response.parsed_body
     expect(document.at_css("#parsed-card-heading")["data-controller"]).to eq("focus")
     form = document.at_css('form[data-controller="form-submission"]')
+    expect(form["data-form-submission-validation-error-id-value"]).to be_nil
     expect(form.at_css('input[value="カードを保存"]')["data-turbo-submits-with"]).to eq("保存中...")
     expect(form.at_css('input[formaction]')["formaction"]).to eq(preview_from_ai_cards_path)
   end

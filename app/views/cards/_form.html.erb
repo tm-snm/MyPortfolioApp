@@ -1,20 +1,43 @@
-<%= form_with model: card do |form| %>
-  <%= render "shared/form_errors", record: card, id: "card-errors" %>
+<% error_id = "card-errors" %>
+<%= form_with model: card,
+              class: "creation-surface p-3 p-md-4",
+              data: {
+                controller: "form-submission",
+                form_submission_validation_error_id_value: error_id,
+                action: [
+                  "submit->form-submission#preventWhileSubmitting",
+                  "turbo:submit-start->form-submission#start",
+                  "turbo:submit-end->form-submission#end",
+                  "turbo:before-fetch-response->form-submission#preserveOnServerError",
+                  "turbo:fetch-request-error->form-submission#requestFailed"
+                ].join(" ")
+              } do |form| %>
+  <div class="alert alert-warning" role="alert" tabindex="-1" hidden
+       data-form-submission-target="networkError">
+    <p class="mb-1">送信結果を確認できませんでした。入力は残っています。</p>
+    <p class="mb-0">
+      再試行する前に
+      <%= link_to card.persisted? ? "カード詳細を別のタブで開き" : "カード一覧を別のタブで開き",
+                  return_path, target: "_blank", rel: "noopener" %>、保存結果を確認してください。
+    </p>
+  </div>
+
+  <%= render "shared/form_errors", record: card, id: error_id %>
 
   <div class="mb-3">
-    <%= form.label :title, "タイトル", class: "form-label" %>
+    <%= form.label :title, "タイトル（必須）", class: "form-label" %>
     <%= form.text_field :title, class: "form-control", placeholder: "例：DockerでGemを追加できなかった原因",
-                        **field_error_attributes(card, :title, error_id: "card-errors") %>
+                        **field_error_attributes(card, :title, error_id: error_id) %>
   </div>
 
   <div class="mb-3">
-    <%= form.label :body, "本文", class: "form-label" %>
+    <%= form.label :body, "本文（必須）", class: "form-label" %>
     <%= form.text_area :body, rows: 12, class: "form-control", placeholder: "状況、原因、解決方法などを入力してください",
-                        **field_error_attributes(card, :body, error_id: "card-errors") %>
+                        **field_error_attributes(card, :body, error_id: error_id) %>
   </div>
 
   <div class="mb-4">
-    <%= form.label :future_note, "未来の自分へのメモ", class: "form-label" %>
+    <%= form.label :future_note, "未来の自分へのメモ（任意）", class: "form-label" %>
 
     <%= form.text_area :future_note, rows: 4, class: "form-control", placeholder: "次回まず確認することなどを入力してください" %>
   </div>
@@ -32,7 +55,14 @@
 
   <div class="d-grid d-sm-flex gap-2">
     <% submit_label = card.persisted? ? "カードを更新" : "カードを保存" %>
+    <% pending_label = card.persisted? ? "更新中…" : "保存中…" %>
     <%= form.submit submit_label, class: "btn btn-primary",
-                    data: { turbo_submits_with: "保存中..." } %>
+                    data: { turbo_submits_with: pending_label } %>
+    <%= link_to "キャンセル", return_path, class: "btn btn-outline-secondary",
+                data: {
+                  form_submission_target: "cancelLink",
+                  action: "form-submission#preventWhileSubmitting"
+                } %>
   </div>
+  <span class="visually-hidden" role="status" data-form-submission-target="status"></span>
 <% end %>
