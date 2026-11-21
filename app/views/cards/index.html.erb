@@ -1,64 +1,69 @@
-<div class="container py-4">
+<div class="container card-list-page py-4">
+  <% search_target_labels = { "all" => "すべて", "title" => "タイトル", "body" => "本文" } %>
   <% review_filter_labels = {
        "all" => "復習予定すべて",
-       "due" => "今日までに復習",
-       "today" => "今日復習",
-       "this_week" => "今週復習",
+       "due" => "今日まで",
+       "today" => "今日",
+       "this_week" => "今週",
        "overdue" => "期限超過"
      } %>
+  <% today_review = @review_filter == "due" %>
   <% filtering_active = params[:q].present? || params[:tag_id].present? || @review_filter.present? %>
-  <% conditions_active = filtering_active ||
-                         @search_target != "all" ||
-                         @sort_order != "newest" %>
+  <% conditions_active = filtering_active || @search_target != "all" || @sort_order != "newest" %>
 
-  <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
-    <h1 class="h2 mb-0">カード一覧</h1>
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <h1 class="h2 mb-0"><%= today_review ? "今日の復習" : "カード一覧" %></h1>
 
-    <div class="d-grid d-sm-block">
-      <%= link_to "AI出力からカードを作成",
-                  new_from_ai_cards_path,
-                  class: "btn btn-primary flex-shrink-0" %>
-    </div>
+    <%= link_to "AI回答を貼り付ける",
+                new_from_ai_cards_path,
+                class: "btn btn-outline-primary d-xl-none" %>
   </div>
 
-  <div class="card shadow-sm mb-4">
-    <div class="card-body">
-      <%= form_with url: cards_path,
-                    method: :get,
-                    class: "row g-2 align-items-end" do %>
+  <% if today_review %>
+    <p class="small text-muted mb-3">今日が復習日、または復習期限を過ぎたカードを表示しています。</p>
+  <% end %>
 
-        <div class="col-12 col-lg-4"
+  <div class="card card-search-panel mb-3">
+    <div class="card-body">
+      <%= form_with url: cards_path, method: :get, class: "card-search-form" do %>
+        <div class="card-search-keyword"
              data-controller="card-title-autocomplete"
              data-card-title-autocomplete-url-value="<%= autocomplete_cards_path %>"
              data-card-title-autocomplete-delay-value="250">
           <%= label_tag :q, "キーワード", class: "form-label" %>
 
-          <div class="position-relative">
-            <%= search_field_tag :q,
-                                 params[:q],
-                                 placeholder: "カードを検索",
-                                 class: "form-control",
-                                 autocomplete: "off",
-                                 role: "combobox",
-                                 aria: {
-                                   autocomplete: "list",
-                                   controls: "card-title-autocomplete-list",
-                                   expanded: "false"
-                                 },
-                                 data: {
-                                   card_title_autocomplete_target: "input",
-                                   action: [
-                                     "input->card-title-autocomplete#search",
-                                     "compositionend->card-title-autocomplete#search",
-                                     "keydown->card-title-autocomplete#handleKeydown",
-                                     "blur->card-title-autocomplete#handleBlur"
-                                   ].join(" ")
-                                 } %>
+          <div class="d-flex gap-2">
+            <div class="position-relative flex-grow-1 min-w-0">
+              <%= search_field_tag :q,
+                                   params[:q],
+                                   placeholder: "カードを検索",
+                                   class: "form-control",
+                                   autocomplete: "off",
+                                   role: "combobox",
+                                   aria: {
+                                     autocomplete: "list",
+                                     controls: "card-title-autocomplete-list",
+                                     expanded: "false"
+                                   },
+                                   data: {
+                                     card_title_autocomplete_target: "input",
+                                     action: [
+                                       "input->card-title-autocomplete#search",
+                                       "compositionend->card-title-autocomplete#search",
+                                       "keydown->card-title-autocomplete#handleKeydown",
+                                       "blur->card-title-autocomplete#handleBlur"
+                                     ].join(" ")
+                                   } %>
 
-            <div id="card-title-autocomplete-list"
-                 class="autocomplete-list list-group position-absolute top-100 start-0 w-100 d-none"
-                 role="listbox"
-                 data-card-title-autocomplete-target="list"></div>
+              <div id="card-title-autocomplete-list"
+                   class="autocomplete-list list-group position-absolute top-100 start-0 w-100 d-none"
+                   role="listbox"
+                   data-card-title-autocomplete-target="list"></div>
+            </div>
+
+            <%= submit_tag "検索",
+                           class: "btn btn-primary flex-shrink-0",
+                           data: { turbo_submits_with: "検索中..." } %>
           </div>
 
           <p class="visually-hidden mb-0"
@@ -66,50 +71,7 @@
              data-card-title-autocomplete-target="status"></p>
         </div>
 
-        <div class="col-12 col-md-6 col-lg-2">
-          <%= label_tag :search_target, "検索対象", class: "form-label" %>
-
-          <%= select_tag :search_target,
-                         options_for_select(
-                           [["すべて", "all"], ["タイトル", "title"], ["本文", "body"]],
-                           @search_target
-                         ),
-                         class: "form-select" %>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-2">
-          <%= label_tag :tag_id, "タグ", class: "form-label" %>
-
-          <%= select_tag :tag_id,
-                        options_from_collection_for_select(
-                          @tags,
-                          :id,
-                          :name,
-                          params[:tag_id]
-                        ),
-                        include_blank: "すべてのタグ",
-                        class: "form-select" %>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-2">
-          <%= label_tag :review_filter, "復習状況", class: "form-label" %>
-
-          <%= select_tag :review_filter,
-                         options_for_select(
-                           [
-                             ["すべてのカード", ""],
-                             ["復習予定すべて", "all"],
-                             ["今日まで", "due"],
-                             ["今日", "today"],
-                             ["今週", "this_week"],
-                             ["期限超過", "overdue"]
-                           ],
-                           @review_filter.to_s
-                         ),
-                         class: "form-select" %>
-        </div>
-
-        <div class="col-12 col-md-6 col-lg-2">
+        <div class="card-search-sort">
           <%= label_tag :sort, "並び順", class: "form-label" %>
 
           <%= select_tag :sort,
@@ -120,56 +82,92 @@
                          class: "form-select" %>
         </div>
 
-        <div class="col-12 col-lg-auto">
-          <div class="d-grid d-sm-flex gap-2">
-            <%= submit_tag "絞り込む",
-                          class: "btn btn-primary",
-                          data: { turbo_submits_with: "検索中..." } %>
+        <details class="card-search-filters">
+          <summary>絞り込み</summary>
+          <div class="row g-2 pt-2">
+            <div class="col-12 col-sm-4">
+              <%= label_tag :search_target, "検索対象", class: "form-label" %>
 
-            <% if conditions_active %>
-              <%= link_to "条件を解除",
-                          cards_path,
-                          class: "btn btn-outline-secondary" %>
-            <% end %>
+              <%= select_tag :search_target,
+                             options_for_select(
+                               search_target_labels.invert,
+                               @search_target
+                             ),
+                             class: "form-select" %>
+            </div>
+
+            <div class="col-12 col-sm-4">
+              <%= label_tag :tag_id, "タグ", class: "form-label" %>
+
+              <%= select_tag :tag_id,
+                            options_from_collection_for_select(
+                              @tags,
+                              :id,
+                              :name,
+                              params[:tag_id]
+                            ),
+                            include_blank: "すべてのタグ",
+                            class: "form-select" %>
+            </div>
+
+            <div class="col-12 col-sm-4">
+              <%= label_tag :review_filter, "復習状況", class: "form-label" %>
+
+              <%= select_tag :review_filter,
+                             options_for_select(
+                               { "" => "すべてのカード" }.merge(review_filter_labels).invert,
+                               @review_filter.to_s
+                             ),
+                             class: "form-select" %>
+            </div>
           </div>
-        </div>
+        </details>
+
+        <% if conditions_active %>
+          <div class="card-search-conditions d-flex flex-wrap align-items-center gap-2 small">
+            <% if params[:q].present? %>
+              <span class="break-anywhere">キーワード：<%= params[:q] %></span>
+            <% end %>
+            <% if @search_target != "all" %>
+              <span>検索対象：<%= search_target_labels.fetch(@search_target) %></span>
+            <% end %>
+            <% if @selected_tag %>
+              <span class="break-anywhere">タグ：<%= @selected_tag.name %></span>
+            <% end %>
+            <% if @review_filter.present? %>
+              <span>復習状況：<%= review_filter_labels.fetch(@review_filter) %></span>
+            <% end %>
+            <%= link_to "条件を解除", cards_path, class: "mobile-link" %>
+          </div>
+        <% end %>
       <% end %>
     </div>
   </div>
-
-  <% if @review_filter.present? %>
-    <div class="alert alert-warning py-2 mb-4">
-      <%= review_filter_labels.fetch(@review_filter) %>のカードを表示しています。
-    </div>
-  <% end %>
 
   <% if @cards.any? %>
     <div class="row g-3">
       <% @cards.each do |card| %>
         <div class="col-12">
-          <article class="card shadow-sm">
+          <article class="card card-list-item">
             <div class="card-body">
-              <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
-                <div class="min-w-0">
-                  <h2 class="h5 card-title break-anywhere mb-2">
-                    <%= card.title %>
-                  </h2>
+              <div class="d-flex flex-wrap align-items-center justify-content-between column-gap-3">
+                <h2 class="h5 card-title break-anywhere mb-0"><%= card.title %></h2>
+                <%= link_to "詳細を見る", card_path(card), class: "mobile-link" %>
+              </div>
 
-                  <p class="text-muted small mb-0">
-                    作成日時：
-                    <%= card.created_at.strftime("%Y/%m/%d %H:%M") %>
-                  </p>
+              <% if card.tags.any? %>
+                <div class="d-flex flex-wrap gap-2 mb-2">
+                  <% card.tags.each do |tag| %>
+                    <span class="badge card-list-tag tag-badge"><%= tag.name %></span>
+                  <% end %>
                 </div>
+              <% end %>
 
-                <div class="d-flex flex-wrap align-items-center gap-2">
-                  <%= link_to "詳細を見る",
-                              card_path(card),
-                              class: "btn btn-outline-primary btn-sm" %>
+              <%= render "review_status", card: card %>
 
-                  <%= render "learning_status", card: card %>
-
-                  <%= render "review_status", card: card %>
-                </div>
+              <div class="d-flex flex-wrap align-items-center gap-2 small text-muted mt-2">
+                <%= render "learning_status", card: card, subtle: true %>
+                <span>作成日：<%= card.created_at.strftime("%Y/%m/%d") %></span>
               </div>
             </div>
           </article>
@@ -178,13 +176,13 @@
     </div>
   <% elsif filtering_active %>
     <div class="text-center border rounded p-3 p-sm-5 bg-light">
-      <p class="mb-3">
-        条件に一致するカードが見つかりませんでした。
+      <p class="mb-0">
+        <% if today_review && params[:q].blank? && params[:tag_id].blank? %>
+          今日までに復習するカードはありません。
+        <% else %>
+          条件に一致するカードが見つかりませんでした。
+        <% end %>
       </p>
-
-      <%= link_to "条件を解除",
-                  cards_path,
-                  class: "btn btn-outline-secondary" %>
     </div>
 
   <% else %>

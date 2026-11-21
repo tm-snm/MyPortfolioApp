@@ -1,10 +1,14 @@
-<div class="container py-4">
+<div class="container card-detail-page py-4">
   <div class="mb-4">
     <h1 class="h2 text-break"><%= @card.title %></h1>
 
     <div class="text-muted">
       作成日時:
       <%= @card.created_at.strftime("%Y/%m/%d %H:%M") %>
+    </div>
+
+    <div class="mt-2">
+      <%= render "review_status", card: @card %>
     </div>
   </div>
 
@@ -22,46 +26,53 @@
     </div>
   <% end %>
 
-  <%= render "learning_metadata", card: @card %>
+  <div class="card-detail-layout">
+    <div class="min-w-0">
+      <div class="mb-4">
+        <h2 class="h5">本文</h2>
 
-  <%= render "review_schedule", card: @card %>
-
-  <div class="mb-4">
-    <h2 class="h5">本文</h2>
-
-    <div class="markdown-content">
-      <%= render_markdown(@card.body) %>
-    </div>
-  </div>
-
-  <% if @card.future_note.present? %>
-    <div class="mb-4">
-      <h2 class="h5 text-break">未来の自分へのメモ</h2>
-
-      <div class="break-anywhere">
-        <%= simple_format(@card.future_note) %>
+        <div class="markdown-content">
+          <%= render_markdown(@card.body) %>
+        </div>
       </div>
+
+      <% if @card.future_note.present? %>
+        <div class="mb-4">
+          <h2 class="h5 text-break">未来の自分へのメモ</h2>
+
+          <div class="break-anywhere">
+            <%= simple_format(@card.future_note) %>
+          </div>
+        </div>
+      <% end %>
+
+      <%= render "review_quiz_prompt", review_quiz_prompt: @review_quiz_prompt %>
     </div>
-  <% end %>
 
-  <%= render "review_quiz_prompt",
-             review_quiz_prompt: @review_quiz_prompt %>
+    <aside class="card-detail-tools min-w-0" aria-label="カードの操作">
+      <%= render "review_schedule", card: @card %>
+      <%= render "learning_metadata", card: @card %>
 
-  <div class="d-grid d-sm-flex flex-sm-wrap gap-2">
-    <%= link_to "編集", edit_card_path(@card), class: "btn btn-outline-primary" %>
-    <%= link_to "Markdownで保存",
-                export_markdown_card_path(@card),
-                class: "btn btn-outline-secondary",
-                data: { turbo: false } %>
-    <%= button_to "カードを削除",
-                  card_path(@card),
-                  method: :delete,
-                  data: {
-                    turbo_confirm: "このカードを削除しますか？",
-                    turbo_submits_with: "削除中..."
-                  },
-                  class: "btn btn-outline-danger",
-                  form: { class: "d-grid" } %>
-    <%= link_to "カード一覧へ戻る", cards_path, class: "btn btn-outline-secondary" %>
+      <section class="mb-4" aria-labelledby="card-actions-heading">
+        <h2 class="h5" id="card-actions-heading">カードの操作</h2>
+        <div class="d-grid gap-2">
+          <%= link_to "編集", edit_card_path(@card), class: "btn btn-outline-primary" %>
+          <%= link_to "Markdownで保存",
+                      export_markdown_card_path(@card),
+                      class: "btn btn-outline-secondary",
+                      data: { turbo: false } %>
+          <%= button_to "カードを削除",
+                        card_path(@card),
+                        method: :delete,
+                        data: {
+                          turbo_confirm: "このカードを削除しますか？",
+                          turbo_submits_with: "削除中..."
+                        },
+                        class: "btn btn-outline-danger",
+                        form: { class: "d-grid" } %>
+          <%= link_to "カード一覧へ戻る", cards_path, class: "btn btn-outline-secondary" %>
+        </div>
+      </section>
+    </aside>
   </div>
 </div>

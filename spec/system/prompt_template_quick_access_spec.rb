@@ -40,11 +40,12 @@ RSpec.describe "テンプレートのクイックアクセス", type: :system do
 
     expect(page).to have_current_path(prompt_template_path(prompt_template))
     expect(page).to have_button("お気に入り登録")
+    expect(page).to have_content("お気に入りを解除しました")
 
     visit prompt_templates_path
 
-    within("#favorite-templates") do
-      expect(page).to have_content("お気に入りはまだありません。")
-    end
+    expect(page).to have_no_css("#quick-access-heading")
+    expect(page).to have_content("すべてのテンプレート")
+    expect(page).to have_link("テンプレートを開く", href: prompt_template_path(prompt_template))
   end
 end

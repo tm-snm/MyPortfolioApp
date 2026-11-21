@@ -1,18 +1,16 @@
-<div class="container py-4">
-  <div class="mb-4">
-    <h1 class="h2 break-anywhere">AI出力からカードを作成</h1>
-
-    <p class="text-muted">
-      外部AIの回答を貼り付け、解析結果を確認・編集してからカードとして保存します。
+<div class="container creation-page py-4 py-md-5">
+  <header class="mb-4">
+    <h1 class="creation-heading break-anywhere">AI出力からカードを作成</h1>
+    <p class="creation-muted mb-0">
+      外部AIで整えた回答を貼り付け、内容を確認してから保存します。
     </p>
-  </div>
+  </header>
 
   <%= turbo_frame_tag "ai_card_builder" do %>
     <%= render "ai_creation_form" %>
   <% end %>
 
-  <nav class="d-flex flex-column flex-sm-row gap-2 mt-4" aria-label="カード作成の補助リンク">
-    <%= link_to "別のテンプレートを確認する", prompt_templates_path, class: "link-primary mobile-link" %>
-    <%= link_to "カード一覧へ戻る", cards_path, class: "link-secondary mobile-link" %>
+  <nav class="mt-3" aria-label="カード作成の補助リンク">
+    <%= link_to "カード一覧へ戻る", cards_path, class: "mobile-link" %>
   </nav>
 </div>

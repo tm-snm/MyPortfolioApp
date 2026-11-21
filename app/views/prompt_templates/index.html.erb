@@ -1,127 +1,110 @@
-<div class="container py-4">
+<% available_templates = @prompt_templates.to_a %>
+<% quick_access_groups = [
+     ["favorite-templates", "お気に入り", @favorite_prompt_templates.to_a],
+     ["recent-templates", "最近使ったテンプレート", @recent_prompt_templates.to_a]
+   ].reject { |_id, _heading, templates| templates.empty? } %>
+
+<div class="container template-catalog py-4 py-md-5">
   <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-sm-start gap-3 mb-4">
-    <div>
-      <h1 class="h2 break-anywhere">プロンプトテンプレート</h1>
-      <p class="text-muted mb-0">
-        公式テンプレートまたは自分専用のテンプレートを選んで、AIとの会話をRecall Card用に整理できます。
+    <div class="min-w-0">
+      <h1 class="creation-heading break-anywhere">プロンプトテンプレート</h1>
+      <p class="creation-muted mb-1">
+        残したい内容に合うテンプレートを選び、詳細でプロンプト（外部AIへの指示文）をコピーします。
       </p>
+      <%= link_to "AI回答を貼り付ける", new_from_ai_cards_path, class: "mobile-link" %>
     </div>
 
-    <div class="d-grid d-sm-block flex-shrink-0">
-      <%= link_to "個人テンプレートを作成",
-                  new_prompt_template_path,
-                  class: "btn btn-primary" %>
-    </div>
+    <% if available_templates.any? %>
+      <div class="d-grid d-sm-block flex-shrink-0">
+        <%= link_to "個人テンプレートを作成",
+                    new_prompt_template_path,
+                    class: "btn btn-outline-secondary" %>
+      </div>
+    <% end %>
   </div>
 
-  <section class="card shadow-sm mb-4" aria-labelledby="quick-access-heading">
-    <div class="card-body">
-      <h2 id="quick-access-heading" class="h4 mb-3">クイックアクセス</h2>
-
-      <div class="row g-4">
-        <div class="col-12 col-lg-6" id="favorite-templates">
-          <h3 class="h5">お気に入り</h3>
-
-          <% if @favorite_prompt_templates.any? %>
-            <div class="list-group">
-              <% @favorite_prompt_templates.each do |prompt_template| %>
-                <%= link_to prompt_template_path(prompt_template),
-                            class: "list-group-item list-group-item-action" do %>
-                  <span class="d-flex flex-wrap align-items-center gap-2">
-                    <span class="break-anywhere"><%= prompt_template.title %></span>
-                    <span class="badge <%= prompt_template.official? ? 'text-bg-primary' : 'text-bg-success' %>">
-                      <%= prompt_template.official? ? "公式" : "個人" %>
-                    </span>
-                  </span>
-                <% end %>
-              <% end %>
-            </div>
-          <% else %>
-            <p class="text-muted mb-0">お気に入りはまだありません。</p>
-          <% end %>
-        </div>
-
-        <div class="col-12 col-lg-6" id="recent-templates">
-          <h3 class="h5">最近使ったテンプレート</h3>
-
-          <% if @recent_prompt_templates.any? %>
-            <div class="list-group">
-              <% @recent_prompt_templates.each do |prompt_template| %>
-                <%= link_to prompt_template_path(prompt_template),
-                            class: "list-group-item list-group-item-action" do %>
-                  <span class="d-flex flex-wrap align-items-center gap-2">
-                    <span class="break-anywhere"><%= prompt_template.title %></span>
-                    <span class="badge <%= prompt_template.official? ? 'text-bg-primary' : 'text-bg-success' %>">
-                      <%= prompt_template.official? ? "公式" : "個人" %>
-                    </span>
-                  </span>
-                <% end %>
-              <% end %>
-            </div>
-          <% else %>
-            <p class="text-muted mb-0">
-              テンプレートをコピーすると、ここからすぐに開けます。
-            </p>
-          <% end %>
-        </div>
+  <% if quick_access_groups.any? %>
+    <section class="creation-surface p-3 p-md-4 mb-4" aria-labelledby="quick-access-heading">
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <h2 id="quick-access-heading" class="h4 mb-0">クイックアクセス</h2>
+        <%= link_to "すべてのテンプレートを見る", "#all-templates-heading", class: "mobile-link" %>
       </div>
-    </div>
-  </section>
 
-  <h2 class="h4 mb-3">すべてのテンプレート</h2>
+      <div class="row g-3">
+        <% quick_access_groups.each do |id, heading, templates| %>
+          <div class="<%= quick_access_groups.one? ? "col-12" : "col-12 col-lg-6" %>" id="<%= id %>">
+            <h3 class="h5"><%= heading %></h3>
 
-  <% if @prompt_templates.any? %>
-    <div class="row g-3">
-      <% @prompt_templates.each do |prompt_template| %>
-        <div class="col-12 col-md-6">
-          <div class="card h-100 shadow-sm">
-            <div class="card-body d-flex flex-column">
-              <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
-                <% if prompt_template.official? %>
-                  <span class="badge text-bg-primary">公式</span>
-                <% else %>
-                  <span class="badge text-bg-success">個人</span>
+            <div class="list-group">
+              <% templates.each do |prompt_template| %>
+                <%= link_to prompt_template_path(prompt_template),
+                            class: "list-group-item list-group-item-action d-flex flex-wrap align-items-center gap-2" do %>
+                  <span class="break-anywhere"><%= prompt_template.title %></span>
+                  <span class="badge template-type<%= " template-type-official" if prompt_template.official? %>">
+                    <%= prompt_template.official? ? "公式" : "個人" %>
+                  </span>
                 <% end %>
-
-                <span class="badge text-bg-light border text-dark break-anywhere">
-                  <%= prompt_template.category %>
-                </span>
-              </div>
-
-              <h2 class="h5 card-title break-anywhere">
-                <%= prompt_template.title %>
-              </h2>
-
-              <% if prompt_template.description.present? %>
-                <p class="card-text text-muted break-anywhere">
-                  <%= prompt_template.description %>
-                </p>
               <% end %>
-
-              <div class="d-grid d-sm-flex flex-sm-wrap gap-2 mt-auto">
-                <%= link_to "詳細を見る",
-                            prompt_template_path(prompt_template),
-                            class: "btn btn-outline-primary" %>
-
-                <%= render "favorite_button",
-                           prompt_template: prompt_template,
-                           favorite: @favorite_prompt_template_ids.include?(
-                             prompt_template.id
-                           ) %>
-              </div>
             </div>
           </div>
-        </div>
-      <% end %>
-    </div>
-  <% else %>
-    <div class="text-center border rounded p-3 p-sm-5 bg-light">
-      <p class="mb-3">利用できるテンプレートがありません。</p>
-      <%= link_to "個人テンプレートを作成",
-                  new_prompt_template_path,
-                  class: "btn btn-primary" %>
-    </div>
+        <% end %>
+      </div>
+    </section>
   <% end %>
+
+  <section aria-labelledby="all-templates-heading">
+    <h2 id="all-templates-heading" class="h4 mb-3" tabindex="-1">すべてのテンプレート</h2>
+
+    <% if available_templates.any? %>
+      <div class="row g-3">
+        <% available_templates.each do |prompt_template| %>
+          <div class="col-12 col-md-6">
+            <article class="card creation-surface h-100">
+              <div class="card-body d-flex flex-column">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                  <span class="badge template-type<%= " template-type-official" if prompt_template.official? %>">
+                    <%= prompt_template.official? ? "公式" : "個人" %>
+                  </span>
+
+                  <span class="badge tag-badge template-type"><%= prompt_template.category %></span>
+                </div>
+
+                <h3 class="h5 card-title break-anywhere">
+                  <%= prompt_template.title %>
+                </h3>
+
+                <% if prompt_template.description.present? %>
+                  <p class="card-text creation-muted break-anywhere">
+                    <%= prompt_template.description %>
+                  </p>
+                <% end %>
+
+                <div class="d-grid d-sm-flex flex-sm-wrap gap-2 mt-auto">
+                  <%= link_to "テンプレートを開く",
+                              prompt_template_path(prompt_template),
+                              class: "btn btn-outline-primary",
+                              aria: { label: "テンプレートを開く（#{prompt_template.title}）" } %>
+
+                  <%= render "favorite_button",
+                             prompt_template: prompt_template,
+                             favorite: @favorite_prompt_template_ids.include?(
+                               prompt_template.id
+                             ) %>
+                </div>
+              </div>
+            </article>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="creation-surface text-center p-3 p-sm-5">
+        <p class="mb-3">利用できるテンプレートがありません。</p>
+        <%= link_to "個人テンプレートを作成",
+                    new_prompt_template_path,
+                    class: "btn btn-primary" %>
+      </div>
+    <% end %>
+  </section>
 
   <div class="d-grid d-sm-block mt-4">
     <%= link_to "カード一覧へ戻る",

@@ -52,37 +52,47 @@ RSpec.describe "Dashboards", type: :request do
         expect(response.body).not_to include(other_card.title, other_tag.name)
       end
 
-      it "カードがなくても空状態と6か月分の0件を表示する" do
+      it "カードが0件なら作成導線を最初に示し、月別は文字でも0件と分かる" do
         get dashboard_path
 
         document = response.parsed_body
-        progressbars = document.css('[role="progressbar"]')
+        first_card = document.at_css('[aria-labelledby="first-card-heading"]')
+        monthly_section = document.at_css('[aria-labelledby="monthly-cards-heading"]')
 
         expect(response).to have_http_status(:ok)
+        expect(document.css("main section h2").first.text).to eq("まだカードがありません。")
+        expect(first_card.css("a").pluck("href")).to eq([ prompt_templates_path, new_from_ai_cards_path ])
+        expect(first_card.at_css(".btn-primary").text).to eq("最初のカードを作成するプロンプトを選ぶ")
+        expect(first_card.at_css(".btn-outline-secondary").text).to eq("AI回答を貼り付ける")
         expect(response.body).to include(
-          "まだカードがありません。",
           "タグ付きのカードがまだありません。",
           "「理解できていない」に設定されたカードはありません。"
         )
-        expect(progressbars.size).to eq(6)
-        expect(progressbars.pluck("aria-valuenow")).to all(eq("0"))
+        expect(monthly_section.css("li").size).to eq(6)
+        expect(monthly_section.css("li .fw-semibold").map(&:text)).to all(eq("0件"))
+        expect(monthly_section.css("li").last.text).to include("2026年9月（月途中）")
+        expect(monthly_section.css(".progress").pluck("aria-hidden")).to all(eq("true"))
       end
 
-      it "既存の絞り込み画面へ移動するリンクを表示する" do
+      it "復習、最近作成、理解度、蓄積の順に並べ、今日の復習を独立した操作として表示する" do
+        today_card = create(:card, :scheduled_for_review, user: user, title: "今日が復習日", understanding_level: nil)
+
         get dashboard_path
 
         document = response.parsed_body
+        review = document.at_css('[aria-labelledby="dashboard-review-heading"]')
 
-        expect(
-          document.at_css(
-            "a[href='#{cards_path(review_filter: "all")}']"
-          ).text.strip
-        ).to eq("復習予定のカードを見る")
-        expect(
-          document.at_css(
-            "a[href='#{cards_path(review_filter: "overdue")}']"
-          ).text.strip
-        ).to eq("期限超過のカードを見る")
+        expect(document.css(".dashboard-page h2").map(&:text)).to eq(
+          [ "復習", "最近作成したカード", "「理解できていない」に設定したカード", "カードの蓄積" ]
+        )
+        expect(review.css("a").pluck("href")).to eq(
+          %w[due overdue all].map { |filter| cards_path(review_filter: filter) }
+        )
+        expect(review.at_css(".btn-primary").text).to eq("今日の復習を見る")
+        expect(review.at_css("#overdue-reviews-metric .dashboard-metric-value").text).to eq("0")
+        expect(review.text).to include("復習期限を過ぎたカードはありません。", "日付未設定を含む")
+        expect(document.at_css('[aria-labelledby="recent-cards-heading"]').text).to include(today_card.title)
+        expect(document.at_css('[aria-labelledby="low-understanding-heading"]').text).not_to include(today_card.title)
       end
     end
 

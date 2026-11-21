@@ -1,4 +1,6 @@
 class CardsController < ApplicationController
+  rescue_from ActionController::InvalidAuthenticityToken, with: :handle_invalid_authenticity_token
+
   before_action :authenticate_user!
   before_action :set_card,
                 only: %i[show edit update destroy export_markdown
@@ -24,7 +26,7 @@ class CardsController < ApplicationController
 
     @cards = filter_by_review_schedule(@cards)
 
-    @cards = @cards.sorted_by(@sort_order)
+    @cards = @cards.sorted_by(@sort_order).includes(:tags)
     @tags = current_user.tags.order(:name)
   end
 
@@ -73,7 +75,7 @@ class CardsController < ApplicationController
   rescue ActiveRecord::RecordInvalid => e
     @card.errors.add(:base, "タグの設定に失敗しました") unless e.record == @card
 
-    if @card.raw_content.present?
+    if ai_previewed_submission? || @card.raw_content.present?
       @previewed = true
       render :new_from_ai, status: :unprocessable_content
     else
@@ -146,19 +148,26 @@ class CardsController < ApplicationController
   end
 
   def preview_from_ai
-    raw_content = params.dig(:card, :raw_content).to_s
-    @card = current_user.cards.build(raw_content: raw_content)
+    submitted = ai_preview_params
+    raw_content = submitted[:raw_content].to_s
     @tag_names = params[:tag_names]
-    @previewed = false
+    @previewed = ai_previewed_submission?
 
     if raw_content.blank?
+      @card = current_user.cards.build(@previewed ? submitted : { raw_content: raw_content })
       @raw_content_error = "AIの出力を貼り付けてください"
       return render_ai_creation(status: :unprocessable_content)
     end
 
     parsed = CardParser.new(raw_content).parse
+    if @previewed
+      parsed[:title] = parsed[:title].presence || submitted[:title]
+      parsed[:future_note] = submitted[:future_note]
+    end
+
     @card = current_user.cards.build(parsed)
     @previewed = true
+    @show_markdown_preview = true
 
     render_ai_creation
   end
@@ -176,6 +185,33 @@ class CardsController < ApplicationController
       :future_note,
       :raw_content
     )
+  end
+
+  def handle_invalid_authenticity_token(error)
+    raise error if user_signed_in?
+
+    operation =
+      case action_name
+      when "preview_from_ai", "create" then "作成"
+      when "update" then "更新"
+      else
+        raise error
+      end
+
+    redirect_to new_user_session_path,
+                alert: "もう一度ログインしてからカードを#{operation}してください",
+                status: :see_other
+  end
+
+  def ai_previewed_submission?
+    params[:ai_previewed] == "1"
+  end
+
+  def ai_preview_params
+    card = params[:card]
+    return {} unless card.is_a?(ActionController::Parameters)
+
+    card.permit(:title, :body, :future_note, :raw_content)
   end
 
   def normalized_search_target

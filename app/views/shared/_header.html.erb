@@ -1,110 +1,61 @@
-<header class="border-bottom bg-white">
-  <nav class="navbar navbar-expand-lg">
-    <div class="container">
+<header class="site-header"
+        <% if user_signed_in? %>
+          data-controller="site-navigation"
+          data-action="keydown.esc->site-navigation#close"
+        <% end %>>
+  <div class="site-header-inner">
+    <%= link_to "Recall Card", root_path, class: "site-brand" %>
 
-      <%# アプリ名 %>
-      <%= link_to "Recall Card",
-                  root_path,
-                  class: "navbar-brand fw-bold" %>
+    <% if user_signed_in? %>
+      <button class="btn btn-outline-secondary site-menu-toggle"
+              type="button"
+              data-bs-toggle="collapse"
+              data-bs-target="#main-navbar"
+              data-site-navigation-target="toggle"
+              aria-controls="main-navbar"
+              aria-expanded="false">
+        メニュー
+      </button>
 
-      <% if user_signed_in? %>
+      <div class="collapse site-menu"
+           id="main-navbar"
+           data-site-navigation-target="menu"
+           data-action="turbo:click->site-navigation#focusDestination">
+        <nav class="site-primary-nav" aria-label="メインナビゲーション">
+          <%= navigation_link "カード一覧", cards_path, :cards, exact: action_name == "index" %>
+          <%= navigation_link "今日の復習", cards_path(review_filter: "due"), :review, exact: true %>
+          <%= navigation_link "プロンプト", prompt_templates_path, :prompts, exact: action_name == "index" %>
+          <%= navigation_link "ダッシュボード", dashboard_path, :dashboard, exact: true %>
+        </nav>
 
-        <%# モバイル用ハンバーガーボタン %>
-        <button class="navbar-toggler ms-auto"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#mainNavbar"
-                aria-controls="mainNavbar"
-                aria-expanded="false"
-                aria-label="メニューを開閉する">
-          <span class="navbar-toggler-icon"></span>
+        <%= navigation_link "AI回答を貼り付ける", new_from_ai_cards_path, :create_card,
+                            exact: action_name == "new_from_ai",
+                            classes: "btn site-create-link" %>
+
+        <details class="site-account" <%= "open" if current_navigation_item == :account %>>
+          <summary class="site-nav-link">アカウント</summary>
+          <p class="mb-1 small break-anywhere"><%= current_user.email %></p>
+          <%= link_to "アカウント設定", edit_user_registration_path, class: "site-nav-link",
+                      aria: { current: ("page" if controller_path == "users/registrations") } %>
+          <%= button_to "ログアウト", destroy_user_session_path, method: :delete,
+                        class: "site-nav-link",
+                        data: { turbo_submits_with: "ログアウト中…" },
+                        form: { class: "m-0" } %>
+          <%= link_to "アカウント削除", account_deletion_path, class: "site-nav-link site-danger-link",
+                      aria: { current: ("page" if controller_path == "account_deletions") } %>
+        </details>
+
+        <button type="button"
+                class="btn btn-outline-secondary site-menu-close"
+                data-action="site-navigation#close">
+          メニューを閉じる
         </button>
-
-        <%# モバイルでは折り畳み、PCでは常時表示 %>
-        <div class="collapse navbar-collapse min-w-0"
-             id="mainNavbar">
-
-          <div class="d-grid d-lg-flex
-                      align-items-lg-center
-                      gap-2
-                      ms-lg-auto
-                      pt-3 pt-lg-0">
-
-            <%# ログインユーザー %>
-            <span class="small text-secondary break-anywhere py-1 py-lg-0">
-              <%= current_user.email %>
-            </span>
-
-            <%# ダッシュボード %>
-            <%= link_to "ダッシュボード",
-                        dashboard_path,
-                        class: "btn btn-outline-primary btn-sm" %>
-
-            <%# カード一覧 %>
-            <%= link_to "カード一覧",
-                        cards_path,
-                        class: "btn btn-outline-primary btn-sm" %>
-
-            <%# 今日の復習 %>
-            <%= link_to "今日の復習",
-                        cards_path(review_filter: "due"),
-                        class: "btn btn-outline-secondary btn-sm" %>
-
-            <%# カード作成 %>
-            <%= link_to "カードを作成",
-                        new_from_ai_cards_path,
-                        class: "btn btn-primary btn-sm" %>
-
-            <%# プロンプト一覧 %>
-            <%= link_to "プロンプト",
-                        prompt_templates_path,
-                        class: "btn btn-outline-primary btn-sm" %>
-
-            <%# アカウント削除 %>
-            <%= link_to "アカウント削除",
-                        account_deletion_path,
-                        class: "btn btn-outline-danger btn-sm" %>
-
-            <%# ログアウト %>
-            <%= button_to "ログアウト",
-                          destroy_user_session_path,
-                          method: :delete,
-                          data: { turbo_submits_with: "ログアウト中..." },
-                          class: "btn btn-outline-secondary btn-sm",
-                          form: {
-                            class: "d-grid d-lg-block m-0"
-                          } %>
-
-            <%# モバイル専用：メニューを閉じる %>
-            <button type="button"
-                    class="btn btn-outline-secondary btn-sm d-lg-none mt-2"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#mainNavbar"
-                    aria-controls="mainNavbar"
-                    aria-label="メニューを閉じる">
-              メニューを閉じる
-            </button>
-
-          </div>
-        </div>
-
-      <% else %>
-
-        <%# 未ログイン時 %>
-        <div class="d-flex flex-wrap justify-content-end align-items-center gap-2 ms-auto">
-
-          <%= link_to "ログイン",
-                      new_user_session_path,
-                      class: "btn btn-outline-primary btn-sm" %>
-
-          <%= link_to "新規登録",
-                      new_user_registration_path,
-                      class: "btn btn-primary btn-sm" %>
-
-        </div>
-
-      <% end %>
-
-    </div>
-  </nav>
+      </div>
+    <% else %>
+      <nav class="d-flex flex-wrap justify-content-end gap-2" aria-label="メインナビゲーション">
+        <%= link_to "ログイン", new_user_session_path, class: "btn btn-outline-primary btn-sm" %>
+        <%= link_to "新規登録", new_user_registration_path, class: "btn btn-primary btn-sm" %>
+      </nav>
+    <% end %>
+  </div>
 </header>

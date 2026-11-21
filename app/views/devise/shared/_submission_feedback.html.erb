@@ -1,0 +1,8 @@
+<div class="alert alert-warning" role="alert" tabindex="-1" hidden
+     data-form-submission-target="networkError">
+  <p class="<%= local_assigns[:recovery_path] ? "mb-2" : "mb-0" %>"><%= message %></p>
+  <% if local_assigns[:recovery_path] %>
+    <%= link_to recovery_label, recovery_path, target: "_blank", rel: "noopener", class: "mobile-link" %>
+  <% end %>
+</div>
+<span class="visually-hidden" role="status" data-form-submission-target="status"></span>

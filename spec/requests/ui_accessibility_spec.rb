@@ -13,6 +13,41 @@ RSpec.describe "既存画面の操作とアクセシビリティ", type: :reques
     expect(document.at_css("main#main-content")["tabindex"]).to eq("-1")
   end
 
+  it "通常一覧と今日の復習で見出しとナビの現在地を切り替える" do
+    get cards_path
+    document = response.parsed_body
+    expect(document.at_css("main h1").text).to eq("カード一覧")
+    expect(document.css("header [aria-current]").pluck("href")).to eq([ cards_path ])
+
+    get cards_path, params: { review_filter: "due" }
+    document = response.parsed_body
+    expect(document.at_css("main h1").text).to eq("今日の復習")
+    expect(document.css("header [aria-current]").pluck("href")).to eq([ cards_path(review_filter: "due") ])
+    expect(document.at_css("main").text).to include("復習期限を過ぎたカード")
+  end
+
+  it "未ログインの公開ページにログインと新規登録の入口を表示する" do
+    sign_out user
+    get terms_path
+
+    document = response.parsed_body
+    expect(document.css("header nav a").pluck("href")).to eq([ new_user_session_path, new_user_registration_path ])
+    expect(document.css("footer nav a").pluck("href")).to include(terms_path, privacy_path, contact_path)
+  end
+
+  it "期限超過のカードでは本文の後に復習記録を開いて表示する" do
+    card = create(:card, :scheduled_for_review, user: user, next_review_on: Date.current)
+    travel 1.day do
+      get card_path(card)
+
+      document = response.parsed_body
+      details = document.at_css("#reviewed_next_review_on").ancestors("details").first
+      expect(details.key?("open")).to be(true)
+      headings = document.css("main h2").map(&:text)
+      expect(headings.index("本文")).to be < headings.index("復習スケジュール")
+    end
+  end
+
   it "カードの保存失敗時は入力とタグを保持し、エラーを入力欄に関連付ける" do
     expect do
       post cards_path, params: {
@@ -26,6 +61,8 @@ RSpec.describe "既存画面の操作とアクセシビリティ", type: :reques
     expect(document.at_css("#card_title")["aria-invalid"]).to eq("true")
     expect(document.at_css("#card_title")["aria-describedby"]).to eq("card-errors")
     expect(document.at_css("#card-errors")["data-controller"]).to eq("focus")
+    form = document.at_css('form[data-controller="form-submission"]')
+    expect(form["data-form-submission-validation-error-id-value"]).to eq("card-errors")
     expect(document.at_css("#card_body").text).to include("修正前の本文")
     expect(document.at_css("#tag_names")["value"]).to eq("Rails, Docker")
     expect(document.at_css("#card_body")["aria-invalid"]).to be_nil
@@ -66,6 +103,7 @@ RSpec.describe "既存画面の操作とアクセシビリティ", type: :reques
     document = response.parsed_body
     expect(document.at_css("#parsed-card-heading")["data-controller"]).to eq("focus")
     form = document.at_css('form[data-controller="form-submission"]')
+    expect(form["data-form-submission-validation-error-id-value"]).to be_nil
     expect(form.at_css('input[value="カードを保存"]')["data-turbo-submits-with"]).to eq("保存中...")
     expect(form.at_css('input[formaction]')["formaction"]).to eq(preview_from_ai_cards_path)
   end
@@ -91,7 +129,7 @@ RSpec.describe "既存画面の操作とアクセシビリティ", type: :reques
 
     document = response.parsed_body
     expect(document.css('[data-controller="focus"]').size).to eq(1)
-    expect(document.at_css("#learning-errors")).to be_present
+    expect(document.at_css("details[open] #learning-errors")).to be_present
     expect(document.at_css("#reviewed-errors")).to be_nil
     expect(document.at_css("#reviewed_understanding_level")["aria-invalid"]).to be_nil
     expect(card.reload.understanding_level).to be_nil
@@ -105,7 +143,7 @@ RSpec.describe "既存画面の操作とアクセシビリティ", type: :reques
 
     expect(response).to have_http_status(:unprocessable_content)
     document = response.parsed_body
-    expect(document.at_css("#reviewed_next_review_on")["aria-describedby"]).to eq("reviewed-errors")
+    expect(document.at_css("details[open] #reviewed_next_review_on")["aria-describedby"]).to eq("reviewed-errors")
     expect(document.at_css("#reviewed_understanding_level")["aria-describedby"]).to eq("reviewed-errors")
     expect(document.at_css("#learning-errors")).to be_nil
     expect(card.reload.last_reviewed_at).to be_nil
@@ -119,14 +157,14 @@ RSpec.describe "既存画面の操作とアクセシビリティ", type: :reques
 
     expect(response).to have_http_status(:unprocessable_content)
     document = response.parsed_body
-    expect(document.at_css("#card_next_review_on")["value"]).to eq(past_date.to_s)
+    expect(document.at_css("details[open] #card_next_review_on")["value"]).to eq(past_date.to_s)
     expect(document.at_css("#card_next_review_on")["aria-describedby"]).to eq("schedule-errors")
     expect(card.reload.next_review_on).to be_nil
   end
 
   it "既存のアカウント編集を日本語で表示し、誤ったパスワードでは更新しない" do
     get edit_user_registration_path
-    expect(response.body).to include("アカウントを編集", "アカウントを更新")
+    expect(response.body).to include("アカウント設定", "アカウントを更新")
 
     original_email = user.email
     put user_registration_path, params: {
@@ -140,15 +178,19 @@ RSpec.describe "既存画面の操作とアクセシビリティ", type: :reques
     expect(user.reload.email).to eq(original_email)
   end
 
-  it "アカウント削除の失敗ではFlashへ案内し、本人を削除しない" do
+  it "アカウント削除の失敗では該当欄にエラーを関連付け、本人を削除しない" do
     delete user_registration_path, params: {
       deletion_confirmation: "1", current_password: "incorrect"
     }
 
     expect(response).to have_http_status(:unprocessable_content)
     document = response.parsed_body
-    expect(document.at_css("#flash-alert")["data-controller"]).to eq("focus")
-    expect(document.at_css("#current_password")["aria-describedby"]).to include("flash-alert")
+    expect(document.at_css("#account-deletion-errors")["data-controller"]).to eq("focus")
+    expect(document.at_css("#current_password")["aria-invalid"]).to eq("true")
+    expect(document.at_css("#current_password")["aria-describedby"])
+      .to eq("deletion-password-help account-deletion-errors")
+    expect(document.at_css("#deletion_confirmation")["checked"]).to be_nil
+    expect(document.at_css("#current_password")["value"]).to be_nil
     expect(User.exists?(user.id)).to be(true)
   end
 

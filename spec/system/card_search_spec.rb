@@ -46,11 +46,11 @@ RSpec.describe "カード検索", type: :system do
     click_button "ログイン"
 
     fill_in "キーワード", with: "Rails"
-    select "タイトル", from: "検索対象"
-    select "Rails", from: "タグ"
-    select "復習予定すべて", from: "復習状況"
+    select "タイトル", from: "検索対象", visible: :all
+    select "Rails", from: "タグ", visible: :all
+    select "復習予定すべて", from: "復習状況", visible: :all
     select "古い順", from: "並び順"
-    click_button "絞り込む"
+    click_button "検索"
 
     query_params = Rack::Utils.parse_nested_query(
       URI.parse(page.current_url).query
@@ -64,9 +64,13 @@ RSpec.describe "カード検索", type: :system do
       "sort" => "oldest"
     )
     expect(page).to have_field("キーワード", with: "Rails")
-    expect(page).to have_select("検索対象", selected: "タイトル")
-    expect(page).to have_select("タグ", selected: "Rails")
-    expect(page).to have_select("復習状況", selected: "復習予定すべて")
+    expect(page).to have_css("details:not([open]) > summary", text: "絞り込み")
+    expect(page).to have_content("検索対象：タイトル")
+    expect(page).to have_content("タグ：Rails")
+    expect(page).to have_content("復習状況：復習予定すべて")
+    expect(page).to have_select("検索対象", selected: "タイトル", visible: :all)
+    expect(page).to have_select("タグ", selected: "Rails", visible: :all)
+    expect(page).to have_select("復習状況", selected: "復習予定すべて", visible: :all)
     expect(page).to have_select("並び順", selected: "古い順")
     expect(page).to have_content(old_card.title)
     expect(page).to have_content(new_card.title)
@@ -78,8 +82,8 @@ RSpec.describe "カード検索", type: :system do
 
     expect(URI.parse(page.current_url).query).to be_nil
     expect(find_field("キーワード").value).to be_nil
-    expect(page).to have_select("検索対象", selected: "すべて")
+    expect(page).to have_select("検索対象", selected: "すべて", visible: :all)
     expect(page).to have_select("並び順", selected: "新しい順")
-    expect(page).to have_select("復習状況", selected: "すべてのカード")
+    expect(page).to have_select("復習状況", selected: "すべてのカード", visible: :all)
   end
 end

@@ -9,8 +9,8 @@
 
 <div class="mb-3"
      data-controller="tag-input"
-     data-action="submit@document->tag-input#prepareSubmit">
-  <%= label_tag :tag_names, "タグ", class: "form-label" %>
+     data-action="formdata@document->tag-input#prepareSubmit:capture">
+  <%= label_tag :tag_names, "タグ（任意）", class: "form-label" %>
 
   <div class="input-group">
     <%= text_field_tag :tag_names,
@@ -59,9 +59,7 @@
     </div>
   </div>
 
-  <div class="mt-3">
-    <h3 class="h6 mb-2">過去に使用したタグ</h3>
-
+  <% candidates = capture do %>
     <% if available_tags.any? %>
       <div class="d-flex flex-wrap gap-2">
         <% available_tags.each do |tag| %>
@@ -83,5 +81,17 @@
         まだ再利用できるタグはありません。
       </p>
     <% end %>
-  </div>
+  <% end %>
+
+  <% if local_assigns[:collapse_candidates] %>
+    <details class="mt-3 creation-disclosure">
+      <summary>過去に使用したタグ</summary>
+      <%= candidates %>
+    </details>
+  <% else %>
+    <div class="mt-3">
+      <h3 class="h6 mb-2">過去に使用したタグ</h3>
+      <%= candidates %>
+    </div>
+  <% end %>
 </div>

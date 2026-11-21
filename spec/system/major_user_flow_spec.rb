@@ -34,13 +34,17 @@ RSpec.describe "主要ユーザーフロー", type: :system do
     expect(page).to have_current_path(cards_path)
     expect(page).to have_content("カード一覧")
 
-    click_link "プロンプト"
+    within("main") { click_link "AI回答を貼り付ける" }
+
+    expect(page).to have_field("AIの出力")
+    expect(page).to have_link("手入力でカードを作成", href: new_card_path)
+    click_link "テンプレートを選ぶ"
 
     expect(page).to have_content("プロンプトテンプレート")
     expect(page).to have_content(prompt_template.title)
 
     click_link(
-      "詳細を見る",
+      "テンプレートを開く",
       href: prompt_template_path(prompt_template)
     )
 
@@ -76,9 +80,10 @@ RSpec.describe "主要ユーザーフロー", type: :system do
       "タイトル",
       with: "Dockerの権限エラー"
     )
-    within(".markdown-content") do
-      expect(page).to have_css("h2", text: "状況")
-      expect(page).to have_css("li", text: "Dockerイメージを再ビルドする")
+    expect(page).to have_css("details:not([open]) > summary", text: "解析時点の表示プレビュー")
+    within(find(".markdown-content", visible: :all)) do
+      expect(page).to have_css("h2", text: "状況", visible: :all)
+      expect(page).to have_css("li", text: "Dockerイメージを再ビルドする", visible: :all)
     end
 
     fill_in "タイトル", with: "編集後のDocker権限エラー"
@@ -105,7 +110,7 @@ RSpec.describe "主要ユーザーフロー", type: :system do
     click_link "カード一覧"
 
     fill_in "キーワード", with: "Docker"
-    click_button "絞り込む"
+    click_button "検索"
 
     expect(page).to have_content("編集後のDocker権限エラー")
     expect(page).not_to have_content("Rubyの配列について")

@@ -14,6 +14,34 @@ RSpec.describe "Home", type: :request do
       expect(response.body).to include("Recall Card")
     end
 
+    it "未ログインのトップ本文から登録・ログイン・使い方に進める" do
+      get root_path
+
+      hero = response.parsed_body.at_css("main .hero-section")
+      links = hero.css("a").map { |link| [ link.text.strip, link["href"] ] }
+
+      expect(links).to eq([
+        [ "新規登録", new_user_registration_path ],
+        [ "ログイン", new_user_session_path ],
+        [ "使い方を見る", "#steps" ]
+      ])
+      expect(response.parsed_body.at_css("#steps ol").css("li").size).to eq(3)
+    end
+
+    it "ログイン中のトップ本文からカード一覧・テンプレートに進める" do
+      sign_in create(:user)
+      get root_path
+
+      hero = response.parsed_body.at_css("main .hero-section")
+      links = hero.css("a").map { |link| [ link.text.strip, link["href"] ] }
+
+      expect(links).to eq([
+        [ "カード一覧へ", cards_path ],
+        [ "テンプレートを選ぶ", prompt_templates_path ],
+        [ "使い方を見る", "#steps" ]
+      ])
+    end
+
     it "未ログインでも初期HTMLにサービス共通の紹介情報を一度ずつ出力する" do
       get root_path
 
